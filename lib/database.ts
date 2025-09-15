@@ -32,7 +32,7 @@ try {
     });
     console.log('✅ Using local SQLite database as fallback');
   });
-} catch (error) {
+} catch {
   console.log('❌ Failed to create Turso client, using local database');
   db = createClient({
     url: 'file:./strategy_analyser.db',
@@ -169,7 +169,7 @@ export async function initializeDatabase() {
       await db.execute(`
         ALTER TABLE strategy_runs ADD COLUMN run_description TEXT
       `);
-    } catch (error) {
+    } catch {
       // Column might already exist, ignore the error
       console.log('Description column already exists or migration not needed');
     }

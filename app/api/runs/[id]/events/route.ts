@@ -1,6 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/database';
 
+// Define the type for strategy events row
+interface StrategyEventRow {
+  event_type: 'tp_near_miss' | 'fill_near_miss' | 'sl_adjustment';
+  date: string;
+  time: string;
+  trade_id: string | null;
+  direction: string | null;
+  target: string | null;
+  closest_distance: string | null;
+  reason: string | null;
+  trigger: string | null;
+  adjustment: string | null;
+}
+
+// Define types for the different event objects
+interface TpNearMissEvent {
+  date: string;
+  time: string;
+  tradeId: string | null;
+  direction: string | null;
+  target: string | null;
+  closestDistance: string | null;
+  reason: string | null;
+}
+
+interface FillNearMissEvent {
+  date: string;
+  time: string;
+  direction: string | null;
+  closestDistance: string | null;
+}
+
+interface SlAdjustmentEvent {
+  date: string;
+  time: string;
+  tradeId: string | null;
+  direction: string | null;
+  trigger: string | null;
+  adjustment: string | null;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -38,13 +79,17 @@ export async function GET(
     });
 
     // Organize events by type
-    const events = {
+    const events: {
+      tpNearMisses: TpNearMissEvent[];
+      fillNearMisses: FillNearMissEvent[];
+      slAdjustments: SlAdjustmentEvent[];
+    } = {
       tpNearMisses: [],
       fillNearMisses: [],
       slAdjustments: []
     };
 
-    result.rows.forEach(row => {
+    result.rows.forEach((row: StrategyEventRow) => {
       switch (row.event_type) {
         case 'tp_near_miss':
           events.tpNearMisses.push({

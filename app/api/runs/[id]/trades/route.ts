@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/database';
 
+// Define the type for strategy trade summaries row
+interface StrategyTradeSummaryRow {
+  trade_id: string;
+  date: string;
+  time: string;
+  direction: string;
+  line: string;
+  entry_price: number;
+  high_price: number;
+  low_price: number;
+  max_profit: number;
+  max_loss: number;
+  actual_pnl: number;
+  bars: number;
+  max_profit_vs_target: number | null;
+  max_loss_vs_stop: number | null;
+  profit_efficiency: number | null;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -42,7 +61,7 @@ export async function GET(
       args: [runId]
     });
 
-    const trades = result.rows.map(row => ({
+    const trades = result.rows.map((row: StrategyTradeSummaryRow) => ({
       tradeId: row.trade_id,
       date: row.date,
       time: row.time,

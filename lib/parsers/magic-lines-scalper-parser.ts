@@ -314,11 +314,6 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     }
     console.log(`Total current trade data found: ${currentTradeData.length}`);
 
-    // Count SL adjustments and near misses per trade - now with ID support
-    const slAdjustmentPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+(?:\[TRADE SL \(ID: \d+\)\]|SL Adjustment|Short position: Price reached X[12]|Long position: Price reached X[12])/g;
-    const nearMissPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[(?:TP )?NEAR MISS \(ID: \d+\)\]/g;
-
-
     // Match all trade components together using IDs
     console.log('=== MATCHING TRADE COMPONENTS BY ID ===');
     
@@ -463,9 +458,6 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     
     // Count General Near Misses (not associated with specific trades)
     const generalNearMisses = (rawData.match(/\[NEAR MISS\]/g) || []).length;
-    
-    // Total near misses from trade data (should match TP near misses)
-    const tradeNearMisses = tradeData.reduce((sum, trade) => sum + trade.nearMisses, 0);
     
     metrics.push({
       name: 'TP Near Misses',

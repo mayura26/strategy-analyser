@@ -68,7 +68,7 @@ export default function InputPage() {
           message: data.error || 'Failed to parse data'
         });
       }
-    } catch (error) {
+    } catch {
       setResult({
         success: false,
         message: 'Network error. Please try again.'
