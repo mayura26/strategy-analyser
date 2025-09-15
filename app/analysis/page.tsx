@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Loader2, BarChart3, Settings, TrendingUp, Calendar, Trash2, Eye, ChevronDown, ChevronRight } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 
 interface Strategy {
   id: number;
@@ -744,33 +744,72 @@ export default function AnalysisPage() {
               <CardContent>
                 <div className="h-96">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart>
+                    <BarChart data={(() => {
+                      // Combine all selected runs' data into a single dataset
+                      const allDates = new Set<string>();
+                      selectedRuns.forEach(runId => {
+                        const data = dailyPnlData[runId] || [];
+                        data.forEach(day => allDates.add(day.date));
+                      });
+                      
+                      const sortedDates = Array.from(allDates).sort();
+                      
+                      return sortedDates.map(date => {
+                        const dataPoint: any = { date };
+                        selectedRuns.forEach((runId, index) => {
+                          const run = runs.find(r => r.id === runId);
+                          const runData = dailyPnlData[runId] || [];
+                          const dayData = runData.find(day => day.date === date);
+                          dataPoint[`run_${runId}`] = dayData ? dayData.pnl : 0;
+                        });
+                        return dataPoint;
+                      });
+                    })()}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
                       <YAxis />
                       <Tooltip 
-                        formatter={(value: any) => [formatCurrency(value), 'PNL']}
+                        formatter={(value: any, name: string) => {
+                          const runId = name.replace('run_', '');
+                          const run = runs.find(r => r.id === parseInt(runId));
+                          return [formatCurrency(value), run?.run_name || `Run ${runId}`];
+                        }}
                         labelFormatter={(label) => `Date: ${label}`}
                       />
                       {selectedRuns.map((runId, index) => {
                         const run = runs.find(r => r.id === runId);
-                        const data = dailyPnlData[runId] || [];
-                        const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#8dd1e1'];
                         
                         return (
-                          <Line
+                          <Bar
                             key={runId}
-                            type="monotone"
-                            dataKey="pnl"
-                            data={data}
-                            stroke={colors[index % colors.length]}
-                            strokeWidth={2}
-                            name={run?.run_name || `Run ${runId}`}
-                            connectNulls={false}
-                          />
+                            dataKey={`run_${runId}`}
+                            name={`run_${runId}`}
+                            fill="#8884d8"
+                          >
+                            {(() => {
+                              // Get the combined data to create cells
+                              const allDates = new Set<string>();
+                              selectedRuns.forEach(id => {
+                                const data = dailyPnlData[id] || [];
+                                data.forEach(day => allDates.add(day.date));
+                              });
+                              const sortedDates = Array.from(allDates).sort();
+                              
+                              return sortedDates.map((date, dateIndex) => {
+                                const runData = dailyPnlData[runId] || [];
+                                const dayData = runData.find(day => day.date === date);
+                                const value = dayData ? dayData.pnl : 0;
+                                const color = value >= 0 ? '#22c55e' : '#ef4444';
+                                
+                                return (
+                                  <Cell key={`cell-${runId}-${dateIndex}`} fill={color} />
+                                );
+                              });
+                            })()}
+                          </Bar>
                         );
                       })}
-                    </LineChart>
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
