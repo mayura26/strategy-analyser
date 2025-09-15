@@ -1,14 +1,55 @@
 import { createClient } from '@libsql/client';
 
 // Database client configuration
-export const db = createClient({
-  url: process.env.DATABASE_URL || 'file:./strategy_analyser.db',
-  authToken: process.env.DATABASE_AUTH_TOKEN,
-});
+const databaseUrl = process.env.DATABASE_URL || 'file:./strategy_analyser.db';
+const authToken = process.env.DATABASE_AUTH_TOKEN;
+
+console.log('Database configuration:');
+console.log('DATABASE_URL:', databaseUrl);
+console.log('DATABASE_AUTH_TOKEN:', authToken ? '***SET***' : 'NOT SET');
+
+// Create database client with fallback
+let db: any;
+
+try {
+  // Try to create client with Turso configuration
+  db = createClient({
+    url: databaseUrl,
+    authToken: authToken,
+  });
+  
+  // Test the connection
+  console.log('Testing Turso connection...');
+  db.execute('SELECT 1 as test').then(() => {
+    console.log('✅ Connected to Turso database');
+  }).catch((error: any) => {
+    console.log('❌ Turso connection failed, falling back to local database');
+    console.log('Error:', error.message);
+    
+    // Fallback to local database
+    db = createClient({
+      url: 'file:./strategy_analyser.db',
+    });
+    console.log('✅ Using local SQLite database as fallback');
+  });
+} catch (error) {
+  console.log('❌ Failed to create Turso client, using local database');
+  db = createClient({
+    url: 'file:./strategy_analyser.db',
+  });
+  console.log('✅ Using local SQLite database as fallback');
+}
+
+export { db };
 
 // Database schema initialization
 export async function initializeDatabase() {
   try {
+    // Test connection first
+    console.log('Testing database connection...');
+    await db.execute('SELECT 1 as test');
+    console.log('Database connection successful');
+    
     // Strategies table - stores strategy metadata
     await db.execute(`
       CREATE TABLE IF NOT EXISTS strategies (

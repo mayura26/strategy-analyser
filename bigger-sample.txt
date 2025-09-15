@@ -1,0 +1,639 @@
+2025-07-27 11:59:30 PM MagicLinesScalper Settings [Playback101]
+2025-07-27 11:59:30 PM === MAIN PARAMETERS ===
+2025-07-27 11:59:30 PM Trade Quantity: 6 | Max Gain: $100 | Max Loss: $75
+2025-07-27 11:59:30 PM Max Consecutive Losses: 3 | Loss Cut Off: $60
+2025-07-27 11:59:30 PM Full Take Profit: 17pts | Full Stop Loss: 17pts
+2025-07-27 11:59:30 PM === ENTRY LOGIC ===
+2025-07-27 11:59:30 PM Min Distance From Line: 3pts | Max Distance From Line: 35pts
+2025-07-27 11:59:30 PM Entry Offset: 0.75pts | Line Cross Bar Count: 8
+2025-07-27 11:59:30 PM Upside Short Trades: True | Downside Long Trades: True
+2025-07-27 11:59:30 PM === POSITION MANAGEMENT ===
+2025-07-27 11:59:30 PM Dynamic Trim: True | Trim Percent: 50% | Trim Take Profit: 45pts
+2025-07-27 11:59:30 PM SL Adjustment: True | X1: 19pts | X2: 30pts
+2025-07-27 11:59:30 PM SL Levels - L1: -7.5pts | L2: 10pts
+2025-07-27 11:59:30 PM === TIME PARAMETERS ===
+2025-07-27 11:59:30 PM Start Time: 09:35 | End Time: 15:58
+2025-07-27 11:59:30 PM === PROTECTIVE FUNCTIONS ===
+2025-07-27 11:59:30 PM Trade Completion Protect: True
+2025-07-27 11:59:30 PM === RTH MAGIC LINES ===
+2025-07-27 11:59:30 PM Upside Levels: 0.6, 2.618, 4.262, 6.262, 7, 10.272, 11.618
+2025-07-27 11:59:30 PM Downside Levels: 2.618, 3.618, 8, 10.272, 11.618
+2025-07-27 11:59:30 PM Mini Mode: False | Instrument: MNQ
+2025-07-28 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23479 Low: 23462.5
+2025-07-28 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-07-28 9:51:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23523 | Bars Since Last Trade: 408
+2025-07-28 9:54:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-07-28 9:54:00 AM [Trade Completion]: Trigger not generated as trade completed on bar: 1697
+2025-07-28 9:55:30 AM [TRADE SL (ID: 1)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-07-28 10:24:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_2.618 | Entry: 23523.00 | High: 23527.75 | Low: 23466.25 | Max Profit: 56.75pts | Max Loss: 4.75pts | Bars: 63
+2025-07-28 10:24:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $264.78 | Current PnL: $361.56 | Points : 44.25 | Quantity: 3
+2025-07-28 10:24:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $361.56 | Total PnL: $361.56
+Strategy 'MagicLinesScalper/362589828': An Enter() method to submit an entry order at '07/28/2025 13:18:00' has been ignored. Please search on the term 'Internal Order Handling Rules that Reduce Unwanted Positions' in the Help Guide for detailed explanation.
+2025-07-29 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23618.75 Low: 23592.75
+2025-07-29 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-07-29 10:18:00 AM [NEAR MISS] Long near miss at 10:09:00 - closest distance: 2.00pts
+2025-07-29 10:24:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23550 | Bars Since Last Trade: 360
+2025-07-29 10:32:00 AM [TP NEAR MISS (ID: 1)] Long TP near miss (17.0pts target) at 10:30:30 - closest distance: 0.25pts (price moved away)
+2025-07-29 10:33:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-07-29 10:41:00 AM [TRADE SL (ID: 1)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-07-29 10:54:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_2.618 | Entry: 23550.00 | High: 23576.25 | Low: 23514.00 | Max Profit: 26.25pts | Max Loss: 36.00pts | Bars: 54
+2025-07-29 10:54:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-50.22 | Current PnL: $46.56 | Points : -8.25 | Quantity: 3
+2025-07-29 10:54:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $46.56 | Total PnL: $46.56
+2025-07-30 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23491.25 Low: 23465.25
+2025-07-30 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-07-30 9:36:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23507.5 | Bars Since Last Trade: 314
+2025-07-30 9:38:30 AM [TP NEAR MISS (ID: 1)] Short TP near miss (17.0pts target) at 09:37:00 - closest distance: 0.00pts (price moved away)
+2025-07-30 9:39:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-07-30 9:39:00 AM [TRADE SL (ID: 1)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-07-30 9:48:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_0.600 | Entry: 23507.50 | High: 23526.50 | Low: 23481.75 | Max Profit: 25.75pts | Max Loss: 19.00pts | Bars: 22
+2025-07-30 9:48:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-50.22 | Current PnL: $46.56 | Points : -8.25 | Quantity: 3
+2025-07-30 9:48:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $46.56 | Total PnL: $46.56
+2025-07-30 10:21:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23507.5 | Bars Since Last Trade: 11
+2025-07-30 10:33:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_0.600 | Entry: 23507.50 | High: 23529.00 | Low: 23501.25 | Max Profit: 6.25pts | Max Loss: 21.50pts | Bars: 19
+2025-07-30 10:33:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-216.44 | Current PnL: $-169.88 | Points : -18 | Quantity: 6
+2025-07-30 10:33:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-216.44 | Total PnL: $-169.88
+2025-07-30 11:51:00 AM [TRADE FILL (ID: 3)] SHORT FILLED: 23507.5 | Bars Since Last Trade: 26
+2025-07-30 12:00:00 PM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_0.600 | Entry: 23507.50 | High: 23530.50 | Low: 23499.75 | Max Profit: 7.75pts | Max Loss: 23.00pts | Bars: 15
+2025-07-30 12:00:00 PM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-384.32 | Points : -17.75 | Quantity: 6
+2025-07-30 12:00:00 PM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-384.32
+2025-07-30 2:30:00 PM [TRADE FILL (ID: 4)] SHORT FILLED: 23560 | Bars Since Last Trade: 50
+2025-07-30 2:33:00 PM ******** TRADING DISABLED (mid-trade) ******** : $-450.3 | Account: Playback101
+2025-07-30 2:36:00 PM [TRADE SUMMARY (ID: 4)] Short | Line: CME_UP_2.618 | Entry: 23560.00 | High: 23586.25 | Low: 23555.00 | Max Profit: 5.00pts | Max Loss: 26.25pts | Bars: 8
+2025-07-30 2:36:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $-91.44 | Current PnL: $-475.76 | Points : -7.5 | Quantity: 6
+2025-07-30 2:36:00 PM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $-91.44 | Total PnL: $-475.76
+2025-07-31 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23752.25 Low: 23717
+2025-07-31 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-07-31 9:42:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23624 | Bars Since Last Trade: 242
+2025-07-31 9:45:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-07-31 9:45:30 AM [TRADE SL (ID: 1)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-07-31 9:48:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_3.618 | Entry: 23624.00 | High: 23649.75 | Low: 23608.25 | Max Profit: 25.75pts | Max Loss: 15.75pts | Bars: 7
+2025-07-31 9:48:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-50.22 | Current PnL: $46.56 | Points : -8.25 | Quantity: 3
+2025-07-31 9:48:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $46.56 | Total PnL: $46.56
+2025-07-31 10:24:00 AM [TRADE FILL (ID: 2)] LONG FILLED: 23624 | Bars Since Last Trade: 12
+2025-07-31 10:28:30 AM [TRADE SL (ID: 2)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-07-31 10:30:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $96.78 | Current PnL: $143.34 | Points : 16.25 | Quantity: 3
+2025-07-31 10:36:00 AM [TRADE SUMMARY (ID: 2)] Long | Line: CME_DOWN_3.618 | Entry: 23624.00 | High: 23657.00 | Low: 23611.50 | Max Profit: 33.00pts | Max Loss: 12.50pts | Bars: 17
+2025-07-31 10:36:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-51.72 | Current PnL: $91.62 | Points : -8.5 | Quantity: 3
+2025-07-31 10:36:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $45.06 | Total PnL: $91.62
+2025-07-31 1:54:00 PM [TRADE FILL (ID: 3)] LONG FILLED: 23389.5 | Bars Since Last Trade: 66
+2025-07-31 2:00:00 PM [TRADE SUMMARY (ID: 3)] Long | Line: CME_DOWN_10.272 | Entry: 23389.50 | High: 23399.50 | Low: 23364.75 | Max Profit: 10.00pts | Max Loss: 24.75pts | Bars: 8
+2025-07-31 2:00:00 PM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-122.82 | Points : -17.75 | Quantity: 6
+2025-07-31 2:00:00 PM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-122.82
+2025-07-31 2:15:00 PM [TRADE FILL (ID: 4)] LONG FILLED: 23342 | Bars Since Last Trade: 5
+2025-07-31 2:18:00 PM [TRADE SUMMARY (ID: 4)] Long | Line: CME_DOWN_11.618 | Entry: 23342.00 | High: 23354.50 | Low: 23305.75 | Max Profit: 12.50pts | Max Loss: 36.25pts | Bars: 4
+2025-07-31 2:18:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-337.26 | Points : -17.75 | Quantity: 6
+2025-07-31 2:18:00 PM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-337.26
+2025-07-31 3:15:00 PM [TRADE FILL (ID: 5)] LONG FILLED: 23389.5 | Bars Since Last Trade: 19
+2025-07-31 3:19:30 PM [TRADE SL (ID: 5)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-07-31 3:21:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $96.78 | Current PnL: $-240.48 | Points : 16.25 | Quantity: 3
+2025-07-31 3:22:00 PM [TP NEAR MISS (ID: 5)] Long TP near miss (17.0pts target) at 15:18:00 - closest distance: 1.75pts (price moved away)
+2025-07-31 3:27:00 PM [TRADE SUMMARY (ID: 5)] Long | Line: CME_DOWN_10.272 | Entry: 23389.50 | High: 23420.00 | Low: 23375.75 | Max Profit: 30.50pts | Max Loss: 13.75pts | Bars: 20
+2025-07-31 3:27:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $-50.22 | Current PnL: $-290.7 | Points : -8.25 | Quantity: 3
+2025-07-31 3:27:00 PM [PNL UPDATE (ID: 5)] COMPLETED TRADE PnL: $46.56 | Total PnL: $-290.7
+2025-07-31 3:51:00 PM [TRADE FILL (ID: 6)] LONG FILLED: 23342 | Bars Since Last Trade: 8
+2025-07-31 3:54:00 PM [TRADE SUMMARY (ID: 6)] Long | Line: CME_DOWN_11.618 | Entry: 23342.00 | High: 23371.50 | Low: 23319.00 | Max Profit: 29.50pts | Max Loss: 23.00pts | Bars: 3
+2025-07-31 3:54:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-505.14 | Points : -17.75 | Quantity: 6
+2025-07-31 3:54:00 PM [PNL UPDATE (ID: 6)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-505.14
+2025-07-31 3:54:00 PM ******** TRADING DISABLED ******** : $-505.14 | Account: Playback101
+2025-08-01 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23090 Low: 23055.5
+2025-08-01 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-01 9:36:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 22999 | Bars Since Last Trade: 214
+2025-08-01 9:39:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_2.618 | Entry: 22999.00 | High: 23032.75 | Low: 22976.25 | Max Profit: 33.75pts | Max Loss: 22.75pts | Bars: 4
+2025-08-01 9:39:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-214.44 | Points : -17.75 | Quantity: 6
+2025-08-01 9:39:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-214.44
+2025-08-01 9:39:00 AM [TRADE FILL (ID: 2)] LONG FILLED: 22999 | Bars Since Last Trade: 0
+2025-08-01 9:42:00 AM [TRADE SUMMARY (ID: 2)] Long | Line: CME_DOWN_2.618 | Entry: 22999.00 | High: 23024.00 | Low: 22960.00 | Max Profit: 25.00pts | Max Loss: 39.00pts | Bars: 3
+2025-08-01 9:42:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-428.88 | Points : -17.75 | Quantity: 6
+2025-08-01 9:42:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-428.88
+2025-08-01 10:27:00 AM [TRADE FILL (ID: 3)] LONG FILLED: 22964.5 | Bars Since Last Trade: 15
+2025-08-01 10:29:00 AM [TP NEAR MISS (ID: 3)] Long TP near miss (17.0pts target) at 09:40:00 - closest distance: 1.00pts (price moved away)
+2025-08-01 10:30:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $96.78 | Current PnL: $-332.1 | Points : 16.25 | Quantity: 3
+2025-08-01 10:30:00 AM [TRADE SL (ID: 3)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-01 10:31:30 AM [TRADE SL (ID: 3)] SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-01 10:36:00 AM [TRADE SUMMARY (ID: 3)] Long | Line: CME_DOWN_3.618 | Entry: 22964.50 | High: 23022.50 | Low: 22963.50 | Max Profit: 58.00pts | Max Loss: 1.00pts | Bars: 15
+2025-08-01 10:36:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $264.78 | Current PnL: $-67.3200000000001 | Points : 44.25 | Quantity: 3
+2025-08-01 10:36:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $361.56 | Total PnL: $-67.3200000000001
+2025-08-01 12:30:00 PM [TRADE FILL (ID: 4)] LONG FILLED: 22999 | Bars Since Last Trade: 40
+2025-08-01 12:35:00 PM [TRADE SL (ID: 4)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-01 12:36:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $96.78 | Current PnL: $29.4599999999999 | Points : 16.25 | Quantity: 3
+2025-08-01 12:39:00 PM [TRADE SUMMARY (ID: 4)] Long | Line: CME_DOWN_2.618 | Entry: 22999.00 | High: 23019.50 | Low: 22984.25 | Max Profit: 20.50pts | Max Loss: 14.75pts | Bars: 16
+2025-08-01 12:39:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $-50.22 | Current PnL: $-20.7600000000001 | Points : -8.25 | Quantity: 3
+2025-08-01 12:39:00 PM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $46.56 | Total PnL: $-20.7600000000001
+2025-08-01 12:39:00 PM [TRADE FILL (ID: 5)] LONG FILLED: 22964.5 | Bars Since Last Trade: 0
+2025-08-01 12:48:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $96.78 | Current PnL: $76.0199999999999 | Points : 16.25 | Quantity: 3
+2025-08-01 12:51:00 PM [TRADE SUMMARY (ID: 5)] Long | Line: CME_DOWN_3.618 | Entry: 22964.50 | High: 22983.75 | Low: 22936.25 | Max Profit: 19.25pts | Max Loss: 28.25pts | Bars: 17
+2025-08-01 12:51:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $-107.22 | Current PnL: $-31.2000000000001 | Points : -17.75 | Quantity: 3
+2025-08-01 12:51:00 PM [PNL UPDATE (ID: 5)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $-31.2000000000001
+2025-08-01 2:09:00 PM [TRADE FILL (ID: 6)] LONG FILLED: 22813.25 | Bars Since Last Trade: 26
+2025-08-01 2:12:00 PM [TRADE SUMMARY (ID: 6)] Long | Line: CME_DOWN_8.000 | Entry: 22813.25 | High: 22832.75 | Low: 22788.25 | Max Profit: 19.50pts | Max Loss: 25.00pts | Bars: 4
+2025-08-01 2:12:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $-219.44 | Current PnL: $-250.64 | Points : -18.25 | Quantity: 6
+2025-08-01 2:12:00 PM [PNL UPDATE (ID: 6)] COMPLETED TRADE PnL: $-219.44 | Total PnL: $-250.64
+2025-08-04 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23119.5 Low: 23092.5
+2025-08-04 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-04 9:42:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23191 | Bars Since Last Trade: 239
+2025-08-04 9:48:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_2.618 | Entry: 23191.00 | High: 23227.00 | Low: 23182.25 | Max Profit: 8.75pts | Max Loss: 36.00pts | Bars: 7
+2025-08-04 9:48:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-214.44 | Points : -17.75 | Quantity: 6
+2025-08-04 9:48:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-214.44
+2025-08-04 9:54:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23235.25 | Bars Since Last Trade: 2
+2025-08-04 9:57:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $96.78 | Current PnL: $-117.66 | Points : 16.25 | Quantity: 3
+2025-08-04 9:57:00 AM [Trade Completion]: Trigger not generated as trade completed on bar: 3397
+2025-08-04 10:00:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_4.262 | Entry: 23235.25 | High: 23258.00 | Low: 23212.00 | Max Profit: 23.25pts | Max Loss: 22.75pts | Bars: 7
+2025-08-04 10:00:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-107.22 | Current PnL: $-224.88 | Points : -17.75 | Quantity: 3
+2025-08-04 10:00:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $-224.88
+2025-08-04 11:51:00 AM [TRADE FILL (ID: 3)] SHORT FILLED: 23235.25 | Bars Since Last Trade: 37
+2025-08-04 12:00:00 PM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_4.262 | Entry: 23235.25 | High: 23263.50 | Low: 23235.75 | Max Profit: -0.50pts | Max Loss: 28.25pts | Bars: 11
+2025-08-04 12:00:00 PM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-439.32 | Points : -17.75 | Quantity: 6
+2025-08-04 12:00:00 PM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-439.32
+2025-08-04 3:15:00 PM [TRADE FILL (ID: 4)] SHORT FILLED: 23289.25 | Bars Since Last Trade: 65
+2025-08-04 3:28:00 PM [TRADE SL (ID: 4)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-04 3:30:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $96.78 | Current PnL: $-342.54 | Points : 16.25 | Quantity: 3
+2025-08-04 3:33:30 PM [TRADE SL (ID: 4)] Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-04 3:51:00 PM [TRADE SUMMARY (ID: 4)] Short | Line: CME_UP_6.262 | Entry: 23289.25 | High: 23298.50 | Low: 23252.50 | Max Profit: 36.75pts | Max Loss: 9.25pts | Bars: 67
+2025-08-04 3:51:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $54.28 | Current PnL: $-288.26 | Points : 9 | Quantity: 3
+2025-08-04 3:51:00 PM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $151.06 | Total PnL: $-288.26
+2025-08-04 3:51:00 PM [Trade Completion]: Trigger not generated as trade completed on bar: 3515
+2025-08-04 3:51:00 PM [TRADE FILL (ID: 5)] SHORT FILLED: 23289.25 | Bars Since Last Trade: 0
+2025-08-04 3:53:30 PM [TP NEAR MISS (ID: 5)] Short TP near miss (17.0pts target) at 15:26:30 - closest distance: 1.25pts (price moved away)
+2025-08-04 4:00:00 PM [TRADE SUMMARY (ID: 5)] Short | Line: CME_UP_6.262 | Entry: 23289.25 | High: 23308.00 | Low: 23286.00 | Max Profit: 3.25pts | Max Loss: 18.75pts | Bars: 12
+2025-08-04 4:00:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-502.7 | Points : -17.75 | Quantity: 6
+2025-08-04 4:00:00 PM [PNL UPDATE (ID: 5)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-502.7
+2025-08-05 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23357.25 Low: 23321.5
+2025-08-05 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-05 9:45:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23379.5 | Bars Since Last Trade: 335
+2025-08-05 9:51:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_0.600 | Entry: 23379.50 | High: 23397.25 | Low: 23362.50 | Max Profit: 17.00pts | Max Loss: 17.75pts | Bars: 9
+2025-08-05 9:51:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-214.44 | Points : -17.75 | Quantity: 6
+2025-08-05 9:51:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-214.44
+2025-08-05 10:27:00 AM [TRADE FILL (ID: 2)] LONG FILLED: 23263 | Bars Since Last Trade: 12
+2025-08-05 10:30:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $96.78 | Current PnL: $-117.66 | Points : 16.25 | Quantity: 3
+2025-08-05 10:30:00 AM [TRADE SL (ID: 2)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-05 10:36:00 AM [TRADE SUMMARY (ID: 2)] Long | Line: CME_DOWN_2.618 | Entry: 23263.00 | High: 23291.50 | Low: 23241.75 | Max Profit: 28.50pts | Max Loss: 21.25pts | Bars: 15
+2025-08-05 10:36:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-50.72 | Current PnL: $-168.38 | Points : -8.5 | Quantity: 3
+2025-08-05 10:36:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $46.06 | Total PnL: $-168.38
+2025-08-05 10:36:00 AM [TRADE FILL (ID: 3)] LONG FILLED: 23227.25 | Bars Since Last Trade: 0
+2025-08-05 10:42:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $96.78 | Current PnL: $-71.6 | Points : 16.25 | Quantity: 3
+2025-08-05 10:45:00 AM [TRADE SUMMARY (ID: 3)] Long | Line: CME_DOWN_3.618 | Entry: 23227.25 | High: 23248.00 | Low: 23177.50 | Max Profit: 20.75pts | Max Loss: 49.75pts | Bars: 11
+2025-08-05 10:45:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-107.72 | Current PnL: $-179.32 | Points : -18 | Quantity: 3
+2025-08-05 10:45:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $-10.94 | Total PnL: $-179.32
+2025-08-05 2:00:00 PM [NEAR MISS] Long near miss at 13:51:00 - closest distance: 1.75pts
+2025-08-06 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23182.25 Low: 23165.75
+2025-08-06 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-06 10:03:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23253.25 | Bars Since Last Trade: 323
+2025-08-06 10:06:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_4.262 | Entry: 23253.25 | High: 23280.00 | Low: 23241.25 | Max Profit: 12.00pts | Max Loss: 26.75pts | Bars: 2
+2025-08-06 10:06:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-214.44 | Points : -17.75 | Quantity: 6
+2025-08-06 10:06:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-214.44
+2025-08-06 10:18:00 AM [NEAR MISS] Short near miss at 10:09:00 - closest distance: 1.25pts
+2025-08-06 11:09:00 AM [NEAR MISS] Short near miss at 11:00:00 - closest distance: 0.50pts
+2025-08-06 11:12:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23298.5 | Bars Since Last Trade: 22
+2025-08-06 11:21:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_7.000 | Entry: 23298.50 | High: 23316.25 | Low: 23290.50 | Max Profit: 8.00pts | Max Loss: 17.75pts | Bars: 11
+2025-08-06 11:21:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-428.88 | Points : -17.75 | Quantity: 6
+2025-08-06 11:21:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-428.88
+2025-08-06 11:48:00 AM [TRADE FILL (ID: 3)] SHORT FILLED: 23352.5 | Bars Since Last Trade: 9
+2025-08-06 11:51:00 AM ******** TRADING DISABLED (mid-trade) ******** : $-506.9 | Account: Playback101
+2025-08-06 11:54:00 AM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_10.272 | Entry: 23352.50 | High: 23375.25 | Low: 23350.25 | Max Profit: 2.25pts | Max Loss: 22.75pts | Bars: 6
+2025-08-06 11:54:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-85.94 | Current PnL: $-514.82 | Points : -7.25 | Quantity: 6
+2025-08-06 11:54:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $-85.94 | Total PnL: $-514.82
+2025-08-07 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23604.25 Low: 23583.25
+2025-08-07 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-07 10:00:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23660 | Bars Since Last Trade: 301
+2025-08-07 10:01:30 AM [TRADE SL (ID: 1)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-07 10:03:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-08-07 10:03:00 AM [Trade Completion]: Trigger not generated as trade completed on bar: 4535
+2025-08-07 10:06:00 AM [TRADE SL (ID: 1)] Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-07 10:09:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_2.618 | Entry: 23660.00 | High: 23670.75 | Low: 23610.25 | Max Profit: 49.75pts | Max Loss: 10.75pts | Bars: 16
+2025-08-07 10:09:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $54.78 | Current PnL: $151.56 | Points : 9.25 | Quantity: 3
+2025-08-07 10:09:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $151.56 | Total PnL: $151.56
+2025-08-07 10:15:00 AM [NEAR MISS] Short near miss at 10:00:00 - closest distance: 1.00pts
+2025-08-07 10:27:00 AM [TRADE FILL (ID: 2)] LONG FILLED: 23548.5 | Bars Since Last Trade: 6
+2025-08-07 10:29:30 AM [TRADE SL (ID: 2)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-07 10:30:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $96.78 | Current PnL: $248.34 | Points : 16.25 | Quantity: 3
+2025-08-07 10:33:00 AM [TRADE SUMMARY (ID: 2)] Long | Line: CME_DOWN_2.618 | Entry: 23548.50 | High: 23577.50 | Low: 23540.25 | Max Profit: 29.00pts | Max Loss: 8.25pts | Bars: 10
+2025-08-07 10:33:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-50.22 | Current PnL: $198.12 | Points : -8.25 | Quantity: 3
+2025-08-07 10:33:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $46.56 | Total PnL: $198.12
+2025-08-07 10:54:00 AM [TRADE FILL (ID: 3)] LONG FILLED: 23527.5 | Bars Since Last Trade: 7
+2025-08-07 11:00:30 AM [TRADE SL (ID: 3)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-07 11:03:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $96.78 | Current PnL: $294.9 | Points : 16.25 | Quantity: 3
+2025-08-07 11:06:00 AM [TRADE SUMMARY (ID: 3)] Long | Line: CME_DOWN_3.618 | Entry: 23527.50 | High: 23557.50 | Low: 23510.50 | Max Profit: 30.00pts | Max Loss: 17.00pts | Bars: 19
+2025-08-07 11:06:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-50.22 | Current PnL: $244.68 | Points : -8.25 | Quantity: 3
+2025-08-07 11:06:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $46.56 | Total PnL: $244.68
+2025-08-07 12:39:00 PM [TRADE FILL (ID: 4)] LONG FILLED: 23435.5 | Bars Since Last Trade: 31
+2025-08-07 12:45:00 PM [TRADE SUMMARY (ID: 4)] Long | Line: CME_DOWN_8.000 | Entry: 23435.50 | High: 23442.50 | Low: 23408.25 | Max Profit: 7.00pts | Max Loss: 27.25pts | Bars: 6
+2025-08-07 12:45:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $-214.44 | Current PnL: $30.2399999999999 | Points : -17.75 | Quantity: 6
+2025-08-07 12:45:00 PM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $30.2399999999999
+2025-08-07 1:36:00 PM [TRADE FILL (ID: 5)] LONG FILLED: 23387.75 | Bars Since Last Trade: 17
+2025-08-07 1:38:00 PM [TP NEAR MISS (ID: 5)] Long TP near miss (17.0pts target) at 12:41:30 - closest distance: 1.00pts (price moved away)
+2025-08-07 1:38:30 PM [TRADE SL (ID: 5)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-07 1:39:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $96.78 | Current PnL: $127.02 | Points : 16.25 | Quantity: 3
+2025-08-07 1:43:30 PM [TRADE SL (ID: 5)] SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-07 1:57:00 PM [TRADE SUMMARY (ID: 5)] Long | Line: CME_DOWN_10.272 | Entry: 23387.75 | High: 23433.50 | Low: 23381.25 | Max Profit: 45.75pts | Max Loss: 6.50pts | Bars: 38
+2025-08-07 1:57:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $264.78 | Current PnL: $391.8 | Points : 44.25 | Quantity: 3
+2025-08-07 1:57:00 PM [PNL UPDATE (ID: 5)] COMPLETED TRADE PnL: $361.56 | Total PnL: $391.8
+2025-08-07 2:00:00 PM [NEAR MISS] Long near miss at 13:33:00 - closest distance: 1.25pts
+2025-08-07 2:06:00 PM [TRADE FILL (ID: 6)] LONG FILLED: 23387.75 | Bars Since Last Trade: 9
+2025-08-07 2:12:00 PM [TRADE SUMMARY (ID: 6)] Long | Line: CME_DOWN_10.272 | Entry: 23387.75 | High: 23394.75 | Low: 23362.00 | Max Profit: 7.00pts | Max Loss: 25.75pts | Bars: 7
+2025-08-07 2:12:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $-214.44 | Current PnL: $177.36 | Points : -17.75 | Quantity: 6
+2025-08-07 2:12:00 PM [PNL UPDATE (ID: 6)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $177.36
+2025-08-07 2:12:00 PM [TRADE FILL (ID: 7)] LONG FILLED: 23359.5 | Bars Since Last Trade: 0
+2025-08-07 2:18:00 PM [TRADE SUMMARY (ID: 7)] Long | Line: CME_DOWN_11.618 | Entry: 23359.50 | High: 23361.00 | Low: 23332.00 | Max Profit: 1.50pts | Max Loss: 27.50pts | Bars: 7
+2025-08-07 2:18:00 PM [PNL UPDATE (ID: 7)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-37.0800000000001 | Points : -17.75 | Quantity: 6
+2025-08-07 2:18:00 PM [PNL UPDATE (ID: 7)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-37.0800000000001
+2025-08-08 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23564.5 Low: 23541.5
+2025-08-08 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-08 9:36:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23579 | Bars Since Last Trade: 246
+2025-08-08 9:42:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_0.600 | Entry: 23579.00 | High: 23601.50 | Low: 23566.00 | Max Profit: 13.00pts | Max Loss: 22.50pts | Bars: 6
+2025-08-08 9:42:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-214.44 | Points : -17.75 | Quantity: 6
+2025-08-08 9:42:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-214.44
+2025-08-08 9:45:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23625.5 | Bars Since Last Trade: 1
+2025-08-08 9:48:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_2.618 | Entry: 23625.50 | High: 23644.25 | Low: 23604.00 | Max Profit: 21.50pts | Max Loss: 18.75pts | Bars: 4
+2025-08-08 9:48:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-428.88 | Points : -17.75 | Quantity: 6
+2025-08-08 9:48:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-428.88
+2025-08-08 10:06:00 AM [TRADE FILL (ID: 3)] SHORT FILLED: 23663.25 | Bars Since Last Trade: 6
+2025-08-08 10:09:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $96.78 | Current PnL: $-332.1 | Points : 16.25 | Quantity: 3
+2025-08-08 10:09:00 AM [Trade Completion]: Trigger not generated as trade completed on bar: 4877
+2025-08-08 10:15:00 AM [TRADE SL (ID: 3)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-08 10:16:00 AM [TRADE SL (ID: 3)] Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-08 10:21:00 AM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_4.262 | Entry: 23663.25 | High: 23678.75 | Low: 23626.25 | Max Profit: 37.00pts | Max Loss: 15.50pts | Bars: 26
+2025-08-08 10:21:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $54.78 | Current PnL: $-277.32 | Points : 9.25 | Quantity: 3
+2025-08-08 10:21:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $151.56 | Total PnL: $-277.32
+2025-08-08 11:00:00 AM [NEAR MISS] Short near miss at 10:21:00 - closest distance: 1.75pts
+2025-08-08 2:00:00 PM [TRADE FILL (ID: 4)] SHORT FILLED: 23709.25 | Bars Since Last Trade: 73
+2025-08-08 2:27:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $96.78 | Current PnL: $-180.54 | Points : 16.25 | Quantity: 3
+2025-08-08 3:43:30 PM [TRADE SL (ID: 4)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-08 4:00:00 PM [TRADE SUMMARY (ID: 4)] Short | Line: CME_UP_6.262 | Entry: 23709.25 | High: 23724.50 | Low: 23676.00 | Max Profit: 33.25pts | Max Loss: 15.25pts | Bars: 238
+2025-08-08 4:00:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $-50.22 | Current PnL: $-230.76 | Points : -8.25 | Quantity: 3
+2025-08-08 4:00:00 PM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $46.56 | Total PnL: $-230.76
+2025-08-11 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23730.75 Low: 23714.75
+2025-08-11 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-11 9:48:00 AM [NEAR MISS] Long near miss at 09:39:00 - closest distance: 1.00pts
+2025-08-11 9:57:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23741 | Bars Since Last Trade: 219
+2025-08-11 10:06:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-08-11 10:15:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_0.600 | Entry: 23741.00 | High: 23759.25 | Low: 23710.75 | Max Profit: 30.25pts | Max Loss: 18.25pts | Bars: 34
+2025-08-11 10:15:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-107.22 | Current PnL: $-10.44 | Points : -17.75 | Quantity: 3
+2025-08-11 10:15:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $-10.44
+2025-08-11 10:48:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23741 | Bars Since Last Trade: 11
+2025-08-11 11:01:30 AM [TP NEAR MISS (ID: 2)] Short TP near miss (17.0pts target) at 11:00:00 - closest distance: 1.25pts (price moved away)
+2025-08-11 11:03:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $96.78 | Current PnL: $86.34 | Points : 16.25 | Quantity: 3
+2025-08-11 11:06:00 AM [TRADE SL (ID: 2)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-11 11:18:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_0.600 | Entry: 23741.00 | High: 23751.50 | Low: 23713.75 | Max Profit: 27.25pts | Max Loss: 10.50pts | Bars: 53
+2025-08-11 11:18:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-50.22 | Current PnL: $36.12 | Points : -8.25 | Quantity: 3
+2025-08-11 11:18:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $46.56 | Total PnL: $36.12
+2025-08-11 12:06:00 PM [TRADE FILL (ID: 3)] SHORT FILLED: 23773.5 | Bars Since Last Trade: 16
+2025-08-11 12:09:00 PM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_2.618 | Entry: 23773.50 | High: 23791.50 | Low: 23763.25 | Max Profit: 10.25pts | Max Loss: 18.00pts | Bars: 2
+2025-08-11 12:09:00 PM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-178.32 | Points : -17.75 | Quantity: 6
+2025-08-11 12:09:00 PM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-178.32
+2025-08-11 12:09:00 PM [TRADE FILL (ID: 4)] SHORT FILLED: 23799.75 | Bars Since Last Trade: 0
+2025-08-11 12:17:30 PM [TP NEAR MISS (ID: 4)] Short TP near miss (17.0pts target) at 12:15:00 - closest distance: 0.00pts (price moved away)
+2025-08-11 12:18:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $96.78 | Current PnL: $-81.54 | Points : 16.25 | Quantity: 3
+2025-08-11 12:19:30 PM [TRADE SL (ID: 4)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-11 12:39:30 PM [TRADE SL (ID: 4)] Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-11 12:42:00 PM [TRADE SUMMARY (ID: 4)] Short | Line: CME_UP_4.262 | Entry: 23799.75 | High: 23804.50 | Low: 23748.25 | Max Profit: 51.50pts | Max Loss: 4.75pts | Bars: 61
+2025-08-11 12:42:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $264.78 | Current PnL: $183.24 | Points : 44.25 | Quantity: 3
+2025-08-11 12:42:00 PM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $361.56 | Total PnL: $183.24
+2025-08-11 1:51:00 PM [NEAR MISS] Long near miss at 13:42:00 - closest distance: 2.00pts
+2025-08-11 2:00:00 PM [TRADE FILL (ID: 5)] LONG FILLED: 23688 | Bars Since Last Trade: 34
+2025-08-11 2:45:00 PM [TRADE SUMMARY (ID: 5)] Long | Line: CME_DOWN_2.618 | Entry: 23688.00 | High: 23701.25 | Low: 23656.50 | Max Profit: 13.25pts | Max Loss: 31.50pts | Bars: 87
+2025-08-11 2:45:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-31.2 | Points : -17.75 | Quantity: 6
+2025-08-11 2:45:00 PM [PNL UPDATE (ID: 5)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-31.2
+2025-08-11 3:51:00 PM [TRADE FILL (ID: 6)] LONG FILLED: 23602 | Bars Since Last Trade: 22
+2025-08-11 3:59:30 PM [TRADE SL (ID: 6)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-11 4:00:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $96.78 | Current PnL: $65.58 | Points : 16.25 | Quantity: 3
+2025-08-11 4:03:00 PM [TRADE SUMMARY (ID: 6)] Long | Line: CME_DOWN_8.000 | Entry: 23602.00 | High: 23648.50 | Low: 23587.00 | Max Profit: 46.50pts | Max Loss: 15.00pts | Bars: 18
+2025-08-11 4:03:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $210.78 | Current PnL: $276.36 | Points : 35.25 | Quantity: 3
+2025-08-11 4:03:00 PM [PNL UPDATE (ID: 6)] COMPLETED TRADE PnL: $307.56 | Total PnL: $276.36
+2025-08-12 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23750.5 Low: 23722
+2025-08-12 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-12 10:00:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23646.75 | Bars Since Last Trade: 251
+2025-08-12 10:03:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_3.618 | Entry: 23646.75 | High: 23656.75 | Low: 23622.00 | Max Profit: 10.00pts | Max Loss: 24.75pts | Bars: 4
+2025-08-12 10:03:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-214.44 | Points : -17.75 | Quantity: 6
+2025-08-12 10:03:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-214.44
+2025-08-12 10:03:00 AM [TRADE FILL (ID: 2)] LONG FILLED: 23646.75 | Bars Since Last Trade: 0
+2025-08-12 10:06:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $96.78 | Current PnL: $-117.66 | Points : 16.25 | Quantity: 3
+2025-08-12 10:06:00 AM [TRADE SL (ID: 2)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-12 10:07:00 AM [TRADE SL (ID: 2)] SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-12 10:09:00 AM [TRADE SUMMARY (ID: 2)] Long | Line: CME_DOWN_3.618 | Entry: 23646.75 | High: 23717.00 | Low: 23632.75 | Max Profit: 70.25pts | Max Loss: 14.00pts | Bars: 10
+2025-08-12 10:09:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $264.78 | Current PnL: $147.12 | Points : 44.25 | Quantity: 3
+2025-08-12 10:09:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $361.56 | Total PnL: $147.12
+2025-08-12 10:48:00 AM [NEAR MISS] Short near miss at 10:39:00 - closest distance: 0.75pts
+2025-08-12 10:51:00 AM [TRADE FILL (ID: 3)] SHORT FILLED: 23768.25 | Bars Since Last Trade: 15
+2025-08-12 10:57:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $96.78 | Current PnL: $243.9 | Points : 16.25 | Quantity: 3
+2025-08-12 11:03:00 AM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_0.600 | Entry: 23768.25 | High: 23794.25 | Low: 23743.75 | Max Profit: 24.50pts | Max Loss: 26.00pts | Bars: 21
+2025-08-12 11:03:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-107.22 | Current PnL: $136.68 | Points : -17.75 | Quantity: 3
+2025-08-12 11:03:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $136.68
+2025-08-12 11:09:00 AM [TRADE FILL (ID: 4)] SHORT FILLED: 23825.75 | Bars Since Last Trade: 2
+2025-08-12 11:18:00 AM [TRADE SUMMARY (ID: 4)] Short | Line: CME_UP_2.618 | Entry: 23825.75 | High: 23852.00 | Low: 23821.75 | Max Profit: 4.00pts | Max Loss: 26.25pts | Bars: 13
+2025-08-12 11:18:00 AM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-77.7600000000001 | Points : -17.75 | Quantity: 6
+2025-08-12 11:18:00 AM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-77.7600000000001
+2025-08-12 11:54:00 AM [TRADE FILL (ID: 5)] SHORT FILLED: 23872.75 | Bars Since Last Trade: 12
+2025-08-12 12:01:00 PM [TRADE SL (ID: 5)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-12 12:03:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $96.78 | Current PnL: $19.0199999999999 | Points : 16.25 | Quantity: 3
+2025-08-12 12:27:00 PM [TRADE SUMMARY (ID: 5)] Short | Line: CME_UP_4.262 | Entry: 23872.75 | High: 23881.00 | Low: 23846.50 | Max Profit: 26.25pts | Max Loss: 8.25pts | Bars: 60
+2025-08-12 12:27:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $-50.22 | Current PnL: $-31.2000000000001 | Points : -8.25 | Quantity: 3
+2025-08-12 12:27:00 PM [PNL UPDATE (ID: 5)] COMPLETED TRADE PnL: $46.56 | Total PnL: $-31.2000000000001
+2025-08-12 2:18:00 PM [TRADE FILL (ID: 6)] SHORT FILLED: 23929.75 | Bars Since Last Trade: 37
+2025-08-12 2:24:30 PM [TP NEAR MISS (ID: 6)] Short TP near miss (17.0pts target) at 14:23:00 - closest distance: 2.00pts (price moved away)
+2025-08-12 2:28:00 PM [TP NEAR MISS (ID: 6)] Short TP near miss (17.0pts target) at 14:26:30 - closest distance: 1.25pts (price moved away)
+2025-08-12 2:33:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $96.78 | Current PnL: $65.5799999999999 | Points : 16.25 | Quantity: 3
+2025-08-12 2:41:30 PM [TRADE SL (ID: 6)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-12 3:39:00 PM [TRADE SUMMARY (ID: 6)] Short | Line: CME_UP_6.262 | Entry: 23929.75 | High: 23943.25 | Low: 23901.00 | Max Profit: 28.75pts | Max Loss: 13.50pts | Bars: 155
+2025-08-12 3:39:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $-50.22 | Current PnL: $15.3599999999999 | Points : -8.25 | Quantity: 3
+2025-08-12 3:39:00 PM [PNL UPDATE (ID: 6)] COMPLETED TRADE PnL: $46.56 | Total PnL: $15.3599999999999
+2025-08-13 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 24049 Low: 24031.25
+2025-08-13 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-13 10:00:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 24001.75 | Bars Since Last Trade: 291
+2025-08-13 10:02:00 AM [TP NEAR MISS (ID: 1)] Long TP near miss (17.0pts target) at 10:00:30 - closest distance: 1.00pts (price moved away)
+2025-08-13 10:12:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_2.618 | Entry: 24001.75 | High: 24014.50 | Low: 23979.25 | Max Profit: 12.75pts | Max Loss: 22.50pts | Bars: 22
+2025-08-13 10:12:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-215.44 | Current PnL: $-215.44 | Points : -18 | Quantity: 6
+2025-08-13 10:12:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-215.44 | Total PnL: $-215.44
+2025-08-13 11:12:00 AM [TRADE FILL (ID: 2)] LONG FILLED: 23906.25 | Bars Since Last Trade: 20
+2025-08-13 11:20:30 AM [TRADE SL (ID: 2)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-13 11:21:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $96.78 | Current PnL: $-118.66 | Points : 16.25 | Quantity: 3
+2025-08-13 11:22:30 AM [TRADE SL (ID: 2)] SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-13 11:25:00 AM [TP NEAR MISS (ID: 2)] Long TP near miss (45.0pts target) at 11:23:30 - closest distance: 0.25pts (price moved away)
+2025-08-13 11:45:00 AM [TRADE SUMMARY (ID: 2)] Long | Line: CME_DOWN_8.000 | Entry: 23906.25 | High: 23958.25 | Low: 23892.25 | Max Profit: 52.00pts | Max Loss: 14.00pts | Bars: 59
+2025-08-13 11:45:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $264.78 | Current PnL: $146.12 | Points : 44.25 | Quantity: 3
+2025-08-13 11:45:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $361.56 | Total PnL: $146.12
+2025-08-13 12:36:00 PM [NEAR MISS] Long near miss at 12:24:00 - closest distance: 0.25pts
+2025-08-13 2:36:00 PM [TRADE FILL (ID: 3)] LONG FILLED: 23906.25 | Bars Since Last Trade: 65
+2025-08-13 2:39:00 PM [TRADE SUMMARY (ID: 3)] Long | Line: CME_DOWN_8.000 | Entry: 23906.25 | High: 23931.50 | Low: 23887.25 | Max Profit: 25.25pts | Max Loss: 19.00pts | Bars: 2
+2025-08-13 2:39:00 PM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-215.44 | Current PnL: $-69.32 | Points : -18 | Quantity: 6
+2025-08-13 2:39:00 PM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $-215.44 | Total PnL: $-69.32
+2025-08-13 2:39:00 PM [TRADE FILL (ID: 4)] LONG FILLED: 23906.25 | Bars Since Last Trade: 0
+2025-08-13 2:40:00 PM [TP NEAR MISS (ID: 4)] Long TP near miss (45.0pts target) at 11:42:30 - closest distance: 1.25pts (price moved away)
+2025-08-13 2:43:00 PM [TRADE SL (ID: 4)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-13 2:45:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $96.78 | Current PnL: $27.46 | Points : 16.25 | Quantity: 3
+2025-08-13 2:57:00 PM [TRADE SL (ID: 4)] SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-13 3:24:00 PM [TRADE SUMMARY (ID: 4)] Long | Line: CME_DOWN_8.000 | Entry: 23906.25 | High: 23954.00 | Low: 23903.50 | Max Profit: 47.75pts | Max Loss: 2.75pts | Bars: 88
+2025-08-13 3:24:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $264.78 | Current PnL: $292.24 | Points : 44.25 | Quantity: 3
+2025-08-13 3:24:00 PM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $361.56 | Total PnL: $292.24
+2025-08-14 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23873.75 Low: 23854.25
+2025-08-14 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-14 9:51:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23957.5 | Bars Since Last Trade: 270
+2025-08-14 9:54:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-08-14 9:54:00 AM [Trade Completion]: Trigger not generated as trade completed on bar: 6356
+2025-08-14 9:54:00 AM [TRADE SL (ID: 1)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-14 9:55:00 AM [TRADE SL (ID: 1)] Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-14 9:57:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_4.262 | Entry: 23957.50 | High: 23960.25 | Low: 23897.75 | Max Profit: 59.75pts | Max Loss: 2.75pts | Bars: 7
+2025-08-14 9:57:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $264.78 | Current PnL: $361.56 | Points : 44.25 | Quantity: 3
+2025-08-14 9:57:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $361.56 | Total PnL: $361.56
+2025-08-14 10:15:00 AM [NEAR MISS] Short near miss at 09:42:00 - closest distance: 1.50pts
+2025-08-14 10:30:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23957.5 | Bars Since Last Trade: 12
+2025-08-14 10:33:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_4.262 | Entry: 23957.50 | High: 23980.00 | Low: 23950.75 | Max Profit: 6.75pts | Max Loss: 22.50pts | Bars: 4
+2025-08-14 10:33:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-214.44 | Current PnL: $147.12 | Points : -17.75 | Quantity: 6
+2025-08-14 10:33:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $147.12
+2025-08-14 10:45:00 AM [TRADE FILL (ID: 3)] SHORT FILLED: 23996.5 | Bars Since Last Trade: 4
+2025-08-14 10:53:30 AM [TP NEAR MISS (ID: 3)] Short TP near miss (17.0pts target) at 10:52:00 - closest distance: 1.25pts (price moved away)
+2025-08-14 10:55:00 AM [TRADE SL (ID: 3)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-14 10:57:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $96.78 | Current PnL: $243.9 | Points : 16.25 | Quantity: 3
+2025-08-14 10:57:30 AM [TRADE SL (ID: 3)] Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-14 11:00:00 AM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_6.262 | Entry: 23996.50 | High: 24005.50 | Low: 23940.75 | Max Profit: 55.75pts | Max Loss: 9.00pts | Bars: 25
+2025-08-14 11:00:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $264.78 | Current PnL: $508.68 | Points : 44.25 | Quantity: 3
+2025-08-14 11:00:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $361.56 | Total PnL: $508.68
+2025-08-14 11:09:00 AM [NEAR MISS] Short near miss at 10:30:00 - closest distance: 1.25pts
+2025-08-14 11:27:00 AM [TRADE FILL (ID: 4)] SHORT FILLED: 23886.25 | Bars Since Last Trade: 10
+2025-08-14 11:33:00 AM [TRADE SUMMARY (ID: 4)] Short | Line: CME_UP_0.600 | Entry: 23886.25 | High: 23903.75 | Low: 23877.50 | Max Profit: 8.75pts | Max Loss: 17.50pts | Bars: 8
+2025-08-14 11:33:00 AM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $-214.44 | Current PnL: $294.24 | Points : -17.75 | Quantity: 6
+2025-08-14 11:33:00 AM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $294.24
+2025-08-14 12:48:00 PM [TRADE FILL (ID: 5)] SHORT FILLED: 23925.5 | Bars Since Last Trade: 25
+2025-08-14 12:57:00 PM [TRADE SUMMARY (ID: 5)] Short | Line: CME_UP_2.618 | Entry: 23925.50 | High: 23943.75 | Low: 23926.00 | Max Profit: -0.50pts | Max Loss: 18.25pts | Bars: 12
+2025-08-14 12:57:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $-214.44 | Current PnL: $79.7999999999999 | Points : -17.75 | Quantity: 6
+2025-08-14 12:57:00 PM [PNL UPDATE (ID: 5)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $79.7999999999999
+2025-08-14 1:45:00 PM [NEAR MISS] Short near miss at 13:12:00 - closest distance: 0.50pts
+2025-08-14 3:51:00 PM [TRADE FILL (ID: 6)] SHORT FILLED: 23957.5 | Bars Since Last Trade: 58
+2025-08-14 3:57:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $96.78 | Current PnL: $176.58 | Points : 16.25 | Quantity: 3
+2025-08-14 3:57:00 PM [TRADE SL (ID: 6)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-14 3:58:00 PM [TP NEAR MISS (ID: 6)] Short TP near miss (17.0pts target) at 15:56:30 - closest distance: 0.50pts (price moved away)
+2025-08-14 4:03:00 PM [TRADE SUMMARY (ID: 6)] Short | Line: CME_UP_4.262 | Entry: 23957.50 | High: 23957.50 | Low: 23883.00 | Max Profit: 74.50pts | Max Loss: 0.00pts | Bars: 19
+2025-08-14 4:03:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $265.78 | Current PnL: $442.36 | Points : 44.25 | Quantity: 3
+2025-08-14 4:03:00 PM [PNL UPDATE (ID: 6)] COMPLETED TRADE PnL: $362.56 | Total PnL: $442.36
+2025-08-15 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23910.75 Low: 23881
+2025-08-15 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-15 9:45:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23832 | Bars Since Last Trade: 214
+2025-08-15 9:48:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_2.618 | Entry: 23832.00 | High: 23854.00 | Low: 23801.00 | Max Profit: 22.00pts | Max Loss: 31.00pts | Bars: 4
+2025-08-15 9:48:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-214.44 | Points : -17.75 | Quantity: 6
+2025-08-15 9:48:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-214.44
+2025-08-15 10:33:00 AM [TRADE FILL (ID: 2)] LONG FILLED: 23832 | Bars Since Last Trade: 15
+2025-08-15 10:36:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $96.78 | Current PnL: $-117.66 | Points : 16.25 | Quantity: 3
+2025-08-15 10:48:00 AM [TRADE SUMMARY (ID: 2)] Long | Line: CME_DOWN_2.618 | Entry: 23832.00 | High: 23855.75 | Low: 23805.50 | Max Profit: 23.75pts | Max Loss: 26.50pts | Bars: 24
+2025-08-15 10:48:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-107.22 | Current PnL: $-224.88 | Points : -17.75 | Quantity: 3
+2025-08-15 10:48:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $-224.88
+2025-08-15 10:48:00 AM [TRADE FILL (ID: 3)] LONG FILLED: 23802.25 | Bars Since Last Trade: 0
+2025-08-15 10:52:00 AM [TP NEAR MISS (ID: 3)] Long TP near miss (17.0pts target) at 10:50:30 - closest distance: 1.00pts (price moved away)
+2025-08-15 10:58:30 AM [TP NEAR MISS (ID: 3)] Long TP near miss (17.0pts target) at 10:57:00 - closest distance: 2.00pts (price moved away)
+2025-08-15 11:18:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $96.78 | Current PnL: $-128.1 | Points : 16.25 | Quantity: 3
+2025-08-15 11:18:30 AM [TRADE SL (ID: 3)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-15 11:20:30 AM [TRADE SL (ID: 3)] SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-15 11:24:00 AM [TRADE SUMMARY (ID: 3)] Long | Line: CME_DOWN_3.618 | Entry: 23802.25 | High: 23835.25 | Low: 23786.75 | Max Profit: 33.00pts | Max Loss: 15.50pts | Bars: 66
+2025-08-15 11:24:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $54.78 | Current PnL: $-73.3200000000001 | Points : 9.25 | Quantity: 3
+2025-08-15 11:24:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $151.56 | Total PnL: $-73.3200000000001
+2025-08-15 2:33:00 PM [NEAR MISS] Long near miss at 14:24:00 - closest distance: 0.00pts
+2025-08-18 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23790 Low: 23767.75
+2025-08-18 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-18 10:33:00 AM [NEAR MISS] Short near miss at 10:24:00 - closest distance: 2.00pts
+2025-08-18 10:45:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23731 | Bars Since Last Trade: 327
+2025-08-18 10:50:30 AM [TRADE SL (ID: 1)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-18 10:51:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-08-18 10:52:30 AM [TRADE SL (ID: 1)] SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-18 10:54:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_2.618 | Entry: 23731.00 | High: 23779.00 | Low: 23718.75 | Max Profit: 48.00pts | Max Loss: 12.25pts | Bars: 13
+2025-08-18 10:54:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $264.78 | Current PnL: $361.56 | Points : 44.25 | Quantity: 3
+2025-08-18 10:54:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $361.56 | Total PnL: $361.56
+2025-08-18 11:33:00 AM [TRADE FILL (ID: 2)] LONG FILLED: 23731 | Bars Since Last Trade: 14
+2025-08-18 11:39:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $96.78 | Current PnL: $458.34 | Points : 16.25 | Quantity: 3
+2025-08-18 11:39:00 AM [TRADE SL (ID: 2)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-18 11:43:30 AM [TP NEAR MISS (ID: 2)] Long TP near miss (17.0pts target) at 11:38:30 - closest distance: 0.25pts (price moved away)
+2025-08-18 12:03:00 PM ******** TRADING DISABLED (mid-trade) ******** : $606.8 | Account: Playback101
+2025-08-18 12:06:00 PM [TRADE SUMMARY (ID: 2)] Long | Line: CME_DOWN_2.618 | Entry: 23731.00 | High: 23759.50 | Low: 23728.50 | Max Profit: 28.50pts | Max Loss: 2.50pts | Bars: 59
+2025-08-18 12:06:00 PM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $135.78 | Current PnL: $594.12 | Points : 22.75 | Quantity: 3
+2025-08-18 12:06:00 PM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $232.56 | Total PnL: $594.12
+2025-08-19 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23765.5 Low: 23749.5
+2025-08-19 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-19 10:42:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23578.75 | Bars Since Last Trade: 312
+2025-08-19 10:48:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-08-19 10:51:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_11.618 | Entry: 23578.75 | High: 23597.00 | Low: 23557.75 | Max Profit: 18.25pts | Max Loss: 21.00pts | Bars: 13
+2025-08-19 10:51:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-107.22 | Current PnL: $-10.44 | Points : -17.75 | Quantity: 3
+2025-08-19 10:51:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $-10.44
+2025-08-20 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23432 Low: 23406
+2025-08-20 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-20 9:42:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23337.25 | Bars Since Last Trade: 311
+2025-08-20 9:48:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_3.618 | Entry: 23337.25 | High: 23331.50 | Low: 23276.25 | Max Profit: -5.75pts | Max Loss: 61.00pts | Bars: 6
+2025-08-20 9:48:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-214.44 | Points : -17.75 | Quantity: 6
+2025-08-20 9:48:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-214.44
+2025-08-20 9:51:00 AM [TRADE FILL (ID: 2)] LONG FILLED: 23223.25 | Bars Since Last Trade: 1
+2025-08-20 9:54:00 AM [TRADE SUMMARY (ID: 2)] Long | Line: CME_DOWN_8.000 | Entry: 23223.25 | High: 23250.50 | Low: 23180.00 | Max Profit: 27.25pts | Max Loss: 43.25pts | Bars: 4
+2025-08-20 9:54:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-10.44 | Current PnL: $-224.88 | Points : -0.75 | Quantity: 6
+2025-08-20 9:54:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $-224.88
+2025-08-20 9:54:00 AM [TRADE FILL (ID: 3)] LONG FILLED: 23164.25 | Bars Since Last Trade: 0
+2025-08-20 9:57:00 AM [TRADE SUMMARY (ID: 3)] Long | Line: CME_DOWN_10.272 | Entry: 23164.25 | High: 23202.25 | Low: 0.00 | Max Profit: 38.00pts | Max Loss: 23164.25pts | Bars: 0
+2025-08-20 9:57:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-439.32 | Points : -17.75 | Quantity: 6
+2025-08-20 9:57:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-439.32
+2025-08-20 9:57:00 AM [TRADE FILL (ID: 4)] LONG FILLED: 23164.25 | Bars Since Last Trade: 0
+2025-08-20 10:00:30 AM [TRADE SL (ID: 4)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-20 10:03:00 AM [TRADE SUMMARY (ID: 4)] Long | Line: CME_DOWN_10.272 | Entry: 23164.25 | High: 23214.50 | Low: 23161.00 | Max Profit: 50.25pts | Max Loss: 3.25pts | Bars: 6
+2025-08-20 10:03:00 AM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $361.56 | Current PnL: $-77.7600000000001 | Points : 30.25 | Quantity: 6
+2025-08-20 10:03:00 AM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $361.56 | Total PnL: $-77.7600000000001
+2025-08-20 10:06:00 AM [TRADE FILL (ID: 5)] LONG FILLED: 23129.25 | Bars Since Last Trade: 1
+2025-08-20 10:06:30 AM [TP NEAR MISS (ID: 5)] Long TP near miss (17.0pts target) at 10:00:00 - closest distance: 1.50pts (price moved away)
+2025-08-20 10:09:00 AM [TRADE SUMMARY (ID: 5)] Long | Line: CME_DOWN_11.618 | Entry: 23129.25 | High: 23147.25 | Low: 23096.50 | Max Profit: 18.00pts | Max Loss: 32.75pts | Bars: 4
+2025-08-20 10:09:00 AM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $-10.44 | Current PnL: $-88.2000000000001 | Points : -0.75 | Quantity: 6
+2025-08-20 10:09:00 AM [PNL UPDATE (ID: 5)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $-88.2000000000001
+2025-08-20 11:24:00 AM [NEAR MISS] Long near miss at 10:03:00 - closest distance: 0.75pts
+2025-08-20 12:57:00 PM [TRADE FILL (ID: 6)] LONG FILLED: 23223.25 | Bars Since Last Trade: 56
+2025-08-20 1:01:30 PM [TRADE SL (ID: 6)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-20 1:03:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $96.78 | Current PnL: $8.57999999999992 | Points : 16.25 | Quantity: 3
+2025-08-20 1:03:00 PM [TRADE SL (ID: 6)] SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-20 1:09:00 PM [TRADE SUMMARY (ID: 6)] Long | Line: CME_DOWN_8.000 | Entry: 23223.25 | High: 23274.50 | Low: 23218.50 | Max Profit: 51.25pts | Max Loss: 4.75pts | Bars: 20
+2025-08-20 1:09:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $264.78 | Current PnL: $273.36 | Points : 44.25 | Quantity: 3
+2025-08-20 1:09:00 PM [PNL UPDATE (ID: 6)] COMPLETED TRADE PnL: $361.56 | Total PnL: $273.36
+2025-08-20 3:24:00 PM [TRADE FILL (ID: 7)] LONG FILLED: 23337.25 | Bars Since Last Trade: 47
+2025-08-20 3:27:00 PM [TRADE SUMMARY (ID: 7)] Long | Line: CME_DOWN_3.618 | Entry: 23337.25 | High: 23353.75 | Low: 23315.75 | Max Profit: 16.50pts | Max Loss: 21.50pts | Bars: 2
+2025-08-20 3:27:00 PM [PNL UPDATE (ID: 7)] CURRENT TRADE PnL: $-216.44 | Current PnL: $56.9199999999999 | Points : -18 | Quantity: 6
+2025-08-20 3:27:00 PM [PNL UPDATE (ID: 7)] COMPLETED TRADE PnL: $-216.44 | Total PnL: $56.9199999999999
+2025-08-21 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23267.25 Low: 23228.75
+2025-08-21 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-21 9:48:00 AM [NEAR MISS] Short near miss at 09:39:00 - closest distance: 0.50pts
+2025-08-21 10:00:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23165.75 | Bars Since Last Trade: 231
+2025-08-21 10:03:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_2.618 | Entry: 23165.75 | High: 23259.25 | Low: 23155.25 | Max Profit: 93.50pts | Max Loss: 10.50pts | Bars: 4
+2025-08-21 10:03:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $361.56 | Current PnL: $361.56 | Points : 30.25 | Quantity: 6
+2025-08-21 10:03:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $361.56 | Total PnL: $361.56
+2025-08-21 10:12:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23291 | Bars Since Last Trade: 3
+2025-08-21 10:18:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_0.600 | Entry: 23291.00 | High: 23314.50 | Low: 23272.00 | Max Profit: 19.00pts | Max Loss: 23.50pts | Bars: 9
+2025-08-21 10:18:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-10.44 | Current PnL: $351.12 | Points : -0.75 | Quantity: 6
+2025-08-21 10:18:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $351.12
+2025-08-21 10:42:00 AM [NEAR MISS] Short near miss at 10:09:00 - closest distance: 1.75pts
+2025-08-21 11:33:00 AM [TRADE FILL (ID: 3)] SHORT FILLED: 23291 | Bars Since Last Trade: 25
+2025-08-21 11:41:30 AM [TP NEAR MISS (ID: 3)] Short TP near miss (17.0pts target) at 11:40:00 - closest distance: 0.75pts (price moved away)
+2025-08-21 11:42:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $96.78 | Current PnL: $447.9 | Points : 16.25 | Quantity: 3
+2025-08-21 11:46:00 AM [TRADE SL (ID: 3)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-21 11:48:00 AM ******** TRADING DISABLED (mid-trade) ******** : $657.9 | Account: Playback101
+2025-08-21 11:51:00 AM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_0.600 | Entry: 23291.00 | High: 23295.75 | Low: 23235.25 | Max Profit: 55.75pts | Max Loss: 4.75pts | Bars: 32
+2025-08-21 11:51:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $201.28 | Current PnL: $649.18 | Points : 33.5 | Quantity: 3
+2025-08-21 11:51:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $298.06 | Total PnL: $649.18
+2025-08-22 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23273.5 Low: 23233
+2025-08-22 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-22 9:39:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23298.5 | Bars Since Last Trade: 296
+2025-08-22 9:45:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_0.600 | Entry: 23298.50 | High: 23324.00 | Low: 23294.25 | Max Profit: 4.25pts | Max Loss: 25.50pts | Bars: 7
+2025-08-22 9:45:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-214.44 | Points : -17.75 | Quantity: 6
+2025-08-22 9:45:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-214.44
+2025-08-22 10:03:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23527.75 | Bars Since Last Trade: 6
+2025-08-22 10:06:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_6.262 | Entry: 23527.75 | High: 23536.00 | Low: 23480.75 | Max Profit: 47.00pts | Max Loss: 8.25pts | Bars: 4
+2025-08-22 10:06:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $361.56 | Current PnL: $147.12 | Points : 30.25 | Quantity: 6
+2025-08-22 10:06:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $361.56 | Total PnL: $147.12
+2025-08-22 10:06:00 AM [Trade Completion]: Trigger not generated as trade completed on bar: 8394
+2025-08-22 10:06:00 AM [TRADE FILL (ID: 3)] SHORT FILLED: 23527.75 | Bars Since Last Trade: 0
+2025-08-22 10:07:30 AM [TRADE SL (ID: 3)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-22 10:09:00 AM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_6.262 | Entry: 23527.75 | High: 23579.00 | Low: 23485.25 | Max Profit: 42.50pts | Max Loss: 51.25pts | Bars: 4
+2025-08-22 10:09:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $46.06 | Current PnL: $193.18 | Points : 3.75 | Quantity: 6
+2025-08-22 10:09:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $46.06 | Total PnL: $193.18
+2025-08-22 12:57:00 PM [TRADE FILL (ID: 4)] SHORT FILLED: 23527.75 | Bars Since Last Trade: 56
+2025-08-22 12:59:30 PM [TP NEAR MISS (ID: 4)] Short TP near miss (17.0pts target) at 10:06:30 - closest distance: 0.00pts (price moved away)
+2025-08-22 1:03:00 PM [TRADE SUMMARY (ID: 4)] Short | Line: CME_UP_6.262 | Entry: 23527.75 | High: 23551.50 | Low: 23526.25 | Max Profit: 1.50pts | Max Loss: 23.75pts | Bars: 6
+2025-08-22 1:03:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-21.2600000000001 | Points : -17.75 | Quantity: 6
+2025-08-22 1:03:00 PM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-21.2600000000001
+2025-08-25 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23518 Low: 23495.5
+2025-08-25 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-25 10:00:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23532.25 | Bars Since Last Trade: 279
+2025-08-25 10:03:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-08-25 10:03:00 AM [Trade Completion]: Trigger not generated as trade completed on bar: 8733
+2025-08-25 10:09:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_0.600 | Entry: 23532.25 | High: 23551.25 | Low: 23504.50 | Max Profit: 27.75pts | Max Loss: 19.00pts | Bars: 16
+2025-08-25 10:09:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-107.22 | Current PnL: $-10.44 | Points : -17.75 | Quantity: 3
+2025-08-25 10:09:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $-10.44
+2025-08-25 11:00:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23577.75 | Bars Since Last Trade: 17
+2025-08-25 11:24:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_2.618 | Entry: 23577.75 | High: 23603.75 | Low: 23566.00 | Max Profit: 11.75pts | Max Loss: 26.00pts | Bars: 44
+2025-08-25 11:24:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-224.88 | Points : -17.75 | Quantity: 6
+2025-08-25 11:24:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-224.88
+2025-08-25 11:51:00 AM [TRADE FILL (ID: 3)] SHORT FILLED: 23614.75 | Bars Since Last Trade: 9
+2025-08-25 11:57:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $96.78 | Current PnL: $-128.1 | Points : 16.25 | Quantity: 3
+2025-08-25 12:30:30 PM [TRADE SL (ID: 3)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-25 1:04:00 PM [TRADE SL (ID: 3)] Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-25 1:06:30 PM [TP NEAR MISS (ID: 3)] Short TP near miss (45.0pts target) at 13:05:00 - closest distance: 0.25pts (price moved away)
+2025-08-25 1:39:00 PM [TP NEAR MISS (ID: 3)] Short TP near miss (45.0pts target) at 13:37:30 - closest distance: 1.00pts (price moved away)
+2025-08-25 1:42:00 PM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_4.262 | Entry: 23614.75 | High: 23614.00 | Low: 23557.25 | Max Profit: 57.50pts | Max Loss: -0.75pts | Bars: 215
+2025-08-25 1:42:00 PM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $264.78 | Current PnL: $136.68 | Points : 44.25 | Quantity: 3
+2025-08-25 1:42:00 PM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $361.56 | Total PnL: $136.68
+2025-08-26 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23489.5 Low: 23468.75
+2025-08-26 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-26 9:48:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23434.5 | Bars Since Last Trade: 297
+2025-08-26 9:51:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-08-26 9:51:00 AM [TRADE SL (ID: 1)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-26 9:51:30 AM [TRADE SL (ID: 1)] SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-26 9:54:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_2.618 | Entry: 23434.50 | High: 23498.00 | Low: 23426.75 | Max Profit: 63.50pts | Max Loss: 7.75pts | Bars: 9
+2025-08-26 9:54:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $264.78 | Current PnL: $361.56 | Points : 44.25 | Quantity: 3
+2025-08-26 9:54:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $361.56 | Total PnL: $361.56
+2025-08-26 10:21:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23544.5 | Bars Since Last Trade: 10
+2025-08-26 10:36:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $96.78 | Current PnL: $458.34 | Points : 16.25 | Quantity: 3
+2025-08-26 10:39:30 AM [TRADE SL (ID: 2)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-26 10:42:00 AM ******** TRADING DISABLED (mid-trade) ******** : $611.3 | Account: Playback101
+2025-08-26 10:45:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_2.618 | Entry: 23544.50 | High: 23549.00 | Low: 23514.50 | Max Profit: 30.00pts | Max Loss: 4.50pts | Bars: 42
+2025-08-26 10:45:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $146.28 | Current PnL: $604.62 | Points : 24.5 | Quantity: 3
+2025-08-26 10:45:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $243.06 | Total PnL: $604.62
+2025-08-27 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23559.5 Low: 23539
+2025-08-27 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-27 9:48:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23505 | Bars Since Last Trade: 321
+2025-08-27 9:54:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-08-27 9:54:30 AM [TRADE SL (ID: 1)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-27 9:55:00 AM [TRADE SL (ID: 1)] SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-27 10:09:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_2.618 | Entry: 23505.00 | High: 23557.75 | Low: 23488.50 | Max Profit: 52.75pts | Max Loss: 16.50pts | Bars: 38
+2025-08-27 10:09:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $264.78 | Current PnL: $361.56 | Points : 44.25 | Quantity: 3
+2025-08-27 10:09:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $361.56 | Total PnL: $361.56
+2025-08-27 10:15:00 AM [TRADE FILL (ID: 2)] SHORT FILLED: 23572.5 | Bars Since Last Trade: 7
+2025-08-27 10:21:00 AM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_0.600 | Entry: 23572.50 | High: 23601.75 | Low: 23566.25 | Max Profit: 6.25pts | Max Loss: 29.25pts | Bars: 10
+2025-08-27 10:21:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-214.44 | Current PnL: $147.12 | Points : -17.75 | Quantity: 6
+2025-08-27 10:21:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $147.12
+2025-08-27 10:39:00 AM [TRADE FILL (ID: 3)] SHORT FILLED: 23614 | Bars Since Last Trade: 6
+2025-08-27 10:46:00 AM [TRADE SL (ID: 3)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-27 10:48:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $96.78 | Current PnL: $243.9 | Points : 16.25 | Quantity: 3
+2025-08-27 11:33:00 AM [TRADE SL (ID: 3)] Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-27 11:42:00 AM [TRADE SUMMARY (ID: 3)] Short | Line: CME_UP_2.618 | Entry: 23614.00 | High: 23613.75 | Low: 23574.00 | Max Profit: 40.00pts | Max Loss: -0.25pts | Bars: 122
+2025-08-27 11:42:00 AM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $54.78 | Current PnL: $298.68 | Points : 9.25 | Quantity: 3
+2025-08-27 11:42:00 AM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $151.56 | Total PnL: $298.68
+2025-08-27 11:42:00 AM [Trade Completion]: Trigger not generated as trade completed on bar: 9446
+2025-08-27 11:45:00 AM [TRADE FILL (ID: 4)] SHORT FILLED: 23614 | Bars Since Last Trade: 1
+2025-08-27 11:57:00 AM [TRADE SUMMARY (ID: 4)] Short | Line: CME_UP_2.618 | Entry: 23614.00 | High: 23631.75 | Low: 23613.00 | Max Profit: 1.00pts | Max Loss: 17.75pts | Bars: 17
+2025-08-27 11:57:00 AM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $-214.44 | Current PnL: $84.24 | Points : -17.75 | Quantity: 6
+2025-08-27 11:57:00 AM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $84.24
+2025-08-27 1:06:00 PM [NEAR MISS] Short near miss at 12:57:00 - closest distance: 2.00pts
+2025-08-27 2:12:00 PM [TRADE FILL (ID: 5)] SHORT FILLED: 23647.5 | Bars Since Last Trade: 45
+2025-08-27 2:54:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $96.78 | Current PnL: $181.02 | Points : 16.25 | Quantity: 3
+2025-08-27 2:55:00 PM [TRADE SL (ID: 5)] Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-27 3:05:00 PM [TRADE SL (ID: 5)] Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-08-27 3:12:00 PM [TRADE SUMMARY (ID: 5)] Short | Line: CME_UP_4.262 | Entry: 23647.50 | High: 23657.50 | Low: 23594.00 | Max Profit: 53.50pts | Max Loss: 10.00pts | Bars: 114
+2025-08-27 3:12:00 PM [PNL UPDATE (ID: 5)] CURRENT TRADE PnL: $264.78 | Current PnL: $445.8 | Points : 44.25 | Quantity: 3
+2025-08-27 3:12:00 PM [PNL UPDATE (ID: 5)] COMPLETED TRADE PnL: $361.56 | Total PnL: $445.8
+2025-08-27 3:15:00 PM [TRADE FILL (ID: 6)] SHORT FILLED: 23572.5 | Bars Since Last Trade: 7
+2025-08-27 3:21:00 PM [TRADE SUMMARY (ID: 6)] Short | Line: CME_UP_0.600 | Entry: 23572.50 | High: 23597.25 | Low: 23573.75 | Max Profit: -1.25pts | Max Loss: 24.75pts | Bars: 10
+2025-08-27 3:21:00 PM [PNL UPDATE (ID: 6)] CURRENT TRADE PnL: $-214.44 | Current PnL: $231.36 | Points : -17.75 | Quantity: 6
+2025-08-27 3:21:00 PM [PNL UPDATE (ID: 6)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $231.36
+2025-08-28 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23668 Low: 23629.25
+2025-08-28 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-28 10:39:00 AM [TRADE FILL (ID: 1)] SHORT FILLED: 23692 | Bars Since Last Trade: 366
+2025-08-28 10:42:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-08-28 10:42:00 AM [Trade Completion]: Trigger not generated as trade completed on bar: 9886
+2025-08-28 10:48:00 AM [TRADE SUMMARY (ID: 1)] Short | Line: CME_UP_0.600 | Entry: 23692.00 | High: 23716.00 | Low: 23673.00 | Max Profit: 19.00pts | Max Loss: 24.00pts | Bars: 13
+2025-08-28 10:48:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-107.22 | Current PnL: $-10.44 | Points : -17.75 | Quantity: 3
+2025-08-28 10:48:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $-10.44 | Total PnL: $-10.44
+2025-08-28 1:30:00 PM [TRADE FILL (ID: 2)] SHORT FILLED: 23770.25 | Bars Since Last Trade: 54
+2025-08-28 1:33:00 PM [TP NEAR MISS (ID: 2)] Short TP near miss (17.0pts target) at 13:31:30 - closest distance: 2.00pts (price moved away)
+2025-08-28 1:35:30 PM [TP NEAR MISS (ID: 2)] Short TP near miss (17.0pts target) at 13:34:00 - closest distance: 1.50pts (price moved away)
+2025-08-28 2:54:00 PM [TRADE SUMMARY (ID: 2)] Short | Line: CME_UP_2.618 | Entry: 23770.25 | High: 23789.00 | Low: 23754.75 | Max Profit: 15.50pts | Max Loss: 18.75pts | Bars: 166
+2025-08-28 2:54:00 PM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-224.88 | Points : -17.75 | Quantity: 6
+2025-08-28 2:54:00 PM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-224.88
+2025-08-29 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23668 Low: 23643
+2025-08-29 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-08-29 9:39:00 AM [TRADE FILL (ID: 1)] LONG FILLED: 23601.75 | Bars Since Last Trade: 304
+2025-08-29 9:42:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $96.78 | Current PnL: $96.78 | Points : 16.25 | Quantity: 3
+2025-08-29 9:42:30 AM [TRADE SL (ID: 1)] SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-08-29 9:45:00 AM [TRADE SUMMARY (ID: 1)] Long | Line: CME_DOWN_2.618 | Entry: 23601.75 | High: 23625.75 | Low: 23585.25 | Max Profit: 24.00pts | Max Loss: 16.50pts | Bars: 9
+2025-08-29 9:45:00 AM [PNL UPDATE (ID: 1)] CURRENT TRADE PnL: $-50.22 | Current PnL: $46.56 | Points : -8.25 | Quantity: 3
+2025-08-29 9:45:00 AM [PNL UPDATE (ID: 1)] COMPLETED TRADE PnL: $46.56 | Total PnL: $46.56
+2025-08-29 9:45:00 AM [TRADE FILL (ID: 2)] LONG FILLED: 23576.75 | Bars Since Last Trade: 0
+2025-08-29 9:48:00 AM [TRADE SUMMARY (ID: 2)] Long | Line: CME_DOWN_3.618 | Entry: 23576.75 | High: 23601.00 | Low: 23541.00 | Max Profit: 24.25pts | Max Loss: 35.75pts | Bars: 3
+2025-08-29 9:48:00 AM [PNL UPDATE (ID: 2)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-167.88 | Points : -17.75 | Quantity: 6
+2025-08-29 9:48:00 AM [PNL UPDATE (ID: 2)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-167.88
+2025-08-29 1:00:00 PM [TRADE FILL (ID: 3)] LONG FILLED: 23467.25 | Bars Since Last Trade: 64
+2025-08-29 1:01:30 PM [TP NEAR MISS (ID: 3)] Long TP near miss (17.0pts target) at 09:46:00 - closest distance: 1.75pts (price moved away)
+2025-08-29 1:03:00 PM [TRADE SUMMARY (ID: 3)] Long | Line: CME_DOWN_8.000 | Entry: 23467.25 | High: 23477.75 | Low: 23449.50 | Max Profit: 10.50pts | Max Loss: 17.75pts | Bars: 4
+2025-08-29 1:03:00 PM [PNL UPDATE (ID: 3)] CURRENT TRADE PnL: $-214.44 | Current PnL: $-382.32 | Points : -17.75 | Quantity: 6
+2025-08-29 1:03:00 PM [PNL UPDATE (ID: 3)] COMPLETED TRADE PnL: $-214.44 | Total PnL: $-382.32
+2025-08-29 1:15:00 PM [TRADE FILL (ID: 4)] LONG FILLED: 23410.5 | Bars Since Last Trade: 4
+2025-08-29 1:18:00 PM ******** TRADING DISABLED (mid-trade) ******** : $-463.3 | Account: Playback101
+2025-08-29 1:21:00 PM [TRADE SUMMARY (ID: 4)] Long | Line: CME_DOWN_10.272 | Entry: 23410.50 | High: 23426.75 | Low: 23401.50 | Max Profit: 16.25pts | Max Loss: 9.00pts | Bars: 9
+2025-08-29 1:21:00 PM [PNL UPDATE (ID: 4)] CURRENT TRADE PnL: $-61.44 | Current PnL: $-443.76 | Points : -5 | Quantity: 6
+2025-08-29 1:21:00 PM [PNL UPDATE (ID: 4)] COMPLETED TRADE PnL: $-61.44 | Total PnL: $-443.76
