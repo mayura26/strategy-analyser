@@ -10,26 +10,38 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
   }
 
   parse(rawData: string): ParsedRunData {
+    console.log('=== MagicLinesScalperParser.parse() START ===');
     const lines = rawData.split('\n');
+    console.log(`Raw data length: ${rawData.length} characters, ${lines.length} lines`);
     
     // Extract strategy name and run ID
     const strategyMatch = rawData.match(/Strategy '([^']+)'/);
     const strategyName = strategyMatch ? strategyMatch[1] : 'MagicLinesScalper';
+    console.log(`Strategy name extracted: ${strategyName}`);
     
     // Extract parameters from the detailed parameter section
+    console.log('Extracting parameters...');
     const parameters = this.extractParameters(rawData);
+    console.log(`Extracted ${parameters.length} parameters`);
     
     // Extract trade data and calculate metrics
+    console.log('Extracting trade data...');
     const tradeData = this.extractTradeData(rawData);
+    console.log(`Extracted ${tradeData.length} trades`);
     
     // Calculate daily PNL from trade summaries
+    console.log('Calculating daily PNL...');
     const dailyPnl = this.calculateDailyPnl(tradeData);
+    console.log(`Calculated daily PNL for ${dailyPnl.length} days`);
     
-    // Calculate overall metrics
+    // Calculate overall metrics from individual trades
     const totalTrades = tradeData.length;
     const netPnl = tradeData.reduce((sum, trade) => sum + trade.pnl, 0);
     const winningTrades = tradeData.filter(trade => trade.pnl > 0).length;
     const winRate = totalTrades > 0 ? winningTrades / totalTrades : 0;
+    
+    console.log(`Total trades: ${totalTrades}, Net PNL: ${netPnl}, Win rate: ${winRate}`);
+    
     
     // Calculate profit factor
     const grossProfit = tradeData.filter(trade => trade.pnl > 0).reduce((sum, trade) => sum + trade.pnl, 0);
@@ -47,7 +59,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     // Extract custom metrics
     const customMetrics = this.extractCustomMetrics(rawData, tradeData);
 
-    return {
+    const result = {
       strategyName: this.strategyName,
       runName: strategyName,
       netPnl: ensureFinite(netPnl),
@@ -60,6 +72,21 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       parameters,
       customMetrics
     };
+    
+    console.log('=== FINAL RESULT ===');
+    console.log(`Strategy: ${result.strategyName}`);
+    console.log(`Run Name: ${result.runName}`);
+    console.log(`Net PNL: $${result.netPnl}`);
+    console.log(`Total Trades: ${result.totalTrades}`);
+    console.log(`Win Rate: ${result.winRate}`);
+    console.log(`Profit Factor: ${result.profitFactor}`);
+    console.log(`Max Drawdown: $${result.maxDrawdown}`);
+    console.log(`Daily PNL entries: ${result.dailyPnl.length}`);
+    console.log(`Parameters: ${result.parameters.length}`);
+    console.log(`Custom Metrics: ${result.customMetrics.length}`);
+    console.log('=== MagicLinesScalperParser.parse() END ===');
+    
+    return result;
   }
 
   private extractParameters(rawData: string): Array<{ name: string; value: string; type: 'string' | 'number' | 'boolean' | 'date' }> {
@@ -131,6 +158,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
 
   private extractTradeData(rawData: string): Array<{
     date: string;
+    time: string;
     direction: 'LONG' | 'SHORT';
     entry: number;
     exit: number;
@@ -139,9 +167,16 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     maxLoss: number;
     bars: number;
     line: string;
+    barsSinceLastTrade: number;
+    quantity: number;
+    points: number;
+    slAdjustments: number;
+    nearMisses: number;
   }> {
+    console.log('=== extractTradeData() START ===');
     const trades: Array<{
       date: string;
+      time: string;
       direction: 'LONG' | 'SHORT';
       entry: number;
       exit: number;
@@ -150,70 +185,238 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       maxLoss: number;
       bars: number;
       line: string;
+      barsSinceLastTrade: number;
+      quantity: number;
+      points: number;
+      slAdjustments: number;
+      nearMisses: number;
     }> = [];
 
-    // Match trade summary lines - more flexible pattern
-    const tradeSummaryPattern = /(\d{4}-\d{2}-\d{2})\s+\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM)\s+\[TRADE SUMMARY\]\s+(LONG|SHORT)\s*\|\s*Line:\s*([^|]+)\s*\|\s*Entry:\s*([\d.]+)\s*\|\s*High:\s*([\d.]+)\s*\|\s*Low:\s*([\d.]+)\s*\|\s*Max Profit:\s*([+-]?[\d.]+)pts\s*\|\s*Max Loss:\s*([+-]?[\d.]+)pts\s*\|\s*Bars:\s*(\d+)/g;
+    // Extract trade fills first - now with ID support
+    const tradeFillPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE FILL \(ID: (\d+)\)\]\s+(LONG|SHORT)\s+FILLED:\s*([\d.]+)\s*\|\s*Bars Since Last Trade:\s*(\d+)/gi;
+    console.log('Looking for trade fills with pattern:', tradeFillPattern);
+    
+    const tradeFills: Array<{
+      date: string;
+      time: string;
+      id: string;
+      direction: 'LONG' | 'SHORT';
+      entry: number;
+      barsSinceLastTrade: number;
+    }> = [];
 
     let match;
-    while ((match = tradeSummaryPattern.exec(rawData)) !== null) {
-      const [, date, direction, line, entryStr, highStr, lowStr, maxProfitStr, maxLossStr, barsStr] = match;
-      
-      const entry = parseFloat(entryStr);
-      const high = parseFloat(highStr);
-      const low = parseFloat(lowStr);
-      const maxProfit = parseFloat(maxProfitStr);
-      const maxLoss = parseFloat(maxLossStr);
-      const bars = parseInt(barsStr);
-      
-      // Calculate PNL based on direction and price movement
-      let pnl = 0;
-      if (direction === 'LONG') {
-        pnl = high - entry; // Use high for long trades
-      } else {
-        pnl = entry - low; // Use low for short trades
-      }
-      
-      // Convert points to dollars (assuming $5 per point for MNQ)
-      const pointValue = 5;
-      pnl *= pointValue;
-      const maxProfitDollars = maxProfit * pointValue;
-      const maxLossDollars = maxLoss * pointValue;
-
-      trades.push({
+    while ((match = tradeFillPattern.exec(rawData)) !== null) {
+      const [, date, time, id, direction, entryStr, barsSinceLastTradeStr] = match;
+      const tradeId = `${date}_${id}`;
+      tradeFills.push({
         date,
+        time,
+        id: tradeId,
         direction: direction as 'LONG' | 'SHORT',
-        entry,
-        exit: direction === 'LONG' ? high : low,
-        pnl,
-        maxProfit: maxProfitDollars,
-        maxLoss: maxLossDollars,
-        bars,
-        line: line.trim()
+        entry: parseFloat(entryStr),
+        barsSinceLastTrade: parseInt(barsSinceLastTradeStr)
       });
+      console.log(`Found trade fill: ${date} ${time} ID:${id} ${direction} at ${entryStr}`);
+    }
+    console.log(`Total trade fills found: ${tradeFills.length}`);
+
+    // Extract trade summaries - now with ID support
+    const tradeSummaryPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE SUMMARY \(ID: (\d+)\)\]\s+(LONG|SHORT)\s*\|\s*Line:\s*([^|]+)\s*\|\s*Entry:\s*([\d.]+)\s*\|\s*High:\s*([\d.]+)\s*\|\s*Low:\s*([\d.]+)\s*\|\s*Max Profit:\s*([+-]?[\d.]+)pts\s*\|\s*Max Loss:\s*([+-]?[\d.]+)pts\s*\|\s*Bars:\s*(\d+)/gi;
+
+    const tradeSummaries: Array<{
+      date: string;
+      time: string;
+      id: string;
+      direction: 'LONG' | 'SHORT';
+      line: string;
+      entry: number;
+      high: number;
+      low: number;
+      maxProfit: number;
+      maxLoss: number;
+      bars: number;
+    }> = [];
+
+    while ((match = tradeSummaryPattern.exec(rawData)) !== null) {
+      const [, date, time, id, direction, line, entryStr, highStr, lowStr, maxProfitStr, maxLossStr, barsStr] = match;
+      const tradeId = `${date}_${id}`;
+      tradeSummaries.push({
+        date,
+        time,
+        id: tradeId,
+        direction: direction as 'LONG' | 'SHORT',
+        line: line.trim(),
+        entry: parseFloat(entryStr),
+        high: parseFloat(highStr),
+        low: parseFloat(lowStr),
+        maxProfit: parseFloat(maxProfitStr),
+        maxLoss: parseFloat(maxLossStr),
+        bars: parseInt(barsStr)
+      });
+      console.log(`Found trade summary: ${date} ${time} ID:${id} ${direction} - Entry: ${entryStr}, Max Profit: ${maxProfitStr}pts, Max Loss: ${maxLossStr}pts`);
+    }
+    console.log(`Total trade summaries found: ${tradeSummaries.length}`);
+
+    // Extract PNL updates - now with ID support
+    const pnlUpdatePattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[PNL UPDATE \(ID: (\d+)\)\]\s+COMPLETED TRADE PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Total PnL:\s*\$([+-]?[\d.]+)/gi;
+
+    const pnlUpdates: Array<{
+      date: string;
+      time: string;
+      id: string;
+      completedTradePnl: number;
+      totalPnl: number;
+    }> = [];
+
+    while ((match = pnlUpdatePattern.exec(rawData)) !== null) {
+      const [, date, time, id, completedTradePnlStr, totalPnlStr] = match;
+      const tradeId = `${date}_${id}`;
+      pnlUpdates.push({
+        date,
+        time,
+        id: tradeId,
+        completedTradePnl: parseFloat(completedTradePnlStr),
+        totalPnl: parseFloat(totalPnlStr)
+      });
+      console.log(`Found PNL update: ${date} ${time} ID:${id} - Completed Trade PnL: $${completedTradePnlStr}, Total PnL: $${totalPnlStr}`);
+    }
+    console.log(`Total PNL updates found: ${pnlUpdates.length}`);
+
+    // Extract additional trade data (quantity, points, etc.) - now with ID support
+    const currentTradePnlPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[PNL UPDATE \(ID: (\d+)\)\]\s+CURRENT TRADE PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Current PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Points\s*:\s*([+-]?[\d.]+)\s*\|\s*Quantity:\s*(\d+)/gi;
+
+    const currentTradeData: Array<{
+      date: string;
+      time: string;
+      id: string;
+      quantity: number;
+      points: number;
+    }> = [];
+
+    while ((match = currentTradePnlPattern.exec(rawData)) !== null) {
+      const [, date, time, id, , , pointsStr, quantityStr] = match;
+      const tradeId = `${date}_${id}`;
+      currentTradeData.push({
+        date,
+        time,
+        id: tradeId,
+        quantity: parseInt(quantityStr),
+        points: parseFloat(pointsStr)
+      });
+      console.log(`Found current trade data: ${date} ${time} ID:${id} - Points: ${pointsStr}, Quantity: ${quantityStr}`);
+    }
+    console.log(`Total current trade data found: ${currentTradeData.length}`);
+
+    // Count SL adjustments and near misses per trade - now with ID support
+    const slAdjustmentPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+(?:\[TRADE SL \(ID: \d+\)\]|SL Adjustment|Short position: Price reached X[12]|Long position: Price reached X[12])/g;
+    const nearMissPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[(?:TP )?NEAR MISS \(ID: \d+\)\]/g;
+
+
+    // Match all trade components together using IDs
+    console.log('=== MATCHING TRADE COMPONENTS BY ID ===');
+    
+    // Create lookup maps for faster matching
+    const summaryMap = new Map<string, typeof tradeSummaries[0]>();
+    const pnlMap = new Map<string, typeof pnlUpdates[0]>();
+    const currentTradeMap = new Map<string, typeof currentTradeData[0]>();
+    
+    tradeSummaries.forEach(summary => summaryMap.set(summary.id, summary));
+    pnlUpdates.forEach(pnl => pnlMap.set(pnl.id, pnl));
+    currentTradeData.forEach(current => currentTradeMap.set(current.id, current));
+    
+    console.log(`Created lookup maps - Summaries: ${summaryMap.size}, PNL: ${pnlMap.size}, Current Trade: ${currentTradeMap.size}`);
+
+    for (const tradeFill of tradeFills) {
+      console.log(`\nProcessing trade fill: ${tradeFill.date} ${tradeFill.time} ${tradeFill.direction} ID:${tradeFill.id} at ${tradeFill.entry}`);
+      
+      // Find components by ID
+      const summary = summaryMap.get(tradeFill.id);
+      const pnlUpdate = pnlMap.get(tradeFill.id);
+      const currentTrade = currentTradeMap.get(tradeFill.id);
+
+      if (summary) {
+        console.log(`  Found matching summary: ${summary.date} ${summary.time} ${summary.direction} - Entry: ${summary.entry}, Max Profit: ${summary.maxProfit}pts, Max Loss: ${summary.maxLoss}pts`);
+        
+        const pnl = pnlUpdate ? pnlUpdate.completedTradePnl : 0;
+        console.log(`  PNL found: $${pnl} (from ${pnlUpdate ? 'PNL update' : 'default'})`);
+        
+        const tradeData = currentTrade || { quantity: 6, points: 0 }; // Default values
+        console.log(`  Current trade data: Quantity=${tradeData.quantity}, Points=${tradeData.points}`);
+
+        // Count SL adjustments and near misses for this trade using ID
+        const tradeId = tradeFill.id.split('_')[1]; // Extract just the ID number
+        const slAdjustments = (rawData.match(new RegExp(`${tradeFill.date}.*(?:\\[TRADE SL \\(ID: ${tradeId}\\)\\]|SL Adjustment|Short position: Price reached X[12]|Long position: Price reached X[12])`, 'g')) || []).length;
+        const nearMisses = (rawData.match(new RegExp(`${tradeFill.date}.*\\[(?:TP )?NEAR MISS \\(ID: ${tradeId}\\)\\]`, 'g')) || []).length;
+        
+        console.log(`  SL Adjustments: ${slAdjustments}, Near Misses: ${nearMisses} for trade ID ${tradeId}`);
+
+        // Convert points to dollars
+        const pointValue = 5;
+        const maxProfitDollars = summary.maxProfit * pointValue;
+        const maxLossDollars = summary.maxLoss * pointValue;
+
+        const trade = {
+          date: tradeFill.date,
+          time: tradeFill.time,
+          direction: tradeFill.direction,
+          entry: tradeFill.entry,
+          exit: summary.direction === 'LONG' ? summary.high : summary.low,
+          pnl,
+          maxProfit: maxProfitDollars,
+          maxLoss: maxLossDollars,
+          bars: summary.bars,
+          line: summary.line,
+          barsSinceLastTrade: tradeFill.barsSinceLastTrade,
+          quantity: tradeData.quantity,
+          points: tradeData.points,
+          slAdjustments,
+          nearMisses
+        };
+        
+        console.log(`  Final trade object: PNL=$${trade.pnl}, Max Profit=$${trade.maxProfit}, Max Loss=$${trade.maxLoss}, Quantity=${trade.quantity}, Points=${trade.points}`);
+        trades.push(trade);
+      } else {
+        console.log(`  No matching summary found for trade ID: ${tradeFill.id}`);
+      }
     }
 
+    console.log(`=== extractTradeData() END - Returning ${trades.length} trades ===`);
     return trades;
   }
 
   private calculateDailyPnl(tradeData: Array<{ date: string; pnl: number; bars: number }>): Array<{ date: string; pnl: number; trades: number }> {
+    console.log('=== calculateDailyPnl() START ===');
+    console.log(`Input trade data: ${tradeData.length} trades`);
+    
     const dailyMap = new Map<string, { pnl: number; trades: number }>();
 
     for (const trade of tradeData) {
+      console.log(`Processing trade: ${trade.date} - PNL: $${trade.pnl}`);
       const existing = dailyMap.get(trade.date) || { pnl: 0, trades: 0 };
+      const newPnl = existing.pnl + (isFinite(trade.pnl) ? trade.pnl : 0);
       dailyMap.set(trade.date, {
-        pnl: existing.pnl + (isFinite(trade.pnl) ? trade.pnl : 0),
+        pnl: newPnl,
         trades: existing.trades + 1
       });
+      console.log(`  Updated daily PNL for ${trade.date}: $${newPnl} (${existing.trades + 1} trades)`);
     }
 
-    return Array.from(dailyMap.entries())
+    const result = Array.from(dailyMap.entries())
       .map(([date, data]) => ({ 
         date, 
         pnl: isFinite(data.pnl) ? data.pnl : 0, 
         trades: data.trades 
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
+    
+    console.log('Daily PNL summary:');
+    result.forEach(day => {
+      console.log(`  ${day.date}: $${day.pnl} (${day.trades} trades)`);
+    });
+    
+    console.log(`=== calculateDailyPnl() END - Returning ${result.length} days ===`);
+    return result;
   }
 
   private calculateMaxDrawdown(tradeData: Array<{ pnl: number }>): number {
@@ -235,7 +438,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     return maxDrawdown;
   }
 
-  private extractCustomMetrics(rawData: string, tradeData: Array<{ pnl: number; maxProfit: number; maxLoss: number }>): Array<{ name: string; value: number; description?: string }> {
+  private extractCustomMetrics(rawData: string, tradeData: Array<{ pnl: number; maxProfit: number; maxLoss: number; bars: number; slAdjustments: number; nearMisses: number; quantity: number; points: number }>): Array<{ name: string; value: number; description?: string }> {
     const metrics: Array<{ name: string; value: number; description?: string }> = [];
 
     // Helper function to ensure finite numbers
@@ -243,21 +446,19 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       return isFinite(value) ? value : defaultValue;
     };
 
-    // Count near misses
-    const nearMissMatches = rawData.match(/\[(?:TP )?NEAR MISS\]/g);
-    const nearMissCount = nearMissMatches ? nearMissMatches.length : 0;
+    // Count near misses and SL adjustments from trade data
+    const totalNearMisses = tradeData.reduce((sum, trade) => sum + trade.nearMisses, 0);
+    const totalSlAdjustments = tradeData.reduce((sum, trade) => sum + trade.slAdjustments, 0);
+    
     metrics.push({
       name: 'Near Misses',
-      value: ensureFinite(nearMissCount),
+      value: ensureFinite(totalNearMisses),
       description: 'Number of near miss trades'
     });
 
-    // Count SL adjustments
-    const slAdjustmentMatches = rawData.match(/SL Adjustment:/g);
-    const slAdjustmentCount = slAdjustmentMatches ? slAdjustmentMatches.length : 0;
     metrics.push({
       name: 'SL Adjustments',
-      value: ensureFinite(slAdjustmentCount),
+      value: ensureFinite(totalSlAdjustments),
       description: 'Number of stop loss adjustments made'
     });
 
@@ -268,6 +469,23 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       name: 'Average Trade Duration',
       value: ensureFinite(avgTradeDuration),
       description: 'Average trade duration in bars'
+    });
+
+    // Calculate average quantity and points
+    const totalQuantity = tradeData.reduce((sum, trade) => sum + trade.quantity, 0);
+    const avgQuantity = tradeData.length > 0 ? totalQuantity / tradeData.length : 0;
+    metrics.push({
+      name: 'Average Quantity',
+      value: ensureFinite(avgQuantity),
+      description: 'Average quantity per trade'
+    });
+
+    const totalPoints = tradeData.reduce((sum, trade) => sum + trade.points, 0);
+    const avgPoints = tradeData.length > 0 ? totalPoints / tradeData.length : 0;
+    metrics.push({
+      name: 'Average Points',
+      value: ensureFinite(avgPoints),
+      description: 'Average points per trade'
     });
 
     // Calculate best and worst trades (only if we have trades)

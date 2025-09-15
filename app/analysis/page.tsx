@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Loader2, BarChart3, Settings, TrendingUp, Calendar, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Loader2, BarChart3, Settings, TrendingUp, Calendar, Trash2, Eye, ChevronDown, ChevronRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface Strategy {
@@ -54,6 +55,8 @@ export default function AnalysisPage() {
   const [parameters, setParameters] = useState<{ [runId: number]: Parameter[] }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [deletingRun, setDeletingRun] = useState<number | null>(null);
+  const [viewingRunDetails, setViewingRunDetails] = useState<number | null>(null);
+  const [expandedSections, setExpandedSections] = useState<{ [runId: number]: { dailyPnl: boolean; parameters: boolean } }>({});
 
   useEffect(() => {
     fetchStrategies();
@@ -85,6 +88,13 @@ export default function AnalysisPage() {
       const data = await response.json();
       if (data.success) {
         setRuns(data.runs);
+        
+        // Fetch daily PNL data for all runs to show date ranges
+        data.runs.forEach((run: Run) => {
+          if (!dailyPnlData[run.id]) {
+            fetchDailyPnl(run.id);
+          }
+        });
       }
     } catch (error) {
       console.error('Error fetching runs:', error);
@@ -183,6 +193,287 @@ export default function AnalysisPage() {
 
   const formatPercentage = (value: number) => {
     return `${(value * 100).toFixed(2)}%`;
+  };
+
+  const getDataDateRange = (runId: number) => {
+    const dailyPnl = dailyPnlData[runId];
+    if (!dailyPnl || dailyPnl.length === 0) {
+      return 'Loading...';
+    }
+    
+    const dates = dailyPnl.map(day => new Date(day.date)).sort((a, b) => a.getTime() - b.getTime());
+    const startDate = dates[0];
+    const endDate = dates[dates.length - 1];
+    
+    return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+  };
+
+  const toggleSection = (runId: number, section: 'dailyPnl' | 'parameters') => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [runId]: {
+        ...prev[runId],
+        [section]: !prev[runId]?.[section]
+      }
+    }));
+  };
+
+  const groupParametersByCategory = (parameters: Parameter[]) => {
+    const categories = [
+      {
+        name: 'Main Parameters',
+        keywords: ['Trade Quantity', 'Max Gain', 'Max Loss', 'Max Consecutive Losses', 'Loss Cut Off', 'Full Take Profit', 'Full Stop Loss']
+      },
+      {
+        name: 'Entry Logic',
+        keywords: ['Min Distance From Line', 'Max Distance From Line', 'Entry Offset', 'Line Cross Bar Count', 'Upside Short Trades', 'Downside Long Trades']
+      },
+      {
+        name: 'Position Management',
+        keywords: ['Dynamic Trim', 'Trim Percent', 'Trim Take Profit', 'SL Adjustment', 'X1', 'X2', 'SL Levels', 'L1', 'L2']
+      },
+      {
+        name: 'Time Parameters',
+        keywords: ['Start Time', 'End Time']
+      },
+      {
+        name: 'Protective Functions',
+        keywords: ['Trade Completion Protect']
+      },
+      {
+        name: 'Magic Lines',
+        keywords: ['Upside Levels', 'Downside Levels', 'Mini Mode', 'Instrument']
+      }
+    ];
+
+    const groupedCategories = categories.map(category => ({
+      name: category.name,
+      parameters: parameters.filter(param => 
+        category.keywords.some(keyword => 
+          param.parameter_name.toLowerCase().includes(keyword.toLowerCase())
+        )
+      )
+    })).filter(category => category.parameters.length > 0);
+
+    // Add any remaining parameters that don't fit into categories
+    const categorizedParams = groupedCategories.flatMap(cat => cat.parameters.map(p => p.parameter_name));
+    const remainingParams = parameters.filter(param => !categorizedParams.includes(param.parameter_name));
+    
+    if (remainingParams.length > 0) {
+      groupedCategories.push({
+        name: 'Other Parameters',
+        parameters: remainingParams
+      });
+    }
+
+    return groupedCategories;
+  };
+
+  const handleViewRunDetails = async (runId: number) => {
+    setViewingRunDetails(runId);
+    
+    // Ensure we have the daily PNL data for this run
+    if (!dailyPnlData[runId]) {
+      await fetchDailyPnl(runId);
+    }
+    
+    // Ensure we have the parameters for this run
+    if (!parameters[runId]) {
+      await fetchParameters(runId);
+    }
+  };
+
+  const RunDetailsDialog = ({ run }: { run: Run }) => {
+    const runDailyPnl = dailyPnlData[run.id] || [];
+    const runParameters = parameters[run.id] || [];
+    const isDailyPnlExpanded = expandedSections[run.id]?.dailyPnl || false;
+    const isParametersExpanded = expandedSections[run.id]?.parameters || false;
+    
+    // Calculate additional stats from daily PNL
+    const totalTrades = runDailyPnl.reduce((sum, day) => sum + day.trades, 0);
+    const bestDay = runDailyPnl.reduce((best, day) => day.pnl > best ? day.pnl : best, 0);
+    const worstDay = runDailyPnl.reduce((worst, day) => day.pnl < worst ? day.pnl : worst, 0);
+    const winningDays = runDailyPnl.filter(day => day.pnl > 0).length;
+    const losingDays = runDailyPnl.filter(day => day.pnl < 0).length;
+
+    return (
+      <Dialog open={viewingRunDetails === run.id} onOpenChange={(open) => !open && setViewingRunDetails(null)}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto bg-gray-800 border-gray-700">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-white text-lg">{run.run_name || `Run ${run.id}`}</DialogTitle>
+            <DialogDescription className="text-gray-300 text-sm">
+              Submitted: {new Date(run.created_at).toLocaleDateString()} • Data: {getDataDateRange(run.id)}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Headline Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-br from-gray-700 to-gray-800 border-gray-600">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-gray-400 uppercase tracking-wide">Net PNL</div>
+                      <div className={`text-xl font-bold ${
+                        run.net_pnl >= 0 ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        {formatCurrency(run.net_pnl)}
+                      </div>
+                    </div>
+                    <TrendingUp className={`h-6 w-6 ${
+                      run.net_pnl >= 0 ? 'text-green-400' : 'text-red-400'
+                    }`} />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-gray-700 to-gray-800 border-gray-600">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-gray-400 uppercase tracking-wide">Profit Factor</div>
+                      <div className="text-xl font-bold text-blue-400">
+                        {run.profit_factor ? run.profit_factor.toFixed(2) : 'N/A'}
+                      </div>
+                    </div>
+                    <BarChart3 className="h-6 w-6 text-blue-400" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-gray-700 to-gray-800 border-gray-600">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-gray-400 uppercase tracking-wide">Win Rate</div>
+                      <div className="text-xl font-bold text-green-400">
+                        {run.win_rate ? formatPercentage(run.win_rate) : 'N/A'}
+                      </div>
+                    </div>
+                    <Calendar className="h-6 w-6 text-green-400" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-gray-700 to-gray-800 border-gray-600">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-gray-400 uppercase tracking-wide">Total Trades</div>
+                      <div className="text-xl font-bold text-white">
+                        {run.total_trades || 0}
+                      </div>
+                    </div>
+                    <Settings className="h-6 w-6 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Daily PNL Section */}
+            <Card className="bg-gray-700 border-gray-600">
+              <CardHeader 
+                className="cursor-pointer hover:bg-gray-600 transition-colors py-3"
+                onClick={() => toggleSection(run.id, 'dailyPnl')}
+              >
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2 text-base">
+                    Daily PNL History
+                    <Badge variant="outline" className="text-xs">
+                      {runDailyPnl.length} days
+                    </Badge>
+                  </CardTitle>
+                  {isDailyPnlExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                  )}
+                </div>
+              </CardHeader>
+              {isDailyPnlExpanded && (
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-600">
+                          <th className="text-left py-3 text-gray-300 font-medium">Date</th>
+                          <th className="text-right py-3 text-gray-300 font-medium">PNL</th>
+                          <th className="text-right py-3 text-gray-300 font-medium">Trades</th>
+                          <th className="text-right py-3 text-gray-300 font-medium">Running Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {runDailyPnl.map((day, index) => (
+                          <tr key={index} className="border-b border-gray-600 hover:bg-gray-600/50">
+                            <td className="py-3 text-gray-300">{day.date}</td>
+                            <td className={`py-3 text-right font-medium ${
+                              day.pnl >= 0 ? 'text-green-500' : 'text-red-500'
+                            }`}>
+                              {formatCurrency(day.pnl)}
+                            </td>
+                            <td className="py-3 text-right text-gray-300">{day.trades}</td>
+                            <td className="py-3 text-right text-gray-300">
+                              {formatCurrency(runDailyPnl.slice(0, index + 1).reduce((sum, d) => sum + d.pnl, 0))}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
+            {/* Parameters Section */}
+            {runParameters.length > 0 && (
+              <Card className="bg-gray-700 border-gray-600">
+                <CardHeader 
+                  className="cursor-pointer hover:bg-gray-600 transition-colors py-3"
+                  onClick={() => toggleSection(run.id, 'parameters')}
+                >
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-white flex items-center gap-2 text-base">
+                      Strategy Parameters
+                      <Badge variant="outline" className="text-xs">
+                        {runParameters.length} params
+                      </Badge>
+                    </CardTitle>
+                    {isParametersExpanded ? (
+                      <ChevronDown className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    )}
+                  </div>
+                </CardHeader>
+                {isParametersExpanded && (
+                  <CardContent>
+                    <div className="space-y-4">
+                      {groupParametersByCategory(runParameters).map((category, categoryIndex) => (
+                        <div key={categoryIndex}>
+                          <h4 className="text-white font-semibold mb-2 pb-1 border-b border-gray-600 text-sm">
+                            {category.name}
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {category.parameters.map((param, paramIndex) => (
+                              <div key={paramIndex} className="flex justify-between items-center py-2 px-3 bg-gray-600 rounded">
+                                <span className="text-gray-300 font-medium text-sm">{param.parameter_name}</span>
+                                <span className="text-white font-mono bg-gray-800 px-2 py-1 rounded text-xs">
+                                  {param.parameter_value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   };
 
   if (isLoading) {
@@ -287,9 +578,10 @@ export default function AnalysisPage() {
                         <h3 className="font-semibold text-white">
                           {run.run_name || `Run ${run.id}`}
                         </h3>
-                        <p className="text-sm text-gray-400">
-                          {new Date(run.created_at).toLocaleDateString()}
-                        </p>
+                        <div className="text-sm text-gray-400 space-y-1">
+                          <p>Submitted: {new Date(run.created_at).toLocaleDateString()}</p>
+                          <p>Data: {getDataDateRange(run.id)}</p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
@@ -302,6 +594,17 @@ export default function AnalysisPage() {
                             {run.total_trades} trades
                           </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewRunDetails(run.id);
+                          }}
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
@@ -481,6 +784,11 @@ export default function AnalysisPage() {
           )}
         </TabsContent>
       </Tabs>
+      
+      {/* Run Details Dialogs */}
+      {runs.map((run) => (
+        <RunDetailsDialog key={run.id} run={run} />
+      ))}
     </div>
   );
 }

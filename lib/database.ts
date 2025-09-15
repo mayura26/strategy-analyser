@@ -103,7 +103,7 @@ export async function getOrCreateStrategy(name: string, description?: string) {
       args: [name, description || '']
     });
 
-    return result.lastInsertRowid as number;
+    return Number(result.lastInsertRowid);
   } catch (error) {
     console.error('Error getting or creating strategy:', error);
     throw error;

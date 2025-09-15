@@ -27,6 +27,18 @@ export async function POST(request: NextRequest) {
     // Get or create strategy
     const strategyId = await getOrCreateStrategy(parsedData.strategyName);
 
+    // Debug: Log the parsed data
+    console.log('Parsed data:', {
+      strategyName: parsedData.strategyName,
+      runName: parsedData.runName,
+      netPnl: parsedData.netPnl,
+      totalTrades: parsedData.totalTrades,
+      winRate: parsedData.winRate,
+      profitFactor: parsedData.profitFactor,
+      maxDrawdown: parsedData.maxDrawdown,
+      sharpeRatio: parsedData.sharpeRatio
+    });
+
     // Insert the run data
     const runResult = await db.execute({
       sql: `
@@ -46,7 +58,7 @@ export async function POST(request: NextRequest) {
       ]
     });
 
-    const runId = runResult.lastInsertRowid as number;
+    const runId = Number(runResult.lastInsertRowid);
 
     // Insert daily PNL data
     for (const daily of parsedData.dailyPnl) {
@@ -85,7 +97,15 @@ export async function POST(request: NextRequest) {
       success: true,
       runId: Number(runId),
       strategyName: parsedData.strategyName,
-      message: 'Data parsed and saved successfully'
+      message: 'Data parsed and saved successfully',
+      summary: {
+        totalTrades: parsedData.totalTrades || 0,
+        netPnl: parsedData.netPnl || 0,
+        winRate: parsedData.winRate || 0,
+        profitFactor: parsedData.profitFactor || 0,
+        maxDrawdown: parsedData.maxDrawdown || 0,
+        days: parsedData.dailyPnl?.length || 0
+      }
     });
 
   } catch (error) {

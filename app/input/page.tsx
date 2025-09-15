@@ -16,6 +16,14 @@ export default function InputPage() {
     message: string;
     runId?: number;
     strategyName?: string;
+    summary?: {
+      totalTrades: number;
+      netPnl: number;
+      winRate: number;
+      profitFactor: number;
+      maxDrawdown: number;
+      days: number;
+    };
   } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,7 +56,8 @@ export default function InputPage() {
           success: true,
           message: data.message,
           runId: data.runId,
-          strategyName: data.strategyName
+          strategyName: data.strategyName,
+          summary: data.summary
         });
         setRawData(''); // Clear the form
       } else {
@@ -113,17 +122,50 @@ export default function InputPage() {
           </form>
 
           {result && (
-            <Alert className={`mt-6 ${result.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+            <Alert className={`mt-6 ${result.success ? 'border-green-600 bg-green-900/20' : 'border-red-600 bg-red-900/20'}`}>
               {result.success ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-green-400" />
               ) : (
-                <XCircle className="h-4 w-4 text-red-600" />
+                <XCircle className="h-4 w-4 text-red-400" />
               )}
-              <AlertDescription className={result.success ? 'text-green-800' : 'text-red-800'}>
+              <AlertDescription className={result.success ? 'text-green-200' : 'text-red-200'}>
                 {result.message}
                 {result.runId && (
                   <div className="mt-2 text-sm">
                     <strong>Run ID:</strong> {result.runId} | <strong>Strategy:</strong> {result.strategyName}
+                  </div>
+                )}
+                {result.summary && (
+                  <div className="mt-4 p-4 bg-gray-800/50 border border-gray-600 rounded-lg">
+                    <h4 className="font-semibold text-white mb-3">Parse Summary</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-400">Total Trades:</span>
+                        <div className="font-mono text-white">{result.summary.totalTrades}</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Net PNL:</span>
+                        <div className={`font-mono ${result.summary.netPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          ${result.summary.netPnl.toFixed(2)}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Win Rate:</span>
+                        <div className="font-mono text-white">{result.summary.winRate.toFixed(1)}%</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Profit Factor:</span>
+                        <div className="font-mono text-white">{result.summary.profitFactor.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Max Drawdown:</span>
+                        <div className="font-mono text-red-400">${result.summary.maxDrawdown.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Trading Days:</span>
+                        <div className="font-mono text-white">{result.summary.days}</div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </AlertDescription>
