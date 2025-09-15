@@ -9,9 +9,7 @@ export class SampleStrategyParser extends BaseStrategyParser {
            rawData.toLowerCase().includes('strategy: sample');
   }
 
-  parse(rawData: string): ParsedRunData {
-    const lines = rawData.split('\n');
-    
+  parse(rawData: string): ParsedRunData {    
     // Extract basic metrics
     const netPnl = this.extractNumber(rawData, /net pnl[:\s]+([+-]?\d+\.?\d*)/i) || 0;
     const totalTrades = this.extractNumber(rawData, /total trades[:\s]+(\d+)/i);

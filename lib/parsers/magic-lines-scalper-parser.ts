@@ -722,7 +722,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     // Extract Fill Near Misses (general near misses)
     const fillNearMissPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[NEAR MISS\]\s+(Long|Short)\s+near miss at ([^-]+) - closest distance: ([\d.]+)pts/g;
     while ((match = fillNearMissPattern.exec(rawData)) !== null) {
-      const [, date, time, direction, timestamp, closestDistance] = match;
+      const [, date, time, direction, closestDistance] = match;
       events.fillNearMisses.push({
         date,
         time,

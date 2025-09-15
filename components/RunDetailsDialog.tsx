@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BarChart3, Settings, TrendingUp, Calendar, ChevronDown, ChevronRight, Edit2, Save, X, Activity, Target } from 'lucide-react';
+import { BarChart3, Settings, Calendar, Activity, Target } from 'lucide-react';
 
 interface Run {
   id: number;
