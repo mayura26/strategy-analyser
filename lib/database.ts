@@ -26,6 +26,7 @@ export async function initializeDatabase() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         strategy_id INTEGER NOT NULL,
         run_name TEXT,
+        run_description TEXT,
         net_pnl REAL NOT NULL,
         total_trades INTEGER,
         win_rate REAL,
@@ -76,6 +77,16 @@ export async function initializeDatabase() {
         FOREIGN KEY (run_id) REFERENCES strategy_runs (id) ON DELETE CASCADE
       )
     `);
+
+    // Add description column to existing strategy_runs table if it doesn't exist
+    try {
+      await db.execute(`
+        ALTER TABLE strategy_runs ADD COLUMN run_description TEXT
+      `);
+    } catch (error) {
+      // Column might already exist, ignore the error
+      console.log('Description column already exists or migration not needed');
+    }
 
     console.log('Database initialized successfully');
   } catch (error) {

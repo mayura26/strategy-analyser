@@ -1,6 +1,7 @@
 export interface ParsedRunData {
   strategyName: string;
   runName?: string;
+  runDescription?: string;
   netPnl: number;
   totalTrades?: number;
   winRate?: number;

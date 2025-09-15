@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Loader2, BarChart3, Settings, TrendingUp, Calendar, Trash2, Eye, ChevronDown, ChevronRight } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Legend } from 'recharts';
+import { RunDetailsDialog } from '@/components/RunDetailsDialog';
 
 interface Strategy {
   id: number;
@@ -24,6 +25,7 @@ interface Strategy {
 interface Run {
   id: number;
   run_name: string;
+  run_description?: string;
   net_pnl: number;
   total_trades: number;
   win_rate: number;
@@ -57,6 +59,11 @@ export default function AnalysisPage() {
   const [deletingRun, setDeletingRun] = useState<number | null>(null);
   const [viewingRunDetails, setViewingRunDetails] = useState<number | null>(null);
   const [expandedSections, setExpandedSections] = useState<{ [runId: number]: { dailyPnl: boolean; parameters: boolean } }>({});
+  const [showOverlapOnly, setShowOverlapOnly] = useState(false);
+  const [dateRangeWarnings, setDateRangeWarnings] = useState<string[]>([]);
+  const [editingDescription, setEditingDescription] = useState<{ [runId: number]: string }>({});
+  const [localDescription, setLocalDescription] = useState<{ [runId: number]: string }>({});
+  const [savingDescription, setSavingDescription] = useState<number | null>(null);
 
   useEffect(() => {
     fetchStrategies();
@@ -147,6 +154,14 @@ export default function AnalysisPage() {
         }
       });
       
+      // Validate date ranges for the new selection
+      if (newSelection.length > 1) {
+        const warnings = validateDateRanges(newSelection);
+        setDateRangeWarnings(warnings);
+      } else {
+        setDateRangeWarnings([]);
+      }
+      
       return newSelection;
     });
   };
@@ -208,7 +223,83 @@ export default function AnalysisPage() {
     return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
   };
 
-  const toggleSection = (runId: number, section: 'dailyPnl' | 'parameters') => {
+  const getDateRangeForRun = (runId: number) => {
+    const dailyPnl = dailyPnlData[runId];
+    if (!dailyPnl || dailyPnl.length === 0) {
+      return null;
+    }
+    
+    const dates = dailyPnl.map(day => new Date(day.date)).sort((a, b) => a.getTime() - b.getTime());
+    return {
+      start: dates[0],
+      end: dates[dates.length - 1],
+      dates: dailyPnl.map(day => day.date)
+    };
+  };
+
+  const getOverlappingDateRange = (runIds: number[]) => {
+    if (runIds.length === 0) return null;
+    
+    const dateRanges = runIds.map(runId => getDateRangeForRun(runId)).filter(Boolean);
+    if (dateRanges.length === 0) return null;
+    
+    // Find the intersection of all date ranges
+    const latestStart = new Date(Math.max(...dateRanges.map(range => range!.start.getTime())));
+    const earliestEnd = new Date(Math.min(...dateRanges.map(range => range!.end.getTime())));
+    
+    if (latestStart > earliestEnd) {
+      return null; // No overlap
+    }
+    
+    // Find common dates across all runs
+    const commonDates = dateRanges[0]!.dates.filter(date => 
+      dateRanges.every(range => range!.dates.includes(date))
+    );
+    
+    return {
+      start: latestStart,
+      end: earliestEnd,
+      dates: commonDates.sort()
+    };
+  };
+
+  const validateDateRanges = (runIds: number[]) => {
+    const warnings: string[] = [];
+    
+    if (runIds.length < 2) return warnings;
+    
+    const dateRanges = runIds.map(runId => getDateRangeForRun(runId)).filter(Boolean);
+    if (dateRanges.length < 2) return warnings;
+    
+    // Check if all runs have the same date range
+    const firstRange = dateRanges[0]!;
+    const allSameRange = dateRanges.every(range => 
+      range!.start.getTime() === firstRange.start.getTime() && 
+      range!.end.getTime() === firstRange.end.getTime()
+    );
+    
+    if (!allSameRange) {
+      warnings.push('Selected runs have different date ranges. Consider enabling "Show Overlap Only" for accurate comparison.');
+      
+      // Check for no overlap
+      const overlap = getOverlappingDateRange(runIds);
+      if (!overlap) {
+        warnings.push('Selected runs have no overlapping dates. Comparison may not be meaningful.');
+      } else {
+        const overlapDays = overlap.dates.length;
+        const totalDays = Math.max(...dateRanges.map(range => range!.dates.length));
+        const overlapPercentage = (overlapDays / totalDays) * 100;
+        
+        if (overlapPercentage < 50) {
+          warnings.push(`Only ${overlapPercentage.toFixed(1)}% of data overlaps. Consider selecting runs with more similar date ranges.`);
+        }
+      }
+    }
+    
+    return warnings;
+  };
+
+  const toggleSection = useCallback((runId: number, section: 'dailyPnl' | 'parameters') => {
     setExpandedSections(prev => ({
       ...prev,
       [runId]: {
@@ -216,6 +307,40 @@ export default function AnalysisPage() {
         [section]: !prev[runId]?.[section]
       }
     }));
+  }, []);
+
+  const getFilteredChartData = () => {
+    if (selectedRuns.length === 0) return [];
+    
+    let allDates: string[];
+    
+    if (showOverlapOnly) {
+      const overlap = getOverlappingDateRange(selectedRuns);
+      if (!overlap) return [];
+      allDates = overlap.dates;
+    } else {
+      // Get all unique dates from selected runs
+      const dateSet = new Set<string>();
+      selectedRuns.forEach(runId => {
+        const data = dailyPnlData[runId] || [];
+        data.forEach(day => dateSet.add(day.date));
+      });
+      allDates = Array.from(dateSet).sort();
+    }
+    
+    // Sort runs by ID for consistent ordering
+    const sortedRuns = [...selectedRuns].sort((a, b) => a - b);
+    
+    return allDates.map(date => {
+      const dataPoint: any = { date };
+      sortedRuns.forEach((runId, index) => {
+        const run = runs.find(r => r.id === runId);
+        const runData = dailyPnlData[runId] || [];
+        const dayData = runData.find(day => day.date === date);
+        dataPoint[`run_${runId}`] = dayData ? dayData.pnl : 0;
+      });
+      return dataPoint;
+    });
   };
 
   const groupParametersByCategory = (parameters: Parameter[]) => {
@@ -283,198 +408,85 @@ export default function AnalysisPage() {
     }
   };
 
-  const RunDetailsDialog = ({ run }: { run: Run }) => {
-    const runDailyPnl = dailyPnlData[run.id] || [];
-    const runParameters = parameters[run.id] || [];
-    const isDailyPnlExpanded = expandedSections[run.id]?.dailyPnl || false;
-    const isParametersExpanded = expandedSections[run.id]?.parameters || false;
+  const handleDescriptionChange = useCallback((runId: number, value: string) => {
+    setLocalDescription(prev => ({
+      ...prev,
+      [runId]: value
+    }));
+  }, []);
+
+  const handleStartEdit = useCallback((runId: number) => {
+    const run = runs.find(r => r.id === runId);
+    setEditingDescription(prev => ({
+      ...prev,
+      [runId]: run?.run_description || ''
+    }));
+    setLocalDescription(prev => ({
+      ...prev,
+      [runId]: run?.run_description || ''
+    }));
+  }, [runs]);
+
+  const handleCancelEdit = useCallback((runId: number) => {
+    setEditingDescription(prev => {
+      const newState = { ...prev };
+      delete newState[runId];
+      return newState;
+    });
+    setLocalDescription(prev => {
+      const newState = { ...prev };
+      delete newState[runId];
+      return newState;
+    });
+  }, []);
+
+  const handleSaveDescription = useCallback(async (runId: number) => {
+    setSavingDescription(runId);
     
-    // Calculate additional stats from daily PNL
-    const totalTrades = runDailyPnl.reduce((sum, day) => sum + day.trades, 0);
-    const bestDay = runDailyPnl.reduce((best, day) => day.pnl > best ? day.pnl : best, 0);
-    const worstDay = runDailyPnl.reduce((worst, day) => day.pnl < worst ? day.pnl : worst, 0);
-    const winningDays = runDailyPnl.filter(day => day.pnl > 0).length;
-    const losingDays = runDailyPnl.filter(day => day.pnl < 0).length;
+    try {
+      const response = await fetch('/api/runs', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          runId,
+          runDescription: localDescription[runId] || ''
+        }),
+      });
 
-    return (
-      <Dialog open={viewingRunDetails === run.id} onOpenChange={(open) => !open && setViewingRunDetails(null)}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto bg-gray-800 border-gray-700">
-          <DialogHeader className="pb-4">
-            <DialogTitle className="text-white text-lg">{run.run_name || `Run ${run.id}`}</DialogTitle>
-            <DialogDescription className="text-gray-300 text-sm">
-              Submitted: {new Date(run.created_at).toLocaleDateString()} • Data: {getDataDateRange(run.id)}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            {/* Headline Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="bg-gradient-to-br from-gray-700 to-gray-800 border-gray-600">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-gray-400 uppercase tracking-wide">Net PNL</div>
-                      <div className={`text-xl font-bold ${
-                        run.net_pnl >= 0 ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        {formatCurrency(run.net_pnl)}
-                      </div>
-                    </div>
-                    <TrendingUp className={`h-6 w-6 ${
-                      run.net_pnl >= 0 ? 'text-green-400' : 'text-red-400'
-                    }`} />
-                  </div>
-                </CardContent>
-              </Card>
+      if (response.ok) {
+        // Update the local runs state
+        setRuns(prev => prev.map(run => 
+          run.id === runId 
+            ? { ...run, run_description: localDescription[runId] || '' }
+            : run
+        ));
+        
+        // Clear the editing state
+        setEditingDescription(prev => {
+          const newState = { ...prev };
+          delete newState[runId];
+          return newState;
+        });
+        
+        // Clear the local description state
+        setLocalDescription(prev => {
+          const newState = { ...prev };
+          delete newState[runId];
+          return newState;
+        });
+      } else {
+        alert('Failed to save description. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error saving description:', error);
+      alert('Failed to save description. Please try again.');
+    } finally {
+      setSavingDescription(null);
+    }
+  }, [localDescription]);
 
-              <Card className="bg-gradient-to-br from-gray-700 to-gray-800 border-gray-600">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-gray-400 uppercase tracking-wide">Profit Factor</div>
-                      <div className="text-xl font-bold text-blue-400">
-                        {run.profit_factor ? run.profit_factor.toFixed(2) : 'N/A'}
-                      </div>
-                    </div>
-                    <BarChart3 className="h-6 w-6 text-blue-400" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-gray-700 to-gray-800 border-gray-600">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-gray-400 uppercase tracking-wide">Win Rate</div>
-                      <div className="text-xl font-bold text-green-400">
-                        {run.win_rate ? formatPercentage(run.win_rate) : 'N/A'}
-                      </div>
-                    </div>
-                    <Calendar className="h-6 w-6 text-green-400" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-gray-700 to-gray-800 border-gray-600">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-gray-400 uppercase tracking-wide">Total Trades</div>
-                      <div className="text-xl font-bold text-white">
-                        {run.total_trades || 0}
-                      </div>
-                    </div>
-                    <Settings className="h-6 w-6 text-gray-400" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Daily PNL Section */}
-            <Card className="bg-gray-700 border-gray-600">
-              <CardHeader 
-                className="cursor-pointer hover:bg-gray-600 transition-colors py-3"
-                onClick={() => toggleSection(run.id, 'dailyPnl')}
-              >
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white flex items-center gap-2 text-base">
-                    Daily PNL History
-                    <Badge variant="outline" className="text-xs">
-                      {runDailyPnl.length} days
-                    </Badge>
-                  </CardTitle>
-                  {isDailyPnlExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-gray-400" />
-                  )}
-                </div>
-              </CardHeader>
-              {isDailyPnlExpanded && (
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-gray-600">
-                          <th className="text-left py-3 text-gray-300 font-medium">Date</th>
-                          <th className="text-right py-3 text-gray-300 font-medium">PNL</th>
-                          <th className="text-right py-3 text-gray-300 font-medium">Trades</th>
-                          <th className="text-right py-3 text-gray-300 font-medium">Running Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {runDailyPnl.map((day, index) => (
-                          <tr key={index} className="border-b border-gray-600 hover:bg-gray-600/50">
-                            <td className="py-3 text-gray-300">{day.date}</td>
-                            <td className={`py-3 text-right font-medium ${
-                              day.pnl >= 0 ? 'text-green-500' : 'text-red-500'
-                            }`}>
-                              {formatCurrency(day.pnl)}
-                            </td>
-                            <td className="py-3 text-right text-gray-300">{day.trades}</td>
-                            <td className="py-3 text-right text-gray-300">
-                              {formatCurrency(runDailyPnl.slice(0, index + 1).reduce((sum, d) => sum + d.pnl, 0))}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-
-            {/* Parameters Section */}
-            {runParameters.length > 0 && (
-              <Card className="bg-gray-700 border-gray-600">
-                <CardHeader 
-                  className="cursor-pointer hover:bg-gray-600 transition-colors py-3"
-                  onClick={() => toggleSection(run.id, 'parameters')}
-                >
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-white flex items-center gap-2 text-base">
-                      Strategy Parameters
-                      <Badge variant="outline" className="text-xs">
-                        {runParameters.length} params
-                      </Badge>
-                    </CardTitle>
-                    {isParametersExpanded ? (
-                      <ChevronDown className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
-                    )}
-                  </div>
-                </CardHeader>
-                {isParametersExpanded && (
-                  <CardContent>
-                    <div className="space-y-4">
-                      {groupParametersByCategory(runParameters).map((category, categoryIndex) => (
-                        <div key={categoryIndex}>
-                          <h4 className="text-white font-semibold mb-2 pb-1 border-b border-gray-600 text-sm">
-                            {category.name}
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {category.parameters.map((param, paramIndex) => (
-                              <div key={paramIndex} className="flex justify-between items-center py-2 px-3 bg-gray-600 rounded">
-                                <span className="text-gray-300 font-medium text-sm">{param.parameter_name}</span>
-                                <span className="text-white font-mono bg-gray-800 px-2 py-1 rounded text-xs">
-                                  {param.parameter_value}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  };
 
   if (isLoading) {
     return (
@@ -575,12 +587,25 @@ export default function AnalysisPage() {
                         className="flex-1 cursor-pointer"
                         onClick={() => handleRunSelect(run.id)}
                       >
+                        <div className="flex items-center gap-3 mb-2">
+                          <Badge 
+                            variant="outline" 
+                            className="bg-blue-600/20 border-blue-500 text-blue-300 font-bold text-sm px-3 py-1"
+                          >
+                            Run #{run.id}
+                          </Badge>
                         <h3 className="font-semibold text-white">
                           {run.run_name || `Run ${run.id}`}
                         </h3>
+                        </div>
                         <div className="text-sm text-gray-400 space-y-1">
                           <p>Submitted: {new Date(run.created_at).toLocaleDateString()}</p>
                           <p>Data: {getDataDateRange(run.id)}</p>
+                          {run.run_description && (
+                            <p className="text-gray-300 text-xs leading-relaxed mt-2 p-2 bg-gray-700/30 rounded border border-gray-600">
+                              {run.run_description}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
@@ -666,18 +691,88 @@ export default function AnalysisPage() {
 
         <TabsContent value="comparison" className="space-y-6">
           {selectedRuns.length > 0 ? (
+            <div className="space-y-6">
+              {/* Date Range Warnings */}
+              {dateRangeWarnings.length > 0 && (
+                <Card className="bg-yellow-900/20 border-yellow-600">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="text-yellow-400 mt-0.5">
+                        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="text-yellow-400 font-semibold mb-2">Date Range Warning</h4>
+                        <ul className="text-yellow-200 text-sm space-y-1">
+                          {dateRangeWarnings.map((warning, index) => (
+                            <li key={index}>• {warning}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Overlap Controls */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-semibold">Chart Display Options</h4>
+                      <p className="text-gray-400 text-sm">
+                        {showOverlapOnly 
+                          ? 'Showing only overlapping dates for accurate comparison'
+                          : 'Showing all dates from selected runs'
+                        }
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 text-sm text-gray-300">
+                        <input
+                          type="checkbox"
+                          checked={showOverlapOnly}
+                          onChange={(e) => setShowOverlapOnly(e.target.checked)}
+                          className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+                        />
+                        Show Overlap Only
+                      </label>
+                      {getOverlappingDateRange(selectedRuns) && (
+                        <Badge variant="outline" className="text-xs">
+                          {getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {selectedRuns.map((runId) => {
                 const run = runs.find(r => r.id === runId);
                 const runParameters = parameters[runId] || [];
                 
                 return (
-                  <Card key={runId}>
+                  <Card key={runId} className="bg-gray-800 border-gray-700">
                     <CardHeader>
-                      <CardTitle>{run?.run_name || `Run ${runId}`}</CardTitle>
-                      <CardDescription>
+                      <div className="flex items-center gap-3 mb-2">
+                        <Badge 
+                          variant="outline" 
+                          className="bg-blue-600/20 border-blue-500 text-blue-300 font-bold text-sm px-3 py-1"
+                        >
+                          Run #{runId}
+                        </Badge>
+                        <CardTitle className="text-white">{run?.run_name || `Run ${runId}`}</CardTitle>
+                      </div>
+                      <CardDescription className="text-gray-300">
                         {run && new Date(run.created_at).toLocaleDateString()}
                       </CardDescription>
+                      {run?.run_description && (
+                        <div className="mt-2 p-2 bg-gray-700/30 rounded border border-gray-600">
+                          <p className="text-gray-300 text-xs leading-relaxed">{run.run_description}</p>
+                        </div>
+                      )}
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
@@ -722,6 +817,7 @@ export default function AnalysisPage() {
                   </Card>
                 );
               })}
+              </div>
             </div>
           ) : (
             <Card>
@@ -734,72 +830,129 @@ export default function AnalysisPage() {
 
         <TabsContent value="charts" className="space-y-6">
           {selectedRuns.length > 0 ? (
+            <div className="space-y-6">
+              {/* Chart Controls */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-semibold">Chart Display Options</h4>
+                      <p className="text-gray-400 text-sm">
+                        {showOverlapOnly 
+                          ? 'Showing only overlapping dates for accurate comparison'
+                          : 'Showing all dates from selected runs'
+                        }
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 text-sm text-gray-300">
+                        <input
+                          type="checkbox"
+                          checked={showOverlapOnly}
+                          onChange={(e) => setShowOverlapOnly(e.target.checked)}
+                          className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+                        />
+                        Show Overlap Only
+                      </label>
+                      {getOverlappingDateRange(selectedRuns) && (
+                        <Badge variant="outline" className="text-xs">
+                          {getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Daily PNL Comparison</CardTitle>
                 <CardDescription>
                   Compare daily performance across selected runs.
+                    {showOverlapOnly && getOverlappingDateRange(selectedRuns) && (
+                      <span className="block text-blue-400 mt-1">
+                        Showing {getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days
+                      </span>
+                    )}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-96">
+                  <div className="h-96 bg-gray-900/50 rounded-lg p-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={(() => {
-                      // Combine all selected runs' data into a single dataset
-                      const allDates = new Set<string>();
-                      selectedRuns.forEach(runId => {
-                        const data = dailyPnlData[runId] || [];
-                        data.forEach(day => allDates.add(day.date));
-                      });
-                      
-                      const sortedDates = Array.from(allDates).sort();
-                      
-                      return sortedDates.map(date => {
-                        const dataPoint: any = { date };
-                        selectedRuns.forEach((runId, index) => {
-                          const run = runs.find(r => r.id === runId);
-                          const runData = dailyPnlData[runId] || [];
-                          const dayData = runData.find(day => day.date === date);
-                          dataPoint[`run_${runId}`] = dayData ? dayData.pnl : 0;
-                        });
-                        return dataPoint;
-                      });
-                    })()}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
+                      <BarChart data={getFilteredChartData()}>
+                      <CartesianGrid 
+                        strokeDasharray="3 3" 
+                        stroke="#374151"
+                        strokeOpacity={0.5}
+                      />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fill: '#9ca3af', fontSize: 12 }}
+                        axisLine={{ stroke: '#374151' }}
+                        tickLine={{ stroke: '#374151' }}
+                      />
+                      <YAxis 
+                        tick={{ fill: '#9ca3af', fontSize: 12 }}
+                        axisLine={{ stroke: '#374151' }}
+                        tickLine={{ stroke: '#374151' }}
+                        tickFormatter={(value) => formatCurrency(value)}
+                      />
+                      <Legend 
+                        wrapperStyle={{
+                          color: '#f9fafb',
+                          fontSize: '14px',
+                          paddingTop: '20px'
+                        }}
+                        iconType="rect"
+                      />
                       <Tooltip 
+                        contentStyle={{
+                          backgroundColor: '#1f2937',
+                          border: '1px solid #374151',
+                          borderRadius: '8px',
+                          color: '#f9fafb'
+                        }}
+                        labelStyle={{
+                          color: '#f9fafb',
+                          fontWeight: '600'
+                        }}
                         formatter={(value: any, name: string) => {
                           const runId = name.replace('run_', '');
                           const run = runs.find(r => r.id === parseInt(runId));
-                          return [formatCurrency(value), run?.run_name || `Run ${runId}`];
+                          const displayName = run?.run_description 
+                            ? `Run ${runId} - ${run.run_description}`
+                            : run?.run_name || `Run ${runId}`;
+                          return [formatCurrency(value), displayName];
                         }}
                         labelFormatter={(label) => `Date: ${label}`}
                       />
-                      {selectedRuns.map((runId, index) => {
+                      {selectedRuns.sort((a, b) => a - b).map((runId, index) => {
                         const run = runs.find(r => r.id === runId);
+                        const colors = [
+                          { positive: '#10b981', negative: '#ef4444' }, // Green/Red
+                          { positive: '#3b82f6', negative: '#dc2626' }, // Blue/Red
+                          { positive: '#8b5cf6', negative: '#b91c1c' }, // Purple/Red
+                          { positive: '#f59e0b', negative: '#dc2626' }, // Amber/Red
+                          { positive: '#06b6d4', negative: '#dc2626' }, // Cyan/Red
+                        ];
+                        const colorScheme = colors[index % colors.length];
                         
                         return (
                           <Bar
                             key={runId}
                             dataKey={`run_${runId}`}
-                            name={`run_${runId}`}
-                            fill="#8884d8"
+                            name={run?.run_description 
+                              ? `Run ${runId} - ${run.run_description}`
+                              : run?.run_name || `Run ${runId}`}
+                            fill={colorScheme.positive}
+                            radius={[2, 2, 0, 0]}
                           >
                             {(() => {
-                              // Get the combined data to create cells
-                              const allDates = new Set<string>();
-                              selectedRuns.forEach(id => {
-                                const data = dailyPnlData[id] || [];
-                                data.forEach(day => allDates.add(day.date));
-                              });
-                              const sortedDates = Array.from(allDates).sort();
+                              const chartData = getFilteredChartData();
                               
-                              return sortedDates.map((date, dateIndex) => {
-                                const runData = dailyPnlData[runId] || [];
-                                const dayData = runData.find(day => day.date === date);
-                                const value = dayData ? dayData.pnl : 0;
-                                const color = value >= 0 ? '#22c55e' : '#ef4444';
+                              return chartData.map((dataPoint, dateIndex) => {
+                                const value = dataPoint[`run_${runId}`] || 0;
+                                const color = value >= 0 ? colorScheme.positive : colorScheme.negative;
                                 
                                 return (
                                   <Cell key={`cell-${runId}-${dateIndex}`} fill={color} />
@@ -814,6 +967,7 @@ export default function AnalysisPage() {
                 </div>
               </CardContent>
             </Card>
+            </div>
           ) : (
             <Card>
               <CardContent className="py-8 text-center">
@@ -826,7 +980,18 @@ export default function AnalysisPage() {
       
       {/* Run Details Dialogs */}
       {runs.map((run) => (
-        <RunDetailsDialog key={run.id} run={run} />
+        <RunDetailsDialog 
+          key={run.id} 
+          run={run}
+          runDailyPnl={dailyPnlData[run.id] || []}
+          runParameters={parameters[run.id] || []}
+          isOpen={viewingRunDetails === run.id}
+          onClose={() => setViewingRunDetails(null)}
+          onSaveDescription={handleSaveDescription}
+          onDescriptionChange={handleDescriptionChange}
+          localDescription={localDescription}
+          savingDescription={savingDescription}
+        />
       ))}
     </div>
   );

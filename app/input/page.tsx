@@ -10,6 +10,7 @@ import { Loader2, Upload, CheckCircle, XCircle } from 'lucide-react';
 
 export default function InputPage() {
   const [rawData, setRawData] = useState('');
+  const [runDescription, setRunDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<{
     success: boolean;
@@ -46,7 +47,7 @@ export default function InputPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ rawData }),
+        body: JSON.stringify({ rawData, runDescription }),
       });
 
       const data = await response.json();
@@ -60,6 +61,7 @@ export default function InputPage() {
           summary: data.summary
         });
         setRawData(''); // Clear the form
+        setRunDescription(''); // Clear the description
       } else {
         setResult({
           success: false,
@@ -96,13 +98,24 @@ export default function InputPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
+              <Label htmlFor="runDescription" className="text-white">Run Description (Optional)</Label>
+              <Textarea
+                id="runDescription"
+                placeholder="Enter a description for this run (e.g., 'Optimized Q4 parameters', 'Conservative approach')..."
+                value={runDescription}
+                onChange={(e) => setRunDescription(e.target.value)}
+                className="min-h-[80px] bg-gray-900 border-gray-600 text-white placeholder-gray-400"
+              />
+            </div>
+            
+            <div className="space-y-2">
               <Label htmlFor="rawData" className="text-white">Strategy Run Data</Label>
               <Textarea
                 id="rawData"
                 placeholder="Paste your raw strategy data here..."
                 value={rawData}
                 onChange={(e) => setRawData(e.target.value)}
-                className="min-h-[400px] font-mono text-sm bg-gray-900 border-gray-600 text-white placeholder-gray-400"
+                className="min-h-[200px] max-h-[300px] overflow-y-auto font-mono text-sm bg-gray-900 border-gray-600 text-white placeholder-gray-400"
               />
             </div>
 

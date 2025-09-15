@@ -5,7 +5,7 @@ import '@/lib/init-db';
 
 export async function POST(request: NextRequest) {
   try {
-    const { rawData } = await request.json();
+    const { rawData, runDescription } = await request.json();
 
     if (!rawData || typeof rawData !== 'string') {
       return NextResponse.json(
@@ -22,6 +22,11 @@ export async function POST(request: NextRequest) {
         { error: 'Unable to parse the provided data. No suitable parser found.' },
         { status: 400 }
       );
+    }
+
+    // Add the description if provided
+    if (runDescription) {
+      parsedData.runDescription = runDescription;
     }
 
     // Get or create strategy
@@ -43,12 +48,13 @@ export async function POST(request: NextRequest) {
     const runResult = await db.execute({
       sql: `
         INSERT INTO strategy_runs 
-        (strategy_id, run_name, net_pnl, total_trades, win_rate, profit_factor, max_drawdown, sharpe_ratio)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (strategy_id, run_name, run_description, net_pnl, total_trades, win_rate, profit_factor, max_drawdown, sharpe_ratio)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       args: [
         strategyId,
         parsedData.runName || null,
+        parsedData.runDescription || null,
         parsedData.netPnl,
         parsedData.totalTrades || null,
         parsedData.winRate || null,

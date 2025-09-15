@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
       SELECT 
         sr.id,
         sr.run_name,
+        sr.run_description,
         sr.net_pnl,
         sr.total_trades,
         sr.win_rate,
@@ -41,6 +42,36 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching runs:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const { runId, runDescription } = await request.json();
+
+    if (!runId) {
+      return NextResponse.json(
+        { error: 'Run ID is required' },
+        { status: 400 }
+      );
+    }
+
+    await db.execute({
+      sql: 'UPDATE strategy_runs SET run_description = ? WHERE id = ?',
+      args: [runDescription || null, parseInt(runId)]
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Run description updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Error updating run description:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
