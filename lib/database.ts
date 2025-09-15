@@ -78,6 +78,51 @@ export async function initializeDatabase() {
       )
     `);
 
+    // Detailed events table - for TP near misses, fill near misses, SL adjustments
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS strategy_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id INTEGER NOT NULL,
+        event_type TEXT NOT NULL CHECK (event_type IN ('tp_near_miss', 'fill_near_miss', 'sl_adjustment')),
+        date DATE NOT NULL,
+        time TIME NOT NULL,
+        trade_id TEXT,
+        direction TEXT,
+        target TEXT,
+        closest_distance TEXT,
+        reason TEXT,
+        trigger TEXT,
+        adjustment TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (run_id) REFERENCES strategy_runs (id) ON DELETE CASCADE
+      )
+    `);
+
+    // Detailed trade summaries table - for trade analysis
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS strategy_trade_summaries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        run_id INTEGER NOT NULL,
+        trade_id TEXT NOT NULL,
+        date DATE NOT NULL,
+        time TIME NOT NULL,
+        direction TEXT NOT NULL,
+        line TEXT NOT NULL,
+        entry_price REAL NOT NULL,
+        high_price REAL NOT NULL,
+        low_price REAL NOT NULL,
+        max_profit REAL NOT NULL,
+        max_loss REAL NOT NULL,
+        actual_pnl REAL NOT NULL,
+        bars INTEGER NOT NULL,
+        max_profit_vs_target REAL,
+        max_loss_vs_stop REAL,
+        profit_efficiency REAL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (run_id) REFERENCES strategy_runs (id) ON DELETE CASCADE
+      )
+    `);
+
     // Add description column to existing strategy_runs table if it doesn't exist
     try {
       await db.execute(`

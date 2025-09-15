@@ -23,6 +23,48 @@ export interface ParsedRunData {
     value: number;
     description?: string;
   }>;
+  detailedEvents?: {
+    tpNearMisses: Array<{
+      date: string;
+      time: string;
+      tradeId: string;
+      direction: string;
+      target: string;
+      closestDistance: string;
+      reason: string;
+    }>;
+    fillNearMisses: Array<{
+      date: string;
+      time: string;
+      direction: string;
+      closestDistance: string;
+    }>;
+    slAdjustments: Array<{
+      date: string;
+      time: string;
+      tradeId: string;
+      direction: string;
+      trigger: string;
+      adjustment: string;
+    }>;
+  };
+  detailedTrades?: Array<{
+    date: string;
+    time: string;
+    tradeId: string;
+    direction: 'LONG' | 'SHORT';
+    line: string;
+    entry: number;
+    high: number;
+    low: number;
+    maxProfit: number;
+    maxLoss: number;
+    actualPnl: number;
+    bars: number;
+    maxProfitVsTarget: number;
+    maxLossVsStop: number;
+    profitEfficiency: number;
+  }>;
 }
 
 export abstract class BaseStrategyParser {

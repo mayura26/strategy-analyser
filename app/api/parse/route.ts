@@ -99,6 +99,62 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Insert detailed events
+    if (parsedData.detailedEvents) {
+      // Insert TP near misses
+      for (const event of parsedData.detailedEvents.tpNearMisses) {
+        await db.execute({
+          sql: `
+            INSERT INTO strategy_events (run_id, event_type, date, time, trade_id, direction, target, closest_distance, reason)
+            VALUES (?, 'tp_near_miss', ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [runId, event.date, event.time, event.tradeId, event.direction, event.target, event.closestDistance, event.reason]
+        });
+      }
+
+      // Insert fill near misses
+      for (const event of parsedData.detailedEvents.fillNearMisses) {
+        await db.execute({
+          sql: `
+            INSERT INTO strategy_events (run_id, event_type, date, time, direction, closest_distance)
+            VALUES (?, 'fill_near_miss', ?, ?, ?, ?)
+          `,
+          args: [runId, event.date, event.time, event.direction, event.closestDistance]
+        });
+      }
+
+      // Insert SL adjustments
+      for (const event of parsedData.detailedEvents.slAdjustments) {
+        await db.execute({
+          sql: `
+            INSERT INTO strategy_events (run_id, event_type, date, time, trade_id, direction, trigger, adjustment)
+            VALUES (?, 'sl_adjustment', ?, ?, ?, ?, ?, ?)
+          `,
+          args: [runId, event.date, event.time, event.tradeId, event.direction, event.trigger, event.adjustment]
+        });
+      }
+    }
+
+    // Insert detailed trade summaries
+    if (parsedData.detailedTrades) {
+      for (const trade of parsedData.detailedTrades) {
+        await db.execute({
+          sql: `
+            INSERT INTO strategy_trade_summaries (
+              run_id, trade_id, date, time, direction, line, entry_price, high_price, low_price,
+              max_profit, max_loss, actual_pnl, bars, max_profit_vs_target, max_loss_vs_stop, profit_efficiency
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+          args: [
+            runId, trade.tradeId, trade.date, trade.time, trade.direction, trade.line,
+            trade.entry, trade.high, trade.low, trade.maxProfit, trade.maxLoss, trade.actualPnl,
+            trade.bars, trade.maxProfitVsTarget, trade.maxLossVsStop, trade.profitEfficiency
+          ]
+        });
+      }
+    }
+
     return NextResponse.json({
       success: true,
       runId: Number(runId),

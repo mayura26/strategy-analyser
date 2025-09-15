@@ -59,6 +59,10 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     // Extract custom metrics
     const customMetrics = this.extractCustomMetrics(rawData, tradeData);
 
+    // Extract detailed events and trade summaries
+    const detailedEvents = this.extractDetailedEvents(rawData);
+    const detailedTrades = this.extractDetailedTradeSummaries(rawData);
+
     const result = {
       strategyName: this.strategyName,
       runName: strategyName,
@@ -70,7 +74,9 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       sharpeRatio: 0, // Would need more data to calculate
       dailyPnl,
       parameters,
-      customMetrics
+      customMetrics,
+      detailedEvents,
+      detailedTrades
     };
     
     console.log('=== FINAL RESULT ===');
@@ -356,6 +362,9 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
         const maxProfitDollars = summary.maxProfit * pointValue;
         const maxLossDollars = summary.maxLoss * pointValue;
 
+        // Normalize line name for better consistency
+        const normalizedLine = this.normalizeLineName(summary.line);
+
         const trade = {
           date: tradeFill.date,
           time: tradeFill.time,
@@ -366,7 +375,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
           maxProfit: maxProfitDollars,
           maxLoss: maxLossDollars,
           bars: summary.bars,
-          line: summary.line,
+          line: normalizedLine,
           barsSinceLastTrade: tradeFill.barsSinceLastTrade,
           quantity: tradeData.quantity,
           points: tradeData.points,
@@ -438,7 +447,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     return maxDrawdown;
   }
 
-  private extractCustomMetrics(rawData: string, tradeData: Array<{ pnl: number; maxProfit: number; maxLoss: number; bars: number; slAdjustments: number; nearMisses: number; quantity: number; points: number }>): Array<{ name: string; value: number; description?: string }> {
+  private extractCustomMetrics(rawData: string, tradeData: Array<{ pnl: number; maxProfit: number; maxLoss: number; bars: number; slAdjustments: number; nearMisses: number; quantity: number; points: number; line: string }>): Array<{ name: string; value: number; description?: string }> {
     const metrics: Array<{ name: string; value: number; description?: string }> = [];
 
     // Helper function to ensure finite numbers
@@ -446,14 +455,28 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       return isFinite(value) ? value : defaultValue;
     };
 
-    // Count near misses and SL adjustments from trade data
-    const totalNearMisses = tradeData.reduce((sum, trade) => sum + trade.nearMisses, 0);
+    // Count different types of near misses
     const totalSlAdjustments = tradeData.reduce((sum, trade) => sum + trade.slAdjustments, 0);
     
+    // Count TP Near Misses (associated with specific trades)
+    const tpNearMisses = (rawData.match(/\[TP NEAR MISS \(ID: \d+\)\]/g) || []).length;
+    
+    // Count General Near Misses (not associated with specific trades)
+    const generalNearMisses = (rawData.match(/\[NEAR MISS\]/g) || []).length;
+    
+    // Total near misses from trade data (should match TP near misses)
+    const tradeNearMisses = tradeData.reduce((sum, trade) => sum + trade.nearMisses, 0);
+    
     metrics.push({
-      name: 'Near Misses',
-      value: ensureFinite(totalNearMisses),
-      description: 'Number of near miss trades'
+      name: 'TP Near Misses',
+      value: ensureFinite(tpNearMisses),
+      description: 'Number of take profit near misses'
+    });
+
+    metrics.push({
+      name: 'General Near Misses',
+      value: ensureFinite(generalNearMisses),
+      description: 'Number of general near misses'
     });
 
     metrics.push({
@@ -467,54 +490,31 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     const avgTradeDuration = tradeData.length > 0 ? totalBars / tradeData.length : 0;
     metrics.push({
       name: 'Average Trade Duration',
-      value: ensureFinite(avgTradeDuration),
+      value: Math.round(ensureFinite(avgTradeDuration) * 100) / 100, // Round to 2 decimal places
       description: 'Average trade duration in bars'
     });
 
-    // Calculate average quantity and points
-    const totalQuantity = tradeData.reduce((sum, trade) => sum + trade.quantity, 0);
-    const avgQuantity = tradeData.length > 0 ? totalQuantity / tradeData.length : 0;
-    metrics.push({
-      name: 'Average Quantity',
-      value: ensureFinite(avgQuantity),
-      description: 'Average quantity per trade'
-    });
-
-    const totalPoints = tradeData.reduce((sum, trade) => sum + trade.points, 0);
-    const avgPoints = tradeData.length > 0 ? totalPoints / tradeData.length : 0;
-    metrics.push({
-      name: 'Average Points',
-      value: ensureFinite(avgPoints),
-      description: 'Average points per trade'
-    });
-
-    // Calculate best and worst trades (only if we have trades)
+    // Calculate consecutive losses and wins (only if we have trades)
     if (tradeData.length > 0) {
-      const bestTrade = Math.max(...tradeData.map(t => t.pnl));
-      const worstTrade = Math.min(...tradeData.map(t => t.pnl));
-      
-      metrics.push({
-        name: 'Best Trade',
-        value: ensureFinite(bestTrade),
-        description: 'Best single trade P&L'
-      });
-
-      metrics.push({
-        name: 'Worst Trade',
-        value: ensureFinite(worstTrade),
-        description: 'Worst single trade P&L'
-      });
-
-      // Count consecutive losses
+      // Count consecutive losses and wins
       let maxConsecutiveLosses = 0;
+      let maxConsecutiveWins = 0;
       let currentConsecutiveLosses = 0;
+      let currentConsecutiveWins = 0;
       
       for (const trade of tradeData) {
         if (trade.pnl < 0) {
           currentConsecutiveLosses++;
           maxConsecutiveLosses = Math.max(maxConsecutiveLosses, currentConsecutiveLosses);
-        } else {
+          currentConsecutiveWins = 0;
+        } else if (trade.pnl > 0) {
+          currentConsecutiveWins++;
+          maxConsecutiveWins = Math.max(maxConsecutiveWins, currentConsecutiveWins);
           currentConsecutiveLosses = 0;
+        } else {
+          // For break-even trades, reset both counters
+          currentConsecutiveLosses = 0;
+          currentConsecutiveWins = 0;
         }
       }
 
@@ -523,8 +523,299 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
         value: ensureFinite(maxConsecutiveLosses),
         description: 'Maximum consecutive losing trades'
       });
+
+      metrics.push({
+        name: 'Max Consecutive Wins',
+        value: ensureFinite(maxConsecutiveWins),
+        description: 'Maximum consecutive winning trades'
+      });
+    }
+
+    // Calculate line-specific statistics
+    const lineStats = this.calculateLineStatistics(tradeData);
+    
+    // Add line-specific metrics to the main metrics array
+    for (const [lineName, stats] of lineStats.entries()) {
+      metrics.push({
+        name: `${lineName} - Total Trades`,
+        value: ensureFinite(stats.totalTrades),
+        description: `Total trades executed on ${lineName}`
+      });
+
+      metrics.push({
+        name: `${lineName} - Win Rate`,
+        value: ensureFinite(stats.winRate),
+        description: `Win rate for trades on ${lineName}`
+      });
+
+      metrics.push({
+        name: `${lineName} - Net PNL`,
+        value: ensureFinite(stats.netPnl),
+        description: `Net P&L for trades on ${lineName}`
+      });
+
+      metrics.push({
+        name: `${lineName} - Avg PNL`,
+        value: ensureFinite(stats.avgPnl),
+        description: `Average P&L per trade on ${lineName}`
+      });
+
+      metrics.push({
+        name: `${lineName} - Gross Profit`,
+        value: ensureFinite(stats.grossProfit),
+        description: `Total profit from winning trades on ${lineName}`
+      });
+
+      metrics.push({
+        name: `${lineName} - Gross Loss`,
+        value: ensureFinite(stats.grossLoss),
+        description: `Total loss from losing trades on ${lineName}`
+      });
+
+      // Calculate profit factor for this line
+      const profitFactor = stats.grossLoss > 0 ? stats.grossProfit / stats.grossLoss : 0;
+      metrics.push({
+        name: `${lineName} - Profit Factor`,
+        value: Math.round(ensureFinite(profitFactor) * 100) / 100, // Round to 2 decimal places
+        description: `Profit factor for trades on ${lineName}`
+      });
     }
 
     return metrics;
+  }
+
+  private calculateLineStatistics(tradeData: Array<{ pnl: number; line: string }>): Map<string, { 
+    totalTrades: number; 
+    winningTrades: number; 
+    losingTrades: number; 
+    winRate: number; 
+    netPnl: number; 
+    avgPnl: number;
+    grossProfit: number;
+    grossLoss: number;
+  }> {
+    const lineStatsMap = new Map<string, { 
+      totalTrades: number; 
+      winningTrades: number; 
+      losingTrades: number; 
+      winRate: number; 
+      netPnl: number; 
+      avgPnl: number;
+      grossProfit: number;
+      grossLoss: number;
+    }>();
+
+    // Group trades by line
+    for (const trade of tradeData) {
+      const lineName = trade.line;
+      
+      if (!lineStatsMap.has(lineName)) {
+        lineStatsMap.set(lineName, {
+          totalTrades: 0,
+          winningTrades: 0,
+          losingTrades: 0,
+          winRate: 0,
+          netPnl: 0,
+          avgPnl: 0,
+          grossProfit: 0,
+          grossLoss: 0
+        });
+      }
+
+      const stats = lineStatsMap.get(lineName)!;
+      stats.totalTrades++;
+      stats.netPnl += trade.pnl;
+
+      if (trade.pnl > 0) {
+        stats.winningTrades++;
+        stats.grossProfit += trade.pnl;
+      } else if (trade.pnl < 0) {
+        stats.losingTrades++;
+        stats.grossLoss += Math.abs(trade.pnl);
+      }
+    }
+
+    // Calculate derived metrics
+    for (const [lineName, stats] of lineStatsMap.entries()) {
+      stats.winRate = stats.totalTrades > 0 ? Math.round((stats.winningTrades / stats.totalTrades) * 10000) / 10000 : 0; // Round to 4 decimal places
+      stats.avgPnl = stats.totalTrades > 0 ? Math.round((stats.netPnl / stats.totalTrades) * 100) / 100 : 0; // Round to 2 decimal places
+      stats.netPnl = Math.round(stats.netPnl * 100) / 100; // Round to 2 decimal places
+      stats.grossProfit = Math.round(stats.grossProfit * 100) / 100; // Round to 2 decimal places
+      stats.grossLoss = Math.round(stats.grossLoss * 100) / 100; // Round to 2 decimal places
+    }
+
+    return lineStatsMap;
+  }
+
+  private normalizeLineName(lineName: string): string {
+    // Clean up the line name by removing extra spaces and standardizing format
+    return lineName.trim().replace(/\s+/g, ' ');
+  }
+
+  private extractDetailedEvents(rawData: string): {
+    tpNearMisses: Array<{
+      date: string;
+      time: string;
+      tradeId: string;
+      direction: string;
+      target: string;
+      closestDistance: string;
+      reason: string;
+    }>;
+    fillNearMisses: Array<{
+      date: string;
+      time: string;
+      direction: string;
+      closestDistance: string;
+    }>;
+    slAdjustments: Array<{
+      date: string;
+      time: string;
+      tradeId: string;
+      direction: string;
+      trigger: string;
+      adjustment: string;
+    }>;
+  } {
+    const events = {
+      tpNearMisses: [] as Array<{
+        date: string;
+        time: string;
+        tradeId: string;
+        direction: string;
+        target: string;
+        closestDistance: string;
+        reason: string;
+      }>,
+      fillNearMisses: [] as Array<{
+        date: string;
+        time: string;
+        direction: string;
+        closestDistance: string;
+      }>,
+      slAdjustments: [] as Array<{
+        date: string;
+        time: string;
+        tradeId: string;
+        direction: string;
+        trigger: string;
+        adjustment: string;
+      }>
+    };
+
+    // Extract TP Near Misses
+    const tpNearMissPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TP NEAR MISS \(ID: (\d+)\)\]\s+(Long|Short)\s+TP near miss \(([^)]+)\) at ([^-]+) - closest distance: ([\d.]+)pts \(([^)]+)\)/g;
+    let match;
+    while ((match = tpNearMissPattern.exec(rawData)) !== null) {
+      const [, date, time, tradeId, direction, target, timestamp, closestDistance, reason] = match;
+      events.tpNearMisses.push({
+        date,
+        time,
+        tradeId,
+        direction,
+        target,
+        closestDistance,
+        reason
+      });
+    }
+
+    // Extract Fill Near Misses (general near misses)
+    const fillNearMissPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[NEAR MISS\]\s+(Long|Short)\s+near miss at ([^-]+) - closest distance: ([\d.]+)pts/g;
+    while ((match = fillNearMissPattern.exec(rawData)) !== null) {
+      const [, date, time, direction, timestamp, closestDistance] = match;
+      events.fillNearMisses.push({
+        date,
+        time,
+        direction,
+        closestDistance
+      });
+    }
+
+    // Extract SL Adjustments
+    const slAdjustmentPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE SL \(ID: (\d+)\)\]\s+(Long|Short)\s+position: Price reached (X[12]) \(([^)]+)\), adjusting SL to (L[12]) \(([^)]+)\)/g;
+    while ((match = slAdjustmentPattern.exec(rawData)) !== null) {
+      const [, date, time, tradeId, direction, trigger, triggerValue, adjustment, adjustmentValue] = match;
+      events.slAdjustments.push({
+        date,
+        time,
+        tradeId,
+        direction,
+        trigger: `${trigger} (${triggerValue})`,
+        adjustment: `${adjustment} (${adjustmentValue})`
+      });
+    }
+
+    return events;
+  }
+
+  private extractDetailedTradeSummaries(rawData: string): Array<{
+    date: string;
+    time: string;
+    tradeId: string;
+    direction: 'LONG' | 'SHORT';
+    line: string;
+    entry: number;
+    high: number;
+    low: number;
+    maxProfit: number;
+    maxLoss: number;
+    actualPnl: number;
+    bars: number;
+    // Analysis fields
+    maxProfitVsTarget: number; // How far max profit was from TP target
+    maxLossVsStop: number; // How far max loss was from SL target
+    profitEfficiency: number; // Actual PNL vs max profit achieved
+  }> {
+    const trades = [];
+
+    // Extract trade summaries with detailed analysis - fixed case sensitivity
+    const tradeSummaryPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE SUMMARY \(ID: (\d+)\)\]\s+(Long|Short)\s*\|\s*Line:\s*([^|]+)\s*\|\s*Entry:\s*([\d.]+)\s*\|\s*High:\s*([\d.]+)\s*\|\s*Low:\s*([\d.]+)\s*\|\s*Max Profit:\s*([+-]?[\d.]+)pts\s*\|\s*Max Loss:\s*([+-]?[\d.]+)pts\s*\|\s*Bars:\s*(\d+)/g;
+    
+    let match;
+    while ((match = tradeSummaryPattern.exec(rawData)) !== null) {
+      const [, date, time, tradeId, direction, line, entryStr, highStr, lowStr, maxProfitStr, maxLossStr, barsStr] = match;
+      
+      // Get actual PNL for this trade
+      const pnlPattern = new RegExp(`${date}.*\\[PNL UPDATE \\(ID: ${tradeId}\\)\\].*COMPLETED TRADE PnL: \\$([+-]?[\\d.]+)`, 'g');
+      const pnlMatch = pnlPattern.exec(rawData);
+      const actualPnl = pnlMatch ? parseFloat(pnlMatch[1]) : 0;
+
+      // Get TP and SL targets from parameters (assuming 17pts for both)
+      const tpTarget = 17; // Full Take Profit from parameters
+      const slTarget = 17; // Full Stop Loss from parameters
+
+      const entry = parseFloat(entryStr);
+      const high = parseFloat(highStr);
+      const low = parseFloat(lowStr);
+      const maxProfit = parseFloat(maxProfitStr);
+      const maxLoss = parseFloat(maxLossStr);
+      const bars = parseInt(barsStr);
+
+      // Calculate analysis metrics
+      const maxProfitVsTarget = maxProfit - tpTarget; // How much more profit could have been made
+      const maxLossVsStop = Math.abs(maxLoss) - slTarget; // How much more loss was taken than stop
+      const profitEfficiency = maxProfit > 0 ? (actualPnl / (maxProfit * 5)) : 0; // 5 is point value
+
+      trades.push({
+        date,
+        time,
+        tradeId,
+        direction: direction as 'LONG' | 'SHORT',
+        line: line.trim(),
+        entry,
+        high,
+        low,
+        maxProfit,
+        maxLoss,
+        actualPnl,
+        bars,
+        maxProfitVsTarget,
+        maxLossVsStop,
+        profitEfficiency
+      });
+    }
+
+
+    return trades;
   }
 }
