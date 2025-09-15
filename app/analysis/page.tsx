@@ -394,6 +394,44 @@ export default function AnalysisPage() {
     return groupedCategories;
   };
 
+  const compareParameters = (runIds: number[]) => {
+    if (runIds.length < 2) return { changed: [], unchanged: [] };
+
+    const allParameters: { [paramName: string]: { [runId: number]: string } } = {};
+    
+    // Collect all parameters from all runs
+    runIds.forEach(runId => {
+      const runParams = parameters[runId] || [];
+      runParams.forEach(param => {
+        if (!allParameters[param.parameter_name]) {
+          allParameters[param.parameter_name] = {};
+        }
+        allParameters[param.parameter_name][runId] = param.parameter_value;
+      });
+    });
+
+    const changed: string[] = [];
+    const unchanged: string[] = [];
+
+    // Compare each parameter across runs
+    Object.entries(allParameters).forEach(([paramName, valuesByRun]) => {
+      const uniqueValues = new Set(Object.values(valuesByRun));
+      if (uniqueValues.size > 1) {
+        changed.push(paramName);
+      } else {
+        unchanged.push(paramName);
+      }
+    });
+
+    return { changed, unchanged };
+  };
+
+  const getParameterValue = (runId: number, paramName: string) => {
+    const runParams = parameters[runId] || [];
+    const param = runParams.find(p => p.parameter_name === paramName);
+    return param ? param.parameter_value : 'N/A';
+  };
+
   const handleViewRunDetails = async (runId: number) => {
     setViewingRunDetails(runId);
     
@@ -715,6 +753,62 @@ export default function AnalysisPage() {
                 </Card>
               )}
 
+              {/* Parameter Changes Summary */}
+              {selectedRuns.length > 1 && (() => {
+                const paramComparison = compareParameters(selectedRuns);
+                return (
+                  <Card className="bg-gray-800 border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <Settings className="h-5 w-5" />
+                        Parameter Changes Summary
+                      </CardTitle>
+                      <CardDescription className="text-gray-300">
+                        Overview of parameter differences between selected runs
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-red-400 flex items-center gap-2">
+                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                            Changed Parameters ({paramComparison.changed.length})
+                          </h4>
+                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {paramComparison.changed.length > 0 ? (
+                              paramComparison.changed.map((paramName, index) => (
+                                <div key={index} className="text-sm text-red-300 bg-red-900/20 px-2 py-1 rounded border border-red-800">
+                                  {paramName}
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-400 italic">No parameter changes detected</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-green-400 flex items-center gap-2">
+                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                            Unchanged Parameters ({paramComparison.unchanged.length})
+                          </h4>
+                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {paramComparison.unchanged.length > 0 ? (
+                              paramComparison.unchanged.map((paramName, index) => (
+                                <div key={index} className="text-sm text-green-300 bg-green-900/20 px-2 py-1 rounded border border-green-800">
+                                  {paramName}
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-400 italic">No unchanged parameters</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })()}
+
               {/* Overlap Controls */}
               <Card className="bg-gray-800 border-gray-700">
                 <CardContent className="p-4">
@@ -800,19 +894,42 @@ export default function AnalysisPage() {
                         </div>
                       </div>
                       
-                      {runParameters.length > 0 && (
-                        <div>
-                          <h4 className="font-medium text-sm text-muted-foreground mb-2">Parameters</h4>
-                          <div className="space-y-1">
-                            {runParameters.map((param, index) => (
-                              <div key={index} className="flex justify-between text-sm">
-                                <span>{param.parameter_name}:</span>
-                                <span className="font-mono">{param.parameter_value}</span>
-                              </div>
-                            ))}
+                      {runParameters.length > 0 && (() => {
+                        const paramComparison = selectedRuns.length > 1 ? compareParameters(selectedRuns) : { changed: [], unchanged: [] };
+                        const changedParameters = runParameters.filter(param => 
+                          selectedRuns.length === 1 || paramComparison.changed.includes(param.parameter_name)
+                        );
+                        
+                        if (changedParameters.length === 0) {
+                          return (
+                            <div>
+                              <h4 className="font-medium text-sm text-muted-foreground mb-2">Parameters</h4>
+                              <p className="text-sm text-gray-400 italic">No parameter changes detected</p>
+                            </div>
+                          );
+                        }
+                        
+                        return (
+                          <div>
+                            <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                              {selectedRuns.length > 1 ? 'Changed Parameters' : 'Parameters'}
+                            </h4>
+                            <div className="space-y-1">
+                              {changedParameters.map((param, index) => (
+                                <div 
+                                  key={index} 
+                                  className="flex justify-between text-sm p-2 rounded bg-red-900/20 border border-red-800 text-red-300"
+                                >
+                                  <span className="font-semibold">
+                                    {param.parameter_name}:
+                                  </span>
+                                  <span className="font-mono">{param.parameter_value}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 );
