@@ -1,0 +1,111 @@
+Strategy 'MagicLinesScalper/362589826': An Enter() method to submit an entry order at '08/18/2025 12:36:00' has been ignored. Please search on the term 'Internal Order Handling Rules that Reduce Unwanted Positions' in the Help Guide for detailed explanation.
+Enabling NinjaScript strategy 'MagicLinesScalper/362589826' : On starting a real-time strategy - StartBehavior=WaitUntilFlatSynchronizeAccount EntryHandling=Unique entries EntriesPerDirection=1 StopTargetHandling=Per entry execution ErrorHandling=Stop strategy, cancel orders, close positions, ignore order rejections ExitOnSessionClose=True / triggering 30 seconds before close SetOrderQuantityBy=Strategy ConnectionLossHandling=Recalculate DisconnectDelaySeconds=10 CancelEntriesOnStrategyDisable=False CancelExitsOnStrategyDisable=False Calculate=On bar close IsUnmanaged=False MaxRestarts=4 in 5 minutes
+2025-09-01 11:59:30 PM MagicLinesScalper Settings [Playback101]
+2025-09-01 11:59:30 PM === MAIN PARAMETERS ===
+2025-09-01 11:59:30 PM Trade Quantity: 6 | Max Gain: $100 | Max Loss: $75
+2025-09-01 11:59:30 PM Max Consecutive Losses: 3 | Loss Cut Off: $60
+2025-09-01 11:59:30 PM Full Take Profit: 17pts | Full Stop Loss: 17pts
+2025-09-01 11:59:30 PM === ENTRY LOGIC ===
+2025-09-01 11:59:30 PM Min Distance From Line: 3pts | Max Distance From Line: 35pts
+2025-09-01 11:59:30 PM Entry Offset: 0.75pts | Line Cross Bar Count: 8
+2025-09-01 11:59:30 PM Upside Short Trades: True | Downside Long Trades: True
+2025-09-01 11:59:30 PM === POSITION MANAGEMENT ===
+2025-09-01 11:59:30 PM Dynamic Trim: True | Trim Percent: 50% | Trim Take Profit: 45pts
+2025-09-01 11:59:30 PM SL Adjustment: True | X1: 19pts | X2: 30pts
+2025-09-01 11:59:30 PM SL Levels - L1: -7.5pts | L2: 10pts
+2025-09-01 11:59:30 PM === TIME PARAMETERS ===
+2025-09-01 11:59:30 PM Start Time: 09:35 | End Time: 15:58
+2025-09-01 11:59:30 PM === PROTECTIVE FUNCTIONS ===
+2025-09-01 11:59:30 PM Trade Completion Protect: True
+2025-09-01 11:59:30 PM === RTH MAGIC LINES ===
+2025-09-01 11:59:30 PM Upside Levels: 0.6, 2.618, 4.262, 6.262, 7, 10.272, 11.618
+2025-09-01 11:59:30 PM Downside Levels: 2.618, 3.618, 8, 10.272, 11.618
+2025-09-01 11:59:30 PM Mini Mode: False | Instrument: MNQ
+2025-09-02 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23101.5 Low: 23049
+2025-09-02 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-09-02 9:36:00 AM ******** TRADING SESSION 1 (Main) ******** 
+2025-09-02 9:36:00 AM [TRADE FILL] SHORT FILLED: 23133.75 | Bars Since Last Trade: 330
+2025-09-02 9:39:00 AM [TRADE SUMMARY] Short | Line: CME_UP_0.600 | Entry: 23133.75 | High: 23162.00 | Low: 23115.25 | Max Profit: 18.50pts | Max Loss: 28.25pts | Bars: 4
+2025-09-02 9:51:00 AM [TRADE FILL] SHORT FILLED: 23239.75 | Bars Since Last Trade: 4
+2025-09-02 9:54:00 AM [Trade Completion]: Trigger not generated as trade completed on bar: 6677
+2025-09-02 9:57:00 AM [TRADE SUMMARY] Short | Line: CME_UP_2.618 | Entry: 23239.75 | High: 23261.00 | Low: 23216.25 | Max Profit: 23.50pts | Max Loss: 21.25pts | Bars: 9
+2025-09-02 1:00:00 PM [TRADE FILL] SHORT FILLED: 23133.75 | Bars Since Last Trade: 61
+2025-09-02 1:12:00 PM Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-09-02 1:19:00 PM [TP NEAR MISS] Short TP near miss (17.0pts target) at 13:11:30 - closest distance: 0.75pts (price moved away)
+2025-09-02 1:24:00 PM [TRADE SUMMARY] Short | Line: CME_UP_0.600 | Entry: 23133.75 | High: 23143.50 | Low: 23104.25 | Max Profit: 29.50pts | Max Loss: 9.75pts | Bars: 44
+2025-09-02 3:18:00 PM [TRADE FILL] SHORT FILLED: 23239.75 | Bars Since Last Trade: 38
+2025-09-02 3:45:00 PM [TRADE SUMMARY] Short | Line: CME_UP_2.618 | Entry: 23239.75 | High: 23261.25 | Low: 23219.25 | Max Profit: 20.50pts | Max Loss: 21.50pts | Bars: 47
+2025-09-03 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23431.75 Low: 23417
+2025-09-03 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-09-03 9:36:00 AM ******** TRADING SESSION 1 (Main) ******** 
+2025-09-03 9:36:00 AM [TRADE FILL] LONG FILLED: 23377.75 | Bars Since Last Trade: 217
+2025-09-03 9:39:00 AM [TP NEAR MISS] Long TP near miss (17.0pts target) at 09:37:30 - closest distance: 1.25pts (price moved away)
+2025-09-03 9:40:30 AM SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-09-03 9:51:00 AM [TRADE SUMMARY] Long | Line: CME_DOWN_3.618 | Entry: 23377.75 | High: 23413.75 | Low: 23369.75 | Max Profit: 36.00pts | Max Loss: 8.00pts | Bars: 26
+2025-09-03 10:03:00 AM [TRADE FILL] SHORT FILLED: 23441.25 | Bars Since Last Trade: 4
+2025-09-03 10:07:30 AM [TP NEAR MISS] Short TP near miss (17.0pts target) at 10:06:00 - closest distance: 0.75pts (price moved away)
+2025-09-03 10:09:00 AM [TRADE SUMMARY] Short | Line: CME_UP_0.600 | Entry: 23441.25 | High: 23461.00 | Low: 23425.00 | Max Profit: 16.25pts | Max Loss: 19.75pts | Bars: 8
+2025-09-03 10:24:00 AM [TRADE FILL] SHORT FILLED: 23471 | Bars Since Last Trade: 5
+2025-09-03 10:28:00 AM Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-09-03 10:30:00 AM Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-09-03 10:33:00 AM [TRADE SUMMARY] Short | Line: CME_UP_2.618 | Entry: 23471.00 | High: 23470.75 | Low: 23430.25 | Max Profit: 40.75pts | Max Loss: -0.25pts | Bars: 12
+2025-09-03 10:39:00 AM [TRADE FILL] SHORT FILLED: 23495.25 | Bars Since Last Trade: 2
+2025-09-03 10:45:00 AM [TRADE SUMMARY] Short | Line: CME_UP_4.262 | Entry: 23495.25 | High: 23515.50 | Low: 23486.25 | Max Profit: 9.00pts | Max Loss: 20.25pts | Bars: 6
+2025-09-03 11:24:00 AM [TRADE FILL] SHORT FILLED: 23471 | Bars Since Last Trade: 13
+2025-09-03 11:26:00 AM Short position: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-09-03 11:28:00 AM Short position: Price reached X2 (30), adjusting SL to L2 (10)
+2025-09-03 11:30:00 AM [TRADE SUMMARY] Short | Line: CME_UP_2.618 | Entry: 23471.00 | High: 23471.00 | Low: 23420.50 | Max Profit: 50.50pts | Max Loss: 0.00pts | Bars: 9
+2025-09-03 11:30:00 AM [NEAR MISS] Short near miss at 10:33:00 - closest distance: 0.25pts
+2025-09-03 12:48:00 PM [TRADE FILL] LONG FILLED: 23392.5 | Bars Since Last Trade: 27
+2025-09-03 12:57:30 PM SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-09-03 1:02:30 PM SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-09-03 1:04:00 PM [TP NEAR MISS] Short TP near miss (45.0pts target) at 11:29:00 - closest distance: 0.25pts (price moved away)
+2025-09-03 1:08:00 PM [TP NEAR MISS] Long TP near miss (45.0pts target) at 13:06:30 - closest distance: 0.75pts (price moved away)
+2025-09-03 1:12:00 PM [TRADE SUMMARY] Long | Line: CME_DOWN_2.618 | Entry: 23392.50 | High: 23452.25 | Low: 23390.50 | Max Profit: 59.75pts | Max Loss: 2.00pts | Bars: 41
+2025-09-03 1:42:00 PM [TRADE FILL] LONG FILLED: 23377.75 | Bars Since Last Trade: 15
+2025-09-03 1:48:00 PM [TRADE SUMMARY] Long | Line: CME_DOWN_3.618 | Entry: 23377.75 | High: 23385.25 | Low: 23346.25 | Max Profit: 7.50pts | Max Loss: 31.50pts | Bars: 7
+2025-09-03 3:45:00 PM [TRADE FILL] LONG FILLED: 23392.5 | Bars Since Last Trade: 39
+2025-09-03 3:50:30 PM SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-09-03 3:51:30 PM SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-09-03 3:57:00 PM [TRADE SUMMARY] Long | Line: CME_DOWN_2.618 | Entry: 23392.50 | High: 23438.25 | Low: 23398.00 | Max Profit: 45.75pts | Max Loss: -5.50pts | Bars: 22
+2025-09-03 3:57:00 PM [NEAR MISS] Long near miss at 13:42:00 - closest distance: 1.00pts
+2025-09-03 3:57:00 PM [TRADE FILL] SHORT FILLED: 23441.25 | Bars Since Last Trade: 2
+2025-09-03 4:03:00 PM [TRADE SUMMARY] Short | Line: CME_UP_0.600 | Entry: 23441.25 | High: 23469.25 | Low: 23431.50 | Max Profit: 9.75pts | Max Loss: 28.00pts | Bars: 9
+2025-09-04 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23487.25 Low: 23457.25
+2025-09-04 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-09-04 9:36:00 AM ******** TRADING SESSION 1 (Main) ******** 
+2025-09-04 10:27:00 AM [NEAR MISS] Long near miss at 10:18:00 - closest distance: 2.00pts
+2025-09-04 10:30:00 AM [TRADE FILL] SHORT FILLED: 23506 | Bars Since Last Trade: 224
+2025-09-04 10:35:30 AM [TP NEAR MISS] Short TP near miss (17.0pts target) at 10:34:00 - closest distance: 1.00pts (price moved away)
+2025-09-04 10:39:00 AM [TRADE SUMMARY] Short | Line: CME_UP_0.600 | Entry: 23506.00 | High: 23530.25 | Low: 23490.00 | Max Profit: 16.00pts | Max Loss: 24.25pts | Bars: 14
+2025-09-04 1:00:00 PM [NEAR MISS] Short near miss at 12:51:00 - closest distance: 1.25pts
+2025-09-04 1:03:00 PM [TRADE FILL] SHORT FILLED: 23566.5 | Bars Since Last Trade: 48
+2025-09-04 1:16:30 PM [TP NEAR MISS] Short TP near miss (17.0pts target) at 13:15:00 - closest distance: 0.50pts (price moved away)
+2025-09-04 1:51:00 PM [TRADE SUMMARY] Short | Line: CME_UP_2.618 | Entry: 23566.50 | High: 23586.00 | Low: 23550.00 | Max Profit: 16.50pts | Max Loss: 19.50pts | Bars: 91
+2025-09-04 2:33:00 PM [TRADE FILL] SHORT FILLED: 23615.75 | Bars Since Last Trade: 14
+2025-09-04 3:15:00 PM [TRADE SUMMARY] Short | Line: CME_UP_4.262 | Entry: 23615.75 | High: 23637.75 | Low: 23605.25 | Max Profit: 10.50pts | Max Loss: 22.00pts | Bars: 78
+2025-09-04 3:57:00 PM [TRADE FILL] SHORT FILLED: 23675.75 | Bars Since Last Trade: 14
+2025-09-04 4:03:00 PM [TRADE SUMMARY] Short | Line: CME_UP_6.262 | Entry: 23675.75 | High: 23680.50 | Low: 23658.50 | Max Profit: 17.25pts | Max Loss: 4.75pts | Bars: 9
+2025-09-05 9:30:30 AM [RTH Magic Lines] RTH Session Detected - High: 23902.5 Low: 23864.5
+2025-09-05 9:30:30 AM [RTH Magic Lines] Generated 7 upside levels and 5 downside levels
+2025-09-05 9:36:00 AM ******** TRADING SESSION 1 (Main) ******** 
+2025-09-05 10:06:00 AM [TRADE FILL] LONG FILLED: 23802.25 | Bars Since Last Trade: 341
+2025-09-05 10:12:00 AM [TRADE SUMMARY] Long | Line: CME_DOWN_2.618 | Entry: 23802.25 | High: 23812.75 | Low: 23772.00 | Max Profit: 10.50pts | Max Loss: 30.25pts | Bars: 10
+2025-09-05 10:12:00 AM [TRADE FILL] LONG FILLED: 23764.25 | Bars Since Last Trade: 0
+2025-09-05 10:18:00 AM [TRADE SUMMARY] Long | Line: CME_DOWN_3.618 | Entry: 23764.25 | High: 23763.50 | Low: 23726.75 | Max Profit: -0.75pts | Max Loss: 37.50pts | Bars: 5
+2025-09-05 11:09:00 AM [TRADE FILL] LONG FILLED: 23511.5 | Bars Since Last Trade: 17
+2025-09-05 11:12:00 AM SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-09-05 11:13:00 AM SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-09-05 11:15:00 AM [TRADE SUMMARY] Long | Line: CME_DOWN_10.272 | Entry: 23511.50 | High: 23575.00 | Low: 23505.00 | Max Profit: 63.50pts | Max Loss: 6.50pts | Bars: 8
+2025-09-05 12:03:00 PM [TRADE FILL] LONG FILLED: 23597.75 | Bars Since Last Trade: 17
+2025-09-05 12:09:00 PM SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-09-05 12:09:30 PM SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-09-05 12:15:00 PM [TRADE SUMMARY] Long | Line: CME_DOWN_8.000 | Entry: 23597.75 | High: 23657.75 | Low: 23596.00 | Max Profit: 60.00pts | Max Loss: 1.75pts | Bars: 21
+2025-09-05 12:36:00 PM [TRADE FILL] LONG FILLED: 23597.75 | Bars Since Last Trade: 10
+2025-09-05 12:39:00 PM SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-09-05 12:41:30 PM SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-09-05 12:42:00 PM [TRADE SUMMARY] Long | Line: CME_DOWN_8.000 | Entry: 23597.75 | High: 23648.00 | Low: 23597.50 | Max Profit: 50.25pts | Max Loss: 0.25pts | Bars: 8
+2025-09-05 1:42:00 PM [TRADE FILL] LONG FILLED: 23597.75 | Bars Since Last Trade: 21
+2025-09-05 1:59:00 PM SL Adjustment: Price reached X1 (19), adjusting SL to L1 (-7.5)
+2025-09-05 2:12:00 PM SL Adjustment: Price reached X2 (30), adjusting SL to L2 (10)
+2025-09-05 2:18:00 PM [TRADE SUMMARY] Long | Line: CME_DOWN_8.000 | Entry: 23597.75 | High: 23643.75 | Low: 23586.00 | Max Profit: 46.00pts | Max Loss: 11.75pts | Bars: 68
