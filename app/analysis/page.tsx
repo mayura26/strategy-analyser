@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Loader2,  Settings, Trash2, Eye} from 'lucide-react';
 import {  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Legend } from 'recharts';
 import { RunDetailsDialog } from '@/components/RunDetailsDialog';
+import { formatDateOnly, formatDateRange, getDateRangeFromStrings, findOverlappingDates } from '@/lib/date-utils';
 
 interface Strategy {
   id: number;
@@ -215,11 +216,12 @@ export default function AnalysisPage() {
       return 'Loading...';
     }
     
-    const dates = dailyPnl.map(day => new Date(day.date)).sort((a, b) => a.getTime() - b.getTime());
-    const startDate = dates[0];
-    const endDate = dates[dates.length - 1];
+    const dates = dailyPnl.map(day => day.date);
+    const dateRange = getDateRangeFromStrings(dates);
     
-    return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+    if (!dateRange) return 'Loading...';
+    
+    return formatDateRange(dateRange.start, dateRange.end);
   };
 
   const getDateRangeForRun = (runId: number) => {
@@ -228,11 +230,15 @@ export default function AnalysisPage() {
       return null;
     }
     
-    const dates = dailyPnl.map(day => new Date(day.date)).sort((a, b) => a.getTime() - b.getTime());
+    const dates = dailyPnl.map(day => day.date);
+    const dateRange = getDateRangeFromStrings(dates);
+    
+    if (!dateRange) return null;
+    
     return {
-      start: dates[0],
-      end: dates[dates.length - 1],
-      dates: dailyPnl.map(day => day.date)
+      start: dateRange.start,
+      end: dateRange.end,
+      dates: dates
     };
   };
 
@@ -242,23 +248,26 @@ export default function AnalysisPage() {
     const dateRanges = runIds.map(runId => getDateRangeForRun(runId)).filter(Boolean);
     if (dateRanges.length === 0) return null;
     
-    // Find the intersection of all date ranges
-    const latestStart = new Date(Math.max(...dateRanges.map(range => range!.start.getTime())));
-    const earliestEnd = new Date(Math.min(...dateRanges.map(range => range!.end.getTime())));
+    // Find the intersection of all date ranges using string comparison
+    const latestStart = dateRanges.reduce((latest, range) => 
+      range!.start > latest ? range!.start : latest, dateRanges[0]!.start
+    );
+    const earliestEnd = dateRanges.reduce((earliest, range) => 
+      range!.end < earliest ? range!.end : earliest, dateRanges[0]!.end
+    );
     
     if (latestStart > earliestEnd) {
       return null; // No overlap
     }
     
     // Find common dates across all runs
-    const commonDates = dateRanges[0]!.dates.filter(date => 
-      dateRanges.every(range => range!.dates.includes(date))
-    );
+    const allDateArrays = dateRanges.map(range => range!.dates);
+    const commonDates = findOverlappingDates(allDateArrays);
     
     return {
       start: latestStart,
       end: earliestEnd,
-      dates: commonDates.sort()
+      dates: commonDates
     };
   };
 
@@ -273,8 +282,8 @@ export default function AnalysisPage() {
     // Check if all runs have the same date range
     const firstRange = dateRanges[0]!;
     const allSameRange = dateRanges.every(range => 
-      range!.start.getTime() === firstRange.start.getTime() && 
-      range!.end.getTime() === firstRange.end.getTime()
+      range!.start === firstRange.start && 
+      range!.end === firstRange.end
     );
     
     if (!allSameRange) {
@@ -331,7 +340,7 @@ export default function AnalysisPage() {
     const sortedRuns = [...selectedRuns].sort((a, b) => a - b);
     
     return allDates.map(date => {
-      const dataPoint: any = { date };
+      const dataPoint: any = { date: formatDateOnly(date) };
       sortedRuns.forEach((runId, index) => {
         const run = runs.find(r => r.id === runId);
         const runData = dailyPnlData[runId] || [];
@@ -636,7 +645,7 @@ export default function AnalysisPage() {
                         </h3>
                         </div>
                         <div className="text-sm text-gray-400 space-y-1">
-                          <p>Submitted: {new Date(run.created_at).toLocaleDateString()}</p>
+                          <p>Submitted: {formatDateOnly(run.created_at)}</p>
                           <p>Data: {getDataDateRange(run.id)}</p>
                           {run.run_description && (
                             <p className="text-gray-300 text-xs leading-relaxed mt-2 p-2 bg-gray-700/30 rounded border border-gray-600">
@@ -859,7 +868,7 @@ export default function AnalysisPage() {
                         <CardTitle className="text-white">{run?.run_name || `Run ${runId}`}</CardTitle>
                       </div>
                       <CardDescription className="text-gray-300">
-                        {run && new Date(run.created_at).toLocaleDateString()}
+                        {run && formatDateOnly(run.created_at)}
                       </CardDescription>
                       {run?.run_description && (
                         <div className="mt-2 p-2 bg-gray-700/30 rounded border border-gray-600">

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { BarChart3, Settings, Calendar, Activity, Target } from 'lucide-react';
+import { formatDateOnly } from '@/lib/date-utils';
 
 interface Run {
   id: number;
@@ -103,7 +104,6 @@ export const RunDetailsDialog = ({
 
   const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
   const formatPercentage = (value: number) => `${(value * 100).toFixed(1)}%`;
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString();
 
   // Fetch data when dialog opens
   useEffect(() => {
@@ -241,7 +241,7 @@ export const RunDetailsDialog = ({
             <DialogTitle className="text-white text-base">{run.run_name || `Run ${run.id}`}</DialogTitle>
           </div>
           <p className="text-gray-300 text-xs">
-            Submitted: {formatDate(run.created_at)}
+            Submitted: {formatDateOnly(run.created_at)}
           </p>
           
           <div className="mt-2 p-2 bg-gray-700/50 rounded border border-gray-600">
@@ -582,7 +582,7 @@ export const RunDetailsDialog = ({
                     <tbody>
                       {runDailyPnl.map((day, index) => (
                         <tr key={index} className="border-b border-gray-600 hover:bg-gray-600/50">
-                          <td className="py-1 text-gray-300">{day.date}</td>
+                          <td className="py-1 text-gray-300">{formatDateOnly(day.date)}</td>
                           <td className={`py-1 text-right font-medium ${day.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                             {formatCurrency(day.pnl)}
                           </td>
