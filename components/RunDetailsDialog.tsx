@@ -101,6 +101,7 @@ export const RunDetailsDialog = ({
   const [detailedTrades, setDetailedTrades] = useState<DetailedTrade[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [loadingTrades, setLoadingTrades] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
   const formatPercentage = (value: number) => `${(value * 100).toFixed(1)}%`;
@@ -232,7 +233,7 @@ export const RunDetailsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl max-h-[90vh] bg-gray-800 border-gray-700 flex flex-col">
+      <DialogContent className={`${activeTab === 'lines' ? 'max-w-[95vw] sm:max-w-[95vw]' : 'max-w-4xl sm:max-w-4xl'} max-h-[90vh] bg-gray-800 border-gray-700 flex flex-col`}>
         <DialogHeader className="pb-2">
           <div className="flex items-center gap-2 mb-1">
             <Badge variant="outline" className="bg-blue-600/20 border-blue-500 text-blue-300 text-xs px-2 py-0.5">
@@ -298,7 +299,7 @@ export const RunDetailsDialog = ({
           </div>
         </DialogHeader>
         
-        <Tabs defaultValue="overview" className="w-full flex flex-col flex-1 min-h-0">
+        <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col flex-1 min-h-0">
           <TabsList className="grid w-full grid-cols-6 bg-gray-700 flex-shrink-0">
             <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
             <TabsTrigger value="lines" className="text-xs">Magic Lines</TabsTrigger>
@@ -359,34 +360,89 @@ export const RunDetailsDialog = ({
               <div className="text-center text-gray-400 py-4">Loading line statistics...</div>
             ) : Object.keys(lineMetrics).length > 0 ? (
               <div className="space-y-3">
-                {Object.entries(lineMetrics).map(([lineName, metrics]) => (
-                  <Card key={lineName} className="bg-gray-700 border-gray-600">
-              <CardContent className="p-3">
-                      <h3 className="text-white flex items-center gap-2 text-sm mb-3">
-                        <Target className="h-4 w-4" />
-                        {lineName}
-                      </h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        {metrics.map((metric, index) => {
-                          const metricType = metric.metric_name.split(' - ')[1];
-                          const isPercentage = metricType.includes('Rate');
-                          const isCurrency = metricType.includes('PNL') || metricType.includes('Profit') || metricType.includes('Loss');
+                <Card className="bg-gray-700 border-gray-600">
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-full">
+                        <thead className="bg-gray-800 border-b border-gray-600">
+                          <tr>
+                            <th className="text-left py-3 px-4 text-white font-medium text-sm">Magic Line</th>
+                            <th className="text-right py-3 px-4 text-white font-medium text-sm">Total Trades</th>
+                            <th className="text-right py-3 px-4 text-white font-medium text-sm">Win Rate</th>
+                            <th className="text-right py-3 px-4 text-white font-medium text-sm">Net PNL</th>
+                            <th className="text-right py-3 px-4 text-white font-medium text-sm">Avg PNL</th>
+                            <th className="text-right py-3 px-4 text-white font-medium text-sm">Gross Profit</th>
+                            <th className="text-right py-3 px-4 text-white font-medium text-sm">Gross Loss</th>
+                            <th className="text-right py-3 px-4 text-white font-medium text-sm">Profit Factor</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(lineMetrics)
+                            .sort(([a], [b]) => {
+                              // Extract direction and numeric values
+                              const aIsUp = a.includes('UP');
+                              const bIsUp = b.includes('UP');
+                              const aNum = parseFloat(a.replace(/[^\d.-]/g, ''));
+                              const bNum = parseFloat(b.replace(/[^\d.-]/g, ''));
+                              
+                              // First sort by direction: UP lines first, then DOWN lines
+                              if (aIsUp && !bIsUp) return -1;
+                              if (!aIsUp && bIsUp) return 1;
+                              
+                              // Within same direction, sort by numeric value
+                              return aNum - bNum;
+                            })
+                            .map(([lineName, metrics]) => {
+                              // Extract specific metrics for this line
+                              const totalTrades = metrics.find(m => m.metric_name.includes('Total Trades'))?.metric_value || 0;
+                              const winRate = metrics.find(m => m.metric_name.includes('Win Rate'))?.metric_value || 0;
+                              const netPnl = metrics.find(m => m.metric_name.includes('Net PNL'))?.metric_value || 0;
+                              const avgPnl = metrics.find(m => m.metric_name.includes('Avg PNL'))?.metric_value || 0;
+                              const grossProfit = metrics.find(m => m.metric_name.includes('Gross Profit'))?.metric_value || 0;
+                              const grossLoss = metrics.find(m => m.metric_name.includes('Gross Loss'))?.metric_value || 0;
+                              const profitFactor = metrics.find(m => m.metric_name.includes('Profit Factor'))?.metric_value || 0;
                           
                           return (
-                            <div key={index} className="flex justify-between items-center py-1.5 px-2 bg-gray-600 rounded">
-                              <span className="text-gray-300 text-xs">{metricType}</span>
-                              <span className="text-white font-mono bg-gray-800 px-1.5 py-0.5 rounded text-xs">
-                                {isPercentage ? formatPercentage(metric.metric_value) : 
-                                 isCurrency ? formatCurrency(metric.metric_value) : 
-                                 metric.metric_value}
+                                <tr key={lineName} className="border-b border-gray-600 hover:bg-gray-600/50">
+                                  <td className="py-3 px-4">
+                                    <div className="flex items-center gap-2">
+                                      <Target className="h-4 w-4 text-blue-400" />
+                                      <span className="text-white font-medium text-sm">{lineName}</span>
+                                    </div>
+                                  </td>
+                                  <td className="text-right py-3 px-4">
+                                    <span className="text-white font-mono text-sm">{totalTrades}</span>
+                                  </td>
+                                  <td className="text-right py-3 px-4">
+                                    <span className="text-white font-mono text-sm">{formatPercentage(winRate)}</span>
+                                  </td>
+                                  <td className="text-right py-3 px-4">
+                                    <span className={`font-mono text-sm ${netPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                      {formatCurrency(netPnl)}
+                                    </span>
+                                  </td>
+                                  <td className="text-right py-3 px-4">
+                                    <span className={`font-mono text-sm ${avgPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                      {formatCurrency(avgPnl)}
                               </span>
-                  </div>
+                                  </td>
+                                  <td className="text-right py-3 px-4">
+                                    <span className="text-green-400 font-mono text-sm">{formatCurrency(grossProfit)}</span>
+                                  </td>
+                                  <td className="text-right py-3 px-4">
+                                    <span className="text-red-400 font-mono text-sm">{formatCurrency(grossLoss)}</span>
+                                  </td>
+                                  <td className="text-right py-3 px-4">
+                                    <span className="text-white font-mono text-sm">{profitFactor.toFixed(2)}</span>
+                                  </td>
+                                </tr>
                           );
                         })}
+                        </tbody>
+                      </table>
                 </div>
               </CardContent>
             </Card>
-                ))}
           </div>
             ) : (
               <div className="text-center text-gray-400 py-4">No line-specific metrics available</div>
