@@ -61,6 +61,7 @@ export default function AnalysisPage() {
   const [viewingRunDetails, setViewingRunDetails] = useState<number | null>(null);
   const [expandedSections, setExpandedSections] = useState<{ [runId: number]: { dailyPnl: boolean; parameters: boolean } }>({});
   const [showOverlapOnly, setShowOverlapOnly] = useState(false);
+  const [showAllParameters, setShowAllParameters] = useState(false);
   const [dateRangeWarnings, setDateRangeWarnings] = useState<string[]>([]);
   const [editingDescription, setEditingDescription] = useState<{ [runId: number]: string }>({});
   const [localDescription, setLocalDescription] = useState<{ [runId: number]: string }>({});
@@ -948,81 +949,203 @@ export default function AnalysisPage() {
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
                         <Settings className="h-5 w-5" />
-                        Parameter Changes Summary
+                        {showAllParameters ? 'Parameter Overview' : 'Parameter Changes Summary'}
                       </CardTitle>
                       <CardDescription className="text-gray-300">
-                        Overview of parameter differences between selected runs
+                        {showAllParameters 
+                          ? 'Overview of all parameters across selected runs'
+                          : 'Overview of parameter differences between selected runs'
+                        }
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-medium text-red-400 flex items-center gap-2">
-                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                            Changed Parameters ({paramComparison.changed.length})
-                          </h4>
-                          <div className="space-y-1 max-h-32 overflow-y-auto">
-                            {paramComparison.changed.length > 0 ? (
-                              paramComparison.changed.map((paramName, index) => (
-                                <div key={index} className="text-sm text-red-300 bg-red-900/20 px-2 py-1 rounded border border-red-800">
-                                  {paramName}
-                                </div>
-                              ))
-                            ) : (
-                              <p className="text-sm text-gray-400 italic">No parameter changes detected</p>
-                            )}
+                      {showAllParameters ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <h4 className="text-sm font-medium text-blue-400 flex items-center gap-2">
+                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                Total Parameters ({paramComparison.changed.length + paramComparison.unchanged.length})
+                              </h4>
+                              <p className="text-sm text-gray-400">
+                                All parameters from selected runs
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <h4 className="text-sm font-medium text-red-400 flex items-center gap-2">
+                                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                Changed Parameters ({paramComparison.changed.length})
+                              </h4>
+                              <p className="text-sm text-gray-400">
+                                Parameters with different values
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <h4 className="text-sm font-medium text-green-400 flex items-center gap-2">
+                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                Unchanged Parameters ({paramComparison.unchanged.length})
+                              </h4>
+                              <p className="text-sm text-gray-400">
+                                Parameters with same values
+                              </p>
+                            </div>
+                          </div>
+                          {paramComparison.changed.length > 0 && (
+                            <div className="space-y-2">
+                              <h4 className="text-sm font-medium text-red-400 flex items-center gap-2">
+                                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                Changed Parameters List
+                              </h4>
+                              <div className="space-y-1 max-h-32 overflow-y-auto">
+                                {paramComparison.changed.map((paramName, index) => (
+                                  <div key={index} className="text-sm text-red-300 bg-red-900/20 px-2 py-1 rounded border border-red-800">
+                                    {paramName}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium text-red-400 flex items-center gap-2">
+                              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                              Changed Parameters ({paramComparison.changed.length})
+                            </h4>
+                            <div className="space-y-1 max-h-32 overflow-y-auto">
+                              {paramComparison.changed.length > 0 ? (
+                                paramComparison.changed.map((paramName, index) => (
+                                  <div key={index} className="text-sm text-red-300 bg-red-900/20 px-2 py-1 rounded border border-red-800">
+                                    {paramName}
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-sm text-gray-400 italic">No parameter changes detected</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium text-green-400 flex items-center gap-2">
+                              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                              Unchanged Parameters ({paramComparison.unchanged.length})
+                            </h4>
+                            <div className="space-y-1 max-h-32 overflow-y-auto">
+                              {paramComparison.unchanged.length > 0 ? (
+                                paramComparison.unchanged.map((paramName, index) => (
+                                  <div key={index} className="text-sm text-green-300 bg-green-900/20 px-2 py-1 rounded border border-green-800">
+                                    {paramName}
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-sm text-gray-400 italic">No unchanged parameters</p>
+                              )}
+                            </div>
                           </div>
                         </div>
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-medium text-green-400 flex items-center gap-2">
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                            Unchanged Parameters ({paramComparison.unchanged.length})
-                          </h4>
-                          <div className="space-y-1 max-h-32 overflow-y-auto">
-                            {paramComparison.unchanged.length > 0 ? (
-                              paramComparison.unchanged.map((paramName, index) => (
-                                <div key={index} className="text-sm text-green-300 bg-green-900/20 px-2 py-1 rounded border border-green-800">
-                                  {paramName}
-                                </div>
-                              ))
-                            ) : (
-                              <p className="text-sm text-gray-400 italic">No unchanged parameters</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
               })()}
 
-              {/* Overlap Controls */}
+              {/* Display Options */}
               <Card className="bg-gray-800 border-gray-700">
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="space-y-4">
                     <div>
-                      <h4 className="text-white font-semibold">Chart Display Options</h4>
+                      <h4 className="text-white font-semibold">Display Options</h4>
                       <p className="text-gray-400 text-sm">
                         {showOverlapOnly 
                           ? 'Showing only overlapping dates for accurate comparison'
                           : 'Showing all dates from selected runs'
                         }
+                        {selectedRuns.length > 1 && (
+                          <span className="block">
+                            {showAllParameters 
+                              ? 'Showing all parameters for each run'
+                              : 'Showing only changed parameters between runs'
+                            }
+                          </span>
+                        )}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <label className="flex items-center gap-2 text-sm text-gray-300">
-                        <input
-                          type="checkbox"
-                          checked={showOverlapOnly}
-                          onChange={(e) => setShowOverlapOnly(e.target.checked)}
-                          className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
-                        />
-                        Show Overlap Only
-                      </label>
-                      {getOverlappingDateRange(selectedRuns) && (
-                        <Badge variant="outline" className="text-xs">
-                          {getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days
-                        </Badge>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Chart Display Option */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium text-gray-300">
+                            Show Overlap Only
+                          </label>
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs ${showOverlapOnly ? 'bg-blue-600/20 border-blue-500 text-blue-300' : 'border-gray-600 text-gray-400'}`}
+                          >
+                            {showOverlapOnly ? 'ON' : 'OFF'}
+                          </Badge>
+                        </div>
+                        <div className="relative">
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="1"
+                            value={showOverlapOnly ? 1 : 0}
+                            onChange={(e) => setShowOverlapOnly(e.target.value === '1')}
+                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                            style={{
+                              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${showOverlapOnly ? '100%' : '0%'}, #374151 ${showOverlapOnly ? '100%' : '0%'}, #374151 100%)`
+                            }}
+                          />
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>All Dates</span>
+                            <span>Overlap Only</span>
+                          </div>
+                        </div>
+                        {getOverlappingDateRange(selectedRuns) && (
+                          <div className="text-xs text-blue-400">
+                            {getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days available
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Parameter Display Option */}
+                      {selectedRuns.length > 1 && (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <label className="text-sm font-medium text-gray-300">
+                              Show All Parameters
+                            </label>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${showAllParameters ? 'bg-green-600/20 border-green-500 text-green-300' : 'border-gray-600 text-gray-400'}`}
+                            >
+                              {showAllParameters ? 'ON' : 'OFF'}
+                            </Badge>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="range"
+                              min="0"
+                              max="1"
+                              step="1"
+                              value={showAllParameters ? 1 : 0}
+                              onChange={(e) => setShowAllParameters(e.target.value === '1')}
+                              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                              style={{
+                                background: `linear-gradient(to right, #10b981 0%, #10b981 ${showAllParameters ? '100%' : '0%'}, #374151 ${showAllParameters ? '100%' : '0%'}, #374151 100%)`
+                              }}
+                            />
+                            <div className="flex justify-between text-xs text-gray-500 mt-1">
+                              <span>Changes Only</span>
+                              <span>All Parameters</span>
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {showAllParameters ? 'Viewing complete parameter sets' : 'Focusing on differences'}
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1083,15 +1206,26 @@ export default function AnalysisPage() {
                       
                       {runParameters.length > 0 && (() => {
                         const paramComparison = selectedRuns.length > 1 ? compareParameters(selectedRuns) : { changed: [], unchanged: [] };
-                        const changedParameters = runParameters.filter(param => 
-                          selectedRuns.length === 1 || paramComparison.changed.includes(param.parameter_name)
-                        );
                         
-                        if (changedParameters.length === 0) {
+                        let parametersToShow: Parameter[];
+                        if (selectedRuns.length === 1 || showAllParameters) {
+                          parametersToShow = runParameters;
+                        } else {
+                          parametersToShow = runParameters.filter(param => 
+                            paramComparison.changed.includes(param.parameter_name)
+                          );
+                        }
+                        
+                        if (parametersToShow.length === 0) {
                           return (
                             <div>
                               <h4 className="font-medium text-sm text-muted-foreground mb-2">Parameters</h4>
-                              <p className="text-sm text-gray-400 italic">No parameter changes detected</p>
+                              <p className="text-sm text-gray-400 italic">
+                                {selectedRuns.length > 1 && !showAllParameters 
+                                  ? 'No parameter changes detected' 
+                                  : 'No parameters available'
+                                }
+                              </p>
                             </div>
                           );
                         }
@@ -1099,20 +1233,43 @@ export default function AnalysisPage() {
                         return (
                           <div>
                             <h4 className="font-medium text-sm text-muted-foreground mb-2">
-                              {selectedRuns.length > 1 ? 'Changed Parameters' : 'Parameters'}
+                              {selectedRuns.length > 1 && !showAllParameters ? 'Changed Parameters' : 'Parameters'}
                             </h4>
-                            <div className="space-y-1">
-                              {changedParameters.map((param, index) => (
-                                <div 
-                                  key={index} 
-                                  className="flex justify-between text-sm p-2 rounded bg-red-900/20 border border-red-800 text-red-300"
-                                >
-                                  <span className="font-semibold">
-                                    {param.parameter_name}:
-                                  </span>
-                                  <span className="font-mono">{param.parameter_value}</span>
-                                </div>
-                              ))}
+                            <div className="space-y-1 max-h-64 overflow-y-auto">
+                              {parametersToShow.map((param, index) => {
+                                const isChanged = selectedRuns.length > 1 && paramComparison.changed.includes(param.parameter_name);
+                                const isUnchanged = selectedRuns.length > 1 && paramComparison.unchanged.includes(param.parameter_name);
+                                
+                                let bgColor, borderColor, textColor;
+                                if (selectedRuns.length === 1 || showAllParameters) {
+                                  // When showing all parameters or single run, use neutral styling
+                                  bgColor = 'bg-gray-900/20';
+                                  borderColor = 'border-gray-700';
+                                  textColor = 'text-gray-300';
+                                } else if (isChanged) {
+                                  // Changed parameters - red styling
+                                  bgColor = 'bg-red-900/20';
+                                  borderColor = 'border-red-800';
+                                  textColor = 'text-red-300';
+                                } else {
+                                  // This shouldn't happen when showAllParameters is false, but just in case
+                                  bgColor = 'bg-gray-900/20';
+                                  borderColor = 'border-gray-700';
+                                  textColor = 'text-gray-300';
+                                }
+                                
+                                return (
+                                  <div 
+                                    key={index} 
+                                    className={`flex justify-between text-sm p-2 rounded ${bgColor} border ${borderColor} ${textColor}`}
+                                  >
+                                    <span className="font-semibold">
+                                      {param.parameter_name}:
+                                    </span>
+                                    <span className="font-mono">{param.parameter_value}</span>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         );
