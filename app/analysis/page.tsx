@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Loader2,  Settings, Trash2, Eye, GitMerge} from 'lucide-react';
+import { toast } from 'sonner';
 import {  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Legend } from 'recharts';
 import { RunDetailsDialog } from '@/components/RunDetailsDialog';
 import { formatDateOnly, formatDateRange, getDateRangeFromStrings, findOverlappingDates } from '@/lib/date-utils';
@@ -193,11 +194,11 @@ export default function AnalysisPage() {
         delete newParameters[runId];
         setParameters(newParameters);
       } else {
-        alert('Failed to delete run. Please try again.');
+        toast.error('Failed to delete run. Please try again.');
       }
     } catch (error) {
       console.error('Error deleting run:', error);
-      alert('Failed to delete run. Please try again.');
+      toast.error('Failed to delete run. Please try again.');
     } finally {
       setDeletingRun(null);
     }
@@ -528,11 +529,11 @@ export default function AnalysisPage() {
           return newState;
         });
       } else {
-        alert('Failed to save description. Please try again.');
+        toast.error('Failed to save description. Please try again.');
       }
     } catch (error) {
       console.error('Error saving description:', error);
-      alert('Failed to save description. Please try again.');
+      toast.error('Failed to save description. Please try again.');
     } finally {
       setSavingDescription(null);
     }
@@ -540,7 +541,7 @@ export default function AnalysisPage() {
 
   const handleMergeRuns = useCallback(async () => {
     if (selectedRuns.length < 2) {
-      alert('Please select at least 2 runs to merge.');
+      toast.error('Please select at least 2 runs to merge.');
       return;
     }
 
@@ -590,13 +591,13 @@ export default function AnalysisPage() {
         setMergedRunName('');
         setMergedRunDescription('');
         
-        alert(`Successfully merged runs into run #${mergeResult.mergedRunId}`);
+        toast.success(`Successfully merged runs into run #${mergeResult.mergedRunId}`);
       } else {
-        alert(`Failed to merge runs: ${mergeResult.error}`);
+        toast.error(`Failed to merge runs: ${mergeResult.error}`);
       }
     } catch (error) {
       console.error('Error merging runs:', error);
-      alert('Failed to merge runs. Please try again.');
+      toast.error('Failed to merge runs. Please try again.');
     } finally {
       setMergingRuns(false);
     }
