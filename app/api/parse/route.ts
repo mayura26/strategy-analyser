@@ -32,17 +32,6 @@ export async function POST(request: NextRequest) {
     // Get or create strategy
     const strategyId = await getOrCreateStrategy(parsedData.strategyName);
 
-    // Debug: Log the parsed data
-    console.log('Parsed data:', {
-      strategyName: parsedData.strategyName,
-      runName: parsedData.runName,
-      netPnl: parsedData.netPnl,
-      totalTrades: parsedData.totalTrades,
-      winRate: parsedData.winRate,
-      profitFactor: parsedData.profitFactor,
-      maxDrawdown: parsedData.maxDrawdown,
-      sharpeRatio: parsedData.sharpeRatio
-    });
 
     // Insert the run data
     const runResult = await db.execute({

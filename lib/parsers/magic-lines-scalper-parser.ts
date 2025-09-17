@@ -10,29 +10,20 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
   }
 
   parse(rawData: string): ParsedRunData {
-    console.log('=== MagicLinesScalperParser.parse() START ===');
     const lines = rawData.split('\n');
-    console.log(`Raw data length: ${rawData.length} characters, ${lines.length} lines`);
     
     // Extract strategy name and run ID
     const strategyMatch = rawData.match(/Strategy '([^']+)'/);
     const strategyName = strategyMatch ? strategyMatch[1] : 'MagicLinesScalper';
-    console.log(`Strategy name extracted: ${strategyName}`);
     
     // Extract parameters from the detailed parameter section
-    console.log('Extracting parameters...');
     const parameters = this.extractParameters(rawData);
-    console.log(`Extracted ${parameters.length} parameters`);
     
     // Extract trade data and calculate metrics
-    console.log('Extracting trade data...');
     const tradeData = this.extractTradeData(rawData);
-    console.log(`Extracted ${tradeData.length} trades`);
     
     // Calculate daily PNL from trade summaries
-    console.log('Calculating daily PNL...');
     const dailyPnl = this.calculateDailyPnl(tradeData);
-    console.log(`Calculated daily PNL for ${dailyPnl.length} days`);
     
     // Calculate overall metrics from individual trades
     const totalTrades = tradeData.length;
@@ -40,7 +31,6 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     const winningTrades = tradeData.filter(trade => trade.pnl > 0).length;
     const winRate = totalTrades > 0 ? winningTrades / totalTrades : 0;
     
-    console.log(`Total trades: ${totalTrades}, Net PNL: ${netPnl}, Win rate: ${winRate}`);
     
     
     // Calculate profit factor
@@ -79,18 +69,6 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       detailedTrades
     };
     
-    console.log('=== FINAL RESULT ===');
-    console.log(`Strategy: ${result.strategyName}`);
-    console.log(`Run Name: ${result.runName}`);
-    console.log(`Net PNL: $${result.netPnl}`);
-    console.log(`Total Trades: ${result.totalTrades}`);
-    console.log(`Win Rate: ${result.winRate}`);
-    console.log(`Profit Factor: ${result.profitFactor}`);
-    console.log(`Max Drawdown: $${result.maxDrawdown}`);
-    console.log(`Daily PNL entries: ${result.dailyPnl.length}`);
-    console.log(`Parameters: ${result.parameters.length}`);
-    console.log(`Custom Metrics: ${result.customMetrics.length}`);
-    console.log('=== MagicLinesScalperParser.parse() END ===');
     
     return result;
   }
@@ -179,7 +157,6 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     slAdjustments: number;
     nearMisses: number;
   }> {
-    console.log('=== extractTradeData() START ===');
     const trades: Array<{
       date: string;
       time: string;
@@ -200,7 +177,6 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
 
     // Extract trade fills first - now with ID support
     const tradeFillPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE FILL \(ID: (\d+)\)\]\s+(LONG|SHORT)\s+FILLED:\s*([\d.]+)\s*\|\s*Bars Since Last Trade:\s*(\d+)/gi;
-    console.log('Looking for trade fills with pattern:', tradeFillPattern);
     
     const tradeFills: Array<{
       date: string;
@@ -223,9 +199,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
         entry: parseFloat(entryStr),
         barsSinceLastTrade: parseInt(barsSinceLastTradeStr)
       });
-      console.log(`Found trade fill: ${date} ${time} ID:${id} ${direction} at ${entryStr}`);
     }
-    console.log(`Total trade fills found: ${tradeFills.length}`);
 
     // Extract trade summaries - now with ID support
     const tradeSummaryPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE SUMMARY \(ID: (\d+)\)\]\s+(LONG|SHORT)\s*\|\s*Line:\s*([^|]+)\s*\|\s*Entry:\s*([\d.]+)\s*\|\s*High:\s*([\d.]+)\s*\|\s*Low:\s*([\d.]+)\s*\|\s*Max Profit:\s*([+-]?[\d.]+)pts\s*\|\s*Max Loss:\s*([+-]?[\d.]+)pts\s*\|\s*Bars:\s*(\d+)/gi;
@@ -260,9 +234,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
         maxLoss: parseFloat(maxLossStr),
         bars: parseInt(barsStr)
       });
-      console.log(`Found trade summary: ${date} ${time} ID:${id} ${direction} - Entry: ${entryStr}, Max Profit: ${maxProfitStr}pts, Max Loss: ${maxLossStr}pts`);
     }
-    console.log(`Total trade summaries found: ${tradeSummaries.length}`);
 
     // Extract PNL updates - now with ID support
     const pnlUpdatePattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[PNL UPDATE \(ID: (\d+)\)\]\s+COMPLETED TRADE PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Total PnL:\s*\$([+-]?[\d.]+)/gi;
@@ -285,9 +257,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
         completedTradePnl: parseFloat(completedTradePnlStr),
         totalPnl: parseFloat(totalPnlStr)
       });
-      console.log(`Found PNL update: ${date} ${time} ID:${id} - Completed Trade PnL: $${completedTradePnlStr}, Total PnL: $${totalPnlStr}`);
     }
-    console.log(`Total PNL updates found: ${pnlUpdates.length}`);
 
     // Extract additional trade data (quantity, points, etc.) - now with ID support
     const currentTradePnlPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[PNL UPDATE \(ID: (\d+)\)\]\s+CURRENT TRADE PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Current PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Points\s*:\s*([+-]?[\d.]+)\s*\|\s*Quantity:\s*(\d+)/gi;
@@ -310,12 +280,9 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
         quantity: parseInt(quantityStr),
         points: parseFloat(pointsStr)
       });
-      console.log(`Found current trade data: ${date} ${time} ID:${id} - Points: ${pointsStr}, Quantity: ${quantityStr}`);
     }
-    console.log(`Total current trade data found: ${currentTradeData.length}`);
 
     // Match all trade components together using IDs
-    console.log('=== MATCHING TRADE COMPONENTS BY ID ===');
     
     // Create lookup maps for faster matching
     const summaryMap = new Map<string, typeof tradeSummaries[0]>();
@@ -326,10 +293,8 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     pnlUpdates.forEach(pnl => pnlMap.set(pnl.id, pnl));
     currentTradeData.forEach(current => currentTradeMap.set(current.id, current));
     
-    console.log(`Created lookup maps - Summaries: ${summaryMap.size}, PNL: ${pnlMap.size}, Current Trade: ${currentTradeMap.size}`);
 
     for (const tradeFill of tradeFills) {
-      console.log(`\nProcessing trade fill: ${tradeFill.date} ${tradeFill.time} ${tradeFill.direction} ID:${tradeFill.id} at ${tradeFill.entry}`);
       
       // Find components by ID
       const summary = summaryMap.get(tradeFill.id);
@@ -337,20 +302,16 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       const currentTrade = currentTradeMap.get(tradeFill.id);
 
       if (summary) {
-        console.log(`  Found matching summary: ${summary.date} ${summary.time} ${summary.direction} - Entry: ${summary.entry}, Max Profit: ${summary.maxProfit}pts, Max Loss: ${summary.maxLoss}pts`);
         
         const pnl = pnlUpdate ? pnlUpdate.completedTradePnl : 0;
-        console.log(`  PNL found: $${pnl} (from ${pnlUpdate ? 'PNL update' : 'default'})`);
         
         const tradeData = currentTrade || { quantity: 6, points: 0 }; // Default values
-        console.log(`  Current trade data: Quantity=${tradeData.quantity}, Points=${tradeData.points}`);
 
         // Count SL adjustments and near misses for this trade using ID
         const tradeId = tradeFill.id.split('_')[1]; // Extract just the ID number
         const slAdjustments = (rawData.match(new RegExp(`${tradeFill.date}.*(?:\\[TRADE SL \\(ID: ${tradeId}\\)\\]|SL Adjustment|Short position: Price reached X[12]|Long position: Price reached X[12])`, 'g')) || []).length;
         const nearMisses = (rawData.match(new RegExp(`${tradeFill.date}.*\\[(?:TP )?NEAR MISS \\(ID: ${tradeId}\\)\\]`, 'g')) || []).length;
         
-        console.log(`  SL Adjustments: ${slAdjustments}, Near Misses: ${nearMisses} for trade ID ${tradeId}`);
 
         // Convert points to dollars
         const pointValue = 5;
@@ -378,32 +339,25 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
           nearMisses
         };
         
-        console.log(`  Final trade object: PNL=$${trade.pnl}, Max Profit=$${trade.maxProfit}, Max Loss=$${trade.maxLoss}, Quantity=${trade.quantity}, Points=${trade.points}`);
         trades.push(trade);
       } else {
-        console.log(`  No matching summary found for trade ID: ${tradeFill.id}`);
       }
     }
 
-    console.log(`=== extractTradeData() END - Returning ${trades.length} trades ===`);
     return trades;
   }
 
   private calculateDailyPnl(tradeData: Array<{ date: string; pnl: number; bars: number }>): Array<{ date: string; pnl: number; trades: number }> {
-    console.log('=== calculateDailyPnl() START ===');
-    console.log(`Input trade data: ${tradeData.length} trades`);
     
     const dailyMap = new Map<string, { pnl: number; trades: number }>();
 
     for (const trade of tradeData) {
-      console.log(`Processing trade: ${trade.date} - PNL: $${trade.pnl}`);
       const existing = dailyMap.get(trade.date) || { pnl: 0, trades: 0 };
       const newPnl = existing.pnl + (isFinite(trade.pnl) ? trade.pnl : 0);
       dailyMap.set(trade.date, {
         pnl: newPnl,
         trades: existing.trades + 1
       });
-      console.log(`  Updated daily PNL for ${trade.date}: $${newPnl} (${existing.trades + 1} trades)`);
     }
 
     const result = Array.from(dailyMap.entries())
@@ -414,12 +368,9 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
     
-    console.log('Daily PNL summary:');
     result.forEach(day => {
-      console.log(`  ${day.date}: $${day.pnl} (${day.trades} trades)`);
     });
     
-    console.log(`=== calculateDailyPnl() END - Returning ${result.length} days ===`);
     return result;
   }
 

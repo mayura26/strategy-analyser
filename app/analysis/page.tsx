@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Loader2,  Settings, Trash2, Eye} from 'lucide-react';
+import { Loader2,  Settings, Trash2, Eye, GitMerge} from 'lucide-react';
 import {  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Legend } from 'recharts';
 import { RunDetailsDialog } from '@/components/RunDetailsDialog';
 import { formatDateOnly, formatDateRange, getDateRangeFromStrings, findOverlappingDates } from '@/lib/date-utils';
@@ -64,6 +64,11 @@ export default function AnalysisPage() {
   const [editingDescription, setEditingDescription] = useState<{ [runId: number]: string }>({});
   const [localDescription, setLocalDescription] = useState<{ [runId: number]: string }>({});
   const [savingDescription, setSavingDescription] = useState<number | null>(null);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [mergeValidation, setMergeValidation] = useState<any>(null);
+  const [mergingRuns, setMergingRuns] = useState(false);
+  const [mergedRunName, setMergedRunName] = useState('');
+  const [mergedRunDescription, setMergedRunDescription] = useState('');
 
   useEffect(() => {
     fetchStrategies();
@@ -533,6 +538,96 @@ export default function AnalysisPage() {
     }
   }, [localDescription]);
 
+  const handleMergeRuns = useCallback(async () => {
+    if (selectedRuns.length < 2) {
+      alert('Please select at least 2 runs to merge.');
+      return;
+    }
+
+    setMergingRuns(true);
+    
+    try {
+      // First validate the merge
+      const validationResponse = await fetch('/api/runs/merge/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ runIds: selectedRuns }),
+      });
+
+      const validation = await validationResponse.json();
+      
+      if (!validationResponse.ok) {
+        setMergeValidation(validation);
+        setShowMergeDialog(true);
+        return;
+      }
+
+      // If validation passes, proceed with merge
+      const mergeResponse = await fetch('/api/runs/merge/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          runIds: selectedRuns,
+          mergedRunName: mergedRunName || `Merged Run (${selectedRuns.join(', ')})`,
+          mergedRunDescription: mergedRunDescription || `Merged from runs: ${selectedRuns.join(', ')}`
+        }),
+      });
+
+      const mergeResult = await mergeResponse.json();
+      
+      if (mergeResponse.ok) {
+        // Refresh the runs list
+        await fetchRuns(selectedStrategy);
+        
+        // Clear selection and merge dialog
+        setSelectedRuns([]);
+        setShowMergeDialog(false);
+        setMergeValidation(null);
+        setMergedRunName('');
+        setMergedRunDescription('');
+        
+        alert(`Successfully merged runs into run #${mergeResult.mergedRunId}`);
+      } else {
+        alert(`Failed to merge runs: ${mergeResult.error}`);
+      }
+    } catch (error) {
+      console.error('Error merging runs:', error);
+      alert('Failed to merge runs. Please try again.');
+    } finally {
+      setMergingRuns(false);
+    }
+  }, [selectedRuns, selectedStrategy, mergedRunName, mergedRunDescription]);
+
+  const handleValidateMerge = useCallback(async () => {
+    if (selectedRuns.length < 2) {
+      setMergeValidation({ error: 'Please select at least 2 runs to merge.' });
+      setShowMergeDialog(true);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/runs/merge/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ runIds: selectedRuns }),
+      });
+
+      const validation = await response.json();
+      setMergeValidation(validation);
+      setShowMergeDialog(true);
+    } catch (error) {
+      console.error('Error validating merge:', error);
+      setMergeValidation({ error: 'Failed to validate merge. Please try again.' });
+      setShowMergeDialog(true);
+    }
+  }, [selectedRuns]);
+
 
   if (isLoading) {
     return (
@@ -610,11 +705,54 @@ export default function AnalysisPage() {
         </TabsList>
 
         <TabsContent value="runs" className="space-y-6">
+          {/* Merge Controls for Runs Overview */}
+          {selectedRuns.length >= 2 && (
+            <Card className="bg-gray-800 border-gray-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-white font-semibold">Merge Runs</h4>
+                    <p className="text-gray-400 text-sm">
+                      {selectedRuns.length} runs selected for merging
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={handleValidateMerge}
+                      className="border-blue-500 text-blue-300 hover:bg-blue-900/20"
+                    >
+                      <GitMerge className="h-4 w-4 mr-2" />
+                      Validate Merge
+                    </Button>
+                    <Button
+                      onClick={handleMergeRuns}
+                      disabled={mergingRuns}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      {mergingRuns ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Merging...
+                        </>
+                      ) : (
+                        <>
+                          <GitMerge className="h-4 w-4 mr-2" />
+                          Merge Runs
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">Strategy Runs</CardTitle>
               <CardDescription className="text-gray-300">
-                Select runs to compare their performance and parameters.
+                Select runs to compare their performance and parameters. Select 2 or more runs to enable merging.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -738,6 +876,46 @@ export default function AnalysisPage() {
         <TabsContent value="comparison" className="space-y-6">
           {selectedRuns.length > 0 ? (
             <div className="space-y-6">
+              {/* Merge Controls */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-semibold">Merge Runs</h4>
+                      <p className="text-gray-400 text-sm">
+                        {selectedRuns.length} runs selected for merging
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={handleValidateMerge}
+                        className="border-blue-500 text-blue-300 hover:bg-blue-900/20"
+                      >
+                        <GitMerge className="h-4 w-4 mr-2" />
+                        Validate Merge
+                      </Button>
+                      <Button
+                        onClick={handleMergeRuns}
+                        disabled={mergingRuns}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        {mergingRuns ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Merging...
+                          </>
+                        ) : (
+                          <>
+                            <GitMerge className="h-4 w-4 mr-2" />
+                            Merge Runs
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               {/* Date Range Warnings */}
               {dateRangeWarnings.length > 0 && (
                 <Card className="bg-yellow-900/20 border-yellow-600">
@@ -1118,6 +1296,150 @@ export default function AnalysisPage() {
           savingDescription={savingDescription}
         />
       ))}
+
+      {/* Merge Dialog */}
+      <AlertDialog open={showMergeDialog} onOpenChange={setShowMergeDialog}>
+        <AlertDialogContent className="max-w-2xl bg-gray-800 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white flex items-center gap-2">
+              <GitMerge className="h-5 w-5" />
+              Merge Runs
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          
+          {mergeValidation?.error ? (
+            <div className="space-y-4">
+              <div className="bg-red-900/20 border border-red-600 rounded-lg p-4">
+                <h4 className="text-red-400 font-semibold mb-2">Cannot Merge Runs</h4>
+                <p className="text-red-300 text-sm">{mergeValidation.error}</p>
+                
+                {mergeValidation.details && (
+                  <div className="mt-3 space-y-2">
+                    {mergeValidation.details.overlaps && (
+                      <div>
+                        <h5 className="text-red-400 font-medium text-sm">Date Overlaps:</h5>
+                        <ul className="text-red-300 text-xs space-y-1">
+                          {mergeValidation.details.overlaps.map((overlap: any, index: number) => (
+                            <li key={index}>
+                              Runs {overlap.run1} and {overlap.run2}: {overlap.overlap}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {mergeValidation.details.parameterDifferences && (
+                      <div>
+                        <h5 className="text-red-400 font-medium text-sm">Parameter Differences:</h5>
+                        <ul className="text-red-300 text-xs space-y-1">
+                          {mergeValidation.details.parameterDifferences.map((diff: any, index: number) => (
+                            <li key={index}>
+                              {diff.parameter}: {diff.differences.map((d: any) => `Run ${d.runId}=${d.value}`).join(', ')}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => setShowMergeDialog(false)}
+                  className="bg-gray-600 hover:bg-gray-700 text-white"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          ) : mergeValidation?.canMerge ? (
+            <div className="space-y-4">
+              <div className="bg-green-900/20 border border-green-600 rounded-lg p-4">
+                <h4 className="text-green-400 font-semibold mb-2">Runs Can Be Merged</h4>
+                <p className="text-green-300 text-sm">
+                  The selected runs have no date overlaps and matching parameters.
+                </p>
+                
+                <div className="mt-3 space-y-2">
+                  <h5 className="text-green-400 font-medium text-sm">Runs to Merge:</h5>
+                  <ul className="text-green-300 text-xs space-y-1">
+                    {mergeValidation.runs.map((run: any) => (
+                      <li key={run.id}>
+                        Run #{run.id}: {run.name} ({run.dateRange?.startDate} to {run.dateRange?.endDate})
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <h5 className="text-green-400 font-medium text-sm">Merged Date Range:</h5>
+                  <p className="text-green-300 text-xs">
+                    {mergeValidation.mergedDateRange?.startDate} to {mergeValidation.mergedDateRange?.endDate}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Merged Run Name
+                  </label>
+                  <input
+                    type="text"
+                    value={mergedRunName}
+                    onChange={(e) => setMergedRunName(e.target.value)}
+                    placeholder={`Merged Run (${selectedRuns.join(', ')})`}
+                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Merged Run Description
+                  </label>
+                  <textarea
+                    value={mergedRunDescription}
+                    onChange={(e) => setMergedRunDescription(e.target.value)}
+                    placeholder={`Merged from runs: ${selectedRuns.join(', ')}`}
+                    rows={3}
+                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 resize-none"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <Button
+                  onClick={() => setShowMergeDialog(false)}
+                  variant="outline"
+                  className="border-gray-500 text-gray-300 hover:bg-gray-600"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleMergeRuns}
+                  disabled={mergingRuns}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {mergingRuns ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Merging...
+                    </>
+                  ) : (
+                    <>
+                      <GitMerge className="h-4 w-4 mr-2" />
+                      Merge Runs
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center text-gray-400 py-4">
+              Validating merge...
+            </div>
+          )}
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
