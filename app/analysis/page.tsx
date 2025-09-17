@@ -59,11 +59,9 @@ export default function AnalysisPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deletingRun, setDeletingRun] = useState<number | null>(null);
   const [viewingRunDetails, setViewingRunDetails] = useState<number | null>(null);
-  const [expandedSections, setExpandedSections] = useState<{ [runId: number]: { dailyPnl: boolean; parameters: boolean } }>({});
   const [showOverlapOnly, setShowOverlapOnly] = useState(false);
   const [showAllParameters, setShowAllParameters] = useState(false);
   const [dateRangeWarnings, setDateRangeWarnings] = useState<string[]>([]);
-  const [editingDescription, setEditingDescription] = useState<{ [runId: number]: string }>({});
   const [localDescription, setLocalDescription] = useState<{ [runId: number]: string }>({});
   const [savingDescription, setSavingDescription] = useState<number | null>(null);
   const [showMergeDialog, setShowMergeDialog] = useState(false);
@@ -314,15 +312,6 @@ export default function AnalysisPage() {
     return warnings;
   };
 
-  const toggleSection = useCallback((runId: number, section: 'dailyPnl' | 'parameters') => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [runId]: {
-        ...prev[runId],
-        [section]: !prev[runId]?.[section]
-      }
-    }));
-  }, []);
 
   const getFilteredChartData = () => {
     if (selectedRuns.length === 0) return [];
@@ -348,8 +337,7 @@ export default function AnalysisPage() {
     
     return allDates.map(date => {
       const dataPoint: any = { date: formatDateOnly(date) };
-      sortedRuns.forEach((runId, index) => {
-        const run = runs.find(r => r.id === runId);
+      sortedRuns.forEach((runId) => {
         const runData = dailyPnlData[runId] || [];
         const dayData = runData.find(day => day.date === date);
         dataPoint[`run_${runId}`] = dayData ? dayData.pnl : 0;
@@ -358,56 +346,6 @@ export default function AnalysisPage() {
     });
   };
 
-  const groupParametersByCategory = (parameters: Parameter[]) => {
-    const categories = [
-      {
-        name: 'Main Parameters',
-        keywords: ['Trade Quantity', 'Max Gain', 'Max Loss', 'Max Consecutive Losses', 'Loss Cut Off', 'Full Take Profit', 'Full Stop Loss']
-      },
-      {
-        name: 'Entry Logic',
-        keywords: ['Min Distance From Line', 'Max Distance From Line', 'Entry Offset', 'Line Cross Bar Count', 'Upside Short Trades', 'Downside Long Trades']
-      },
-      {
-        name: 'Position Management',
-        keywords: ['Dynamic Trim', 'Trim Percent', 'Trim Take Profit', 'SL Adjustment', 'X1', 'X2', 'SL Levels', 'L1', 'L2']
-      },
-      {
-        name: 'Time Parameters',
-        keywords: ['Start Time', 'End Time']
-      },
-      {
-        name: 'Protective Functions',
-        keywords: ['Trade Completion Protect']
-      },
-      {
-        name: 'Magic Lines',
-        keywords: ['Upside Levels', 'Downside Levels', 'Mini Mode', 'Instrument']
-      }
-    ];
-
-    const groupedCategories = categories.map(category => ({
-      name: category.name,
-      parameters: parameters.filter(param => 
-        category.keywords.some(keyword => 
-          param.parameter_name.toLowerCase().includes(keyword.toLowerCase())
-        )
-      )
-    })).filter(category => category.parameters.length > 0);
-
-    // Add any remaining parameters that don't fit into categories
-    const categorizedParams = groupedCategories.flatMap(cat => cat.parameters.map(p => p.parameter_name));
-    const remainingParams = parameters.filter(param => !categorizedParams.includes(param.parameter_name));
-    
-    if (remainingParams.length > 0) {
-      groupedCategories.push({
-        name: 'Other Parameters',
-        parameters: remainingParams
-      });
-    }
-
-    return groupedCategories;
-  };
 
   const compareParameters = (runIds: number[]) => {
     if (runIds.length < 2) return { changed: [], unchanged: [] };
@@ -441,11 +379,6 @@ export default function AnalysisPage() {
     return { changed, unchanged };
   };
 
-  const getParameterValue = (runId: number, paramName: string) => {
-    const runParams = parameters[runId] || [];
-    const param = runParams.find(p => p.parameter_name === paramName);
-    return param ? param.parameter_value : 'N/A';
-  };
 
   const handleViewRunDetails = async (runId: number) => {
     setViewingRunDetails(runId);
@@ -468,30 +401,7 @@ export default function AnalysisPage() {
     }));
   }, []);
 
-  const handleStartEdit = useCallback((runId: number) => {
-    const run = runs.find(r => r.id === runId);
-    setEditingDescription(prev => ({
-      ...prev,
-      [runId]: run?.run_description || ''
-    }));
-    setLocalDescription(prev => ({
-      ...prev,
-      [runId]: run?.run_description || ''
-    }));
-  }, [runs]);
 
-  const handleCancelEdit = useCallback((runId: number) => {
-    setEditingDescription(prev => {
-      const newState = { ...prev };
-      delete newState[runId];
-      return newState;
-    });
-    setLocalDescription(prev => {
-      const newState = { ...prev };
-      delete newState[runId];
-      return newState;
-    });
-  }, []);
 
   const handleSaveDescription = useCallback(async (runId: number) => {
     setSavingDescription(runId);
@@ -517,11 +427,6 @@ export default function AnalysisPage() {
         ));
         
         // Clear the editing state
-        setEditingDescription(prev => {
-          const newState = { ...prev };
-          delete newState[runId];
-          return newState;
-        });
         
         // Clear the local description state
         setLocalDescription(prev => {
@@ -602,7 +507,7 @@ export default function AnalysisPage() {
     } finally {
       setMergingRuns(false);
     }
-  }, [selectedRuns, selectedStrategy, mergedRunName, mergedRunDescription]);
+  }, [selectedRuns, selectedStrategy, mergedRunName, mergedRunDescription, fetchRuns]);
 
   const handleValidateMerge = useCallback(async () => {
     if (selectedRuns.length < 2) {
@@ -1238,7 +1143,6 @@ export default function AnalysisPage() {
                             <div className="space-y-1 max-h-64 overflow-y-auto">
                               {parametersToShow.map((param, index) => {
                                 const isChanged = selectedRuns.length > 1 && paramComparison.changed.includes(param.parameter_name);
-                                const isUnchanged = selectedRuns.length > 1 && paramComparison.unchanged.includes(param.parameter_name);
                                 
                                 let bgColor, borderColor, textColor;
                                 if (selectedRuns.length === 1 || showAllParameters) {

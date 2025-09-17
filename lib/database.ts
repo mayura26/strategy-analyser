@@ -18,7 +18,7 @@ try {
   // Test the connection
   db.execute('SELECT 1 as test').then(() => {
     // Connected to Turso database
-  }).catch((error: any) => {
+  }).catch(() => {
     // Fallback to local database
     db = createClient({
       url: 'file:./strategy_analyser.db',

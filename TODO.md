@@ -1,1 +1,0 @@
-[x] Magic lines tab more streamline, maybe as a table?

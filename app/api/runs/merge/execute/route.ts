@@ -48,13 +48,7 @@ export async function POST(request: NextRequest) {
     });
     const strategyId = firstRunResult.rows[0].strategy_id;
 
-    let mergedRunId: number;
-    let totalPnl: number;
-    let totalTrades: number;
-    let winRate: number;
-    let profitFactor: number;
     let maxDrawdown: number;
-    let sharpeRatio: number;
 
     // Create the merged run (no transactions - simple sequential operations like parse route)
     const mergedRunResult = await db.execute({
@@ -78,7 +72,7 @@ export async function POST(request: NextRequest) {
       ]
     });
 
-    mergedRunId = Number(mergedRunResult.lastInsertRowid);
+    const mergedRunId = Number(mergedRunResult.lastInsertRowid);
 
     // Merge daily PNL data
     const dailyPnlResult = await db.execute({
@@ -208,17 +202,17 @@ export async function POST(request: NextRequest) {
     }));
 
     // Calculate metrics from individual trades (not daily aggregation)
-    totalTrades = allTrades.length;
-    totalPnl = allTrades.reduce((sum: number, trade: any) => sum + trade.pnl, 0);
+    const totalTrades = allTrades.length;
+    const totalPnl = allTrades.reduce((sum: number, trade: any) => sum + trade.pnl, 0);
     
     // Calculate win rate from individual trades
     const winningTrades = allTrades.filter((trade: any) => trade.pnl > 0).length;
-    winRate = totalTrades > 0 ? winningTrades / totalTrades : 0;
+    const winRate = totalTrades > 0 ? winningTrades / totalTrades : 0;
 
     // Calculate profit factor from individual trades
     const totalProfit = allTrades.filter((trade: any) => trade.pnl > 0).reduce((sum: number, trade: any) => sum + trade.pnl, 0);
     const totalLoss = Math.abs(allTrades.filter((trade: any) => trade.pnl < 0).reduce((sum: number, trade: any) => sum + trade.pnl, 0));
-    profitFactor = totalLoss > 0 ? totalProfit / totalLoss : (totalProfit > 0 ? Infinity : 0);
+    const profitFactor = totalLoss > 0 ? totalProfit / totalLoss : (totalProfit > 0 ? Infinity : 0);
 
     // Calculate max drawdown from cumulative PNL curve of individual trades
     maxDrawdown = 0;
@@ -240,7 +234,7 @@ export async function POST(request: NextRequest) {
     const tradeReturns = allTrades.map((trade: any) => trade.pnl);
     const avgReturn = tradeReturns.length > 0 ? tradeReturns.reduce((sum: number, ret: number) => sum + ret, 0) / tradeReturns.length : 0;
     const variance = tradeReturns.length > 0 ? tradeReturns.reduce((sum: number, ret: number) => sum + Math.pow(ret - avgReturn, 2), 0) / tradeReturns.length : 0;
-    sharpeRatio = variance > 0 ? avgReturn / Math.sqrt(variance) : 0;
+    const sharpeRatio = variance > 0 ? avgReturn / Math.sqrt(variance) : 0;
 
     // Update the merged run with calculated metrics
     await db.execute({

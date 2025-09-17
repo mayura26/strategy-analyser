@@ -225,7 +225,7 @@ export const RunDetailsDialog = ({
 
     // Remove empty categories
     return Object.fromEntries(
-      Object.entries(categories).filter(([_, params]) => params.length > 0)
+      Object.entries(categories).filter(([, params]) => params.length > 0)
     );
   };
 

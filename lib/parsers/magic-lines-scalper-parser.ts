@@ -10,7 +10,6 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
   }
 
   parse(rawData: string): ParsedRunData {
-    const lines = rawData.split('\n');
     
     // Extract strategy name and run ID
     const strategyMatch = rawData.match(/Strategy '([^']+)'/);
@@ -368,8 +367,6 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
     
-    result.forEach(day => {
-    });
     
     return result;
   }
@@ -650,7 +647,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     const tpNearMissPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TP NEAR MISS \(ID: (\d+)\)\]\s+(Long|Short)\s+TP near miss \(([^)]+)\) at ([^-]+) - closest distance: ([\d.]+)pts \(([^)]+)\)/g;
     let match;
     while ((match = tpNearMissPattern.exec(rawData)) !== null) {
-      const [, date, time, tradeId, direction, target, timestamp, closestDistance, reason] = match;
+      const [, date, time, tradeId, direction, target, , closestDistance, reason] = match;
       events.tpNearMisses.push({
         date,
         time,
