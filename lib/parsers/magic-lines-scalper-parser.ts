@@ -108,6 +108,13 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       { name: 'SL Levels - L2', pattern: /L2:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
       { name: 'SL High/Low Y1', pattern: /SL High\/Low Y1:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
       { name: 'SL High/Low Y2', pattern: /Y2:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
+      { name: 'SL Time-Based', pattern: /SL Time-Based:\s*(\d+)\s*bars/i, type: 'number' as const },
+      { name: 'Level L', pattern: /Level L:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
+      { name: 'TP Adjustment', pattern: /TP Adjustment:\s*(True|False)/i, type: 'boolean' as const },
+      { name: 'TP X1', pattern: /TP Adjustment:.*?X1:\s*(\d+)\s*bars/i, type: 'number' as const },
+      { name: 'TP X2', pattern: /TP Adjustment:.*?X2:\s*(\d+)\s*bars/i, type: 'number' as const },
+      { name: 'TP Levels - L1', pattern: /TP Levels - L1:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
+      { name: 'TP Levels - L2', pattern: /TP Levels - L2:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
     ];
 
     // Time parameters

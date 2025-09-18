@@ -212,7 +212,11 @@ export const RunDetailsDialog = ({
                  name.includes('upside') || name.includes('downside')) {
         categories['Entry Logic'].push(param);
       } else if (name.includes('trim') || name.includes('adjustment') || name.includes('x1') || 
-                 name.includes('x2') || name.includes('l1') || name.includes('l2')) {
+                 name.includes('x2') || name.includes('l1') || name.includes('l2') || 
+                 name.includes('sl time-based') || name.includes('level l') || 
+                 name.includes('sl adjustment') || name.includes('sl levels') || 
+                 name.includes('sl high/low') || name.includes('tp adjustment') || 
+                 name.includes('tp levels') || name.includes('tp x1') || name.includes('tp x2')) {
         categories['Position Management'].push(param);
       } else if (name.includes('time') || name.includes('start') || name.includes('end')) {
         categories['Time Parameters'].push(param);
