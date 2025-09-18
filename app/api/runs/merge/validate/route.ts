@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Check if all runs have the same parameters
-    const parameterDifferences: Array<{parameter: string, differences: Array<{runId: number, value: string}>}> = [];
+    const parameterDifferences: Array<{parameter: string, differences: Array<{runId: number, value: string | null}>}> = [];
     const allParameterNames = new Set<string>();
     
     // Collect all parameter names
