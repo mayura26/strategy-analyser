@@ -104,14 +104,21 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       { name: 'SL Adjustment', pattern: /SL Adjustment:\s*(True|False)/i, type: 'boolean' as const },
       { name: 'X1', pattern: /X1:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
       { name: 'X2', pattern: /X2:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
-      { name: 'L1', pattern: /L1:\s*([+-]?\d+(?:\.\d+)?)pts/i, type: 'number' as const },
-      { name: 'L2', pattern: /L2:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
+      { name: 'SL Levels - L1', pattern: /SL Levels - L1:\s*([+-]?\d+(?:\.\d+)?)pts/i, type: 'number' as const },
+      { name: 'SL Levels - L2', pattern: /L2:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
+      { name: 'SL High/Low Y1', pattern: /SL High\/Low Y1:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
+      { name: 'SL High/Low Y2', pattern: /Y2:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
     ];
 
     // Time parameters
     const timeParams = [
       { name: 'Start Time', pattern: /Start Time:\s*(\d{2}:\d{2})/i, type: 'string' as const },
       { name: 'End Time', pattern: /End Time:\s*(\d{2}:\d{2})/i, type: 'string' as const },
+    ];
+
+    // Protective functions parameters
+    const protectiveParams = [
+      { name: 'Trade Completion Protect', pattern: /Trade Completion Protect:\s*(True|False)/i, type: 'boolean' as const },
     ];
 
     // Magic lines parameters
@@ -123,7 +130,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     ];
 
     // Extract all parameters
-    const allParams = [...mainParams, ...entryParams, ...positionParams, ...timeParams, ...magicLinesParams];
+    const allParams = [...mainParams, ...entryParams, ...positionParams, ...timeParams, ...protectiveParams, ...magicLinesParams];
     
     for (const param of allParams) {
       const value = this.extractString(rawData, param.pattern);

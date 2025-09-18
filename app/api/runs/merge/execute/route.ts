@@ -103,17 +103,31 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Copy parameters from the first run (all runs have identical parameters)
-    const parametersResult = await db.execute({
+    // Merge parameters - collect all unique parameters from all runs
+    const allParametersResult = await db.execute({
       sql: `
-        SELECT parameter_name, parameter_value, parameter_type
+        SELECT DISTINCT parameter_name, parameter_value, parameter_type
         FROM strategy_parameters
-        WHERE run_id = ?
+        WHERE run_id IN (${validRunIds.map(() => '?').join(',')})
+        ORDER BY parameter_name
       `,
-      args: [validRunIds[0]]
+      args: validRunIds
     });
 
-    for (const param of parametersResult.rows) {
+    // Group parameters by name to handle conflicts
+    const parameterMap = new Map();
+    allParametersResult.rows.forEach((param: any) => {
+      if (!parameterMap.has(param.parameter_name)) {
+        parameterMap.set(param.parameter_name, {
+          name: param.parameter_name,
+          value: param.parameter_value,
+          type: param.parameter_type
+        });
+      }
+    });
+
+    // Insert all unique parameters
+    for (const param of parameterMap.values()) {
       await db.execute({
         sql: `
           INSERT INTO strategy_parameters (run_id, parameter_name, parameter_value, parameter_type)

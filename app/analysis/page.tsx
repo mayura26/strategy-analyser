@@ -276,6 +276,25 @@ export default function AnalysisPage() {
     };
   };
 
+  const getOverlapPnLTotals = (runIds: number[]) => {
+    if (runIds.length === 0) return {};
+    
+    const overlap = getOverlappingDateRange(runIds);
+    if (!overlap) return {};
+    
+    const totals: { [runId: number]: number } = {};
+    
+    runIds.forEach(runId => {
+      const runData = dailyPnlData[runId] || [];
+      const overlapTotal = runData
+        .filter(day => overlap.dates.includes(day.date))
+        .reduce((sum, day) => sum + day.pnl, 0);
+      totals[runId] = overlapTotal;
+    });
+    
+    return totals;
+  };
+
   const validateDateRanges = (runIds: number[]) => {
     const warnings: string[] = [];
     
@@ -350,7 +369,7 @@ export default function AnalysisPage() {
   const compareParameters = (runIds: number[]) => {
     if (runIds.length < 2) return { changed: [], unchanged: [] };
 
-    const allParameters: { [paramName: string]: { [runId: number]: string } } = {};
+    const allParameters: { [paramName: string]: { [runId: number]: string | null } } = {};
     
     // Collect all parameters from all runs
     runIds.forEach(runId => {
@@ -363,13 +382,31 @@ export default function AnalysisPage() {
       });
     });
 
+    // Ensure all runs have entries for all parameters (null for missing)
+    Object.keys(allParameters).forEach(paramName => {
+      runIds.forEach(runId => {
+        if (!(runId in allParameters[paramName])) {
+          allParameters[paramName][runId] = null;
+        }
+      });
+    });
+
     const changed: string[] = [];
     const unchanged: string[] = [];
 
     // Compare each parameter across runs
     Object.entries(allParameters).forEach(([paramName, valuesByRun]) => {
-      const uniqueValues = new Set(Object.values(valuesByRun));
-      if (uniqueValues.size > 1) {
+      const allValues = Object.values(valuesByRun);
+      const nonNullValues = allValues.filter(v => v !== null);
+      const uniqueNonNullValues = new Set(nonNullValues);
+      
+      // Consider it changed if:
+      // 1. There are multiple different non-null values, OR
+      // 2. Some runs have the parameter and others don't (mix of null and non-null)
+      const hasNullValues = allValues.some(v => v === null);
+      const hasNonNullValues = nonNullValues.length > 0;
+      
+      if (uniqueNonNullValues.size > 1 || (hasNullValues && hasNonNullValues)) {
         changed.push(paramName);
       } else {
         unchanged.push(paramName);
@@ -602,6 +639,30 @@ export default function AnalysisPage() {
             <div className="text-2xl font-bold text-white">{selectedRuns.length}</div>
           </CardContent>
         </Card>
+
+        {showOverlapOnly && selectedRuns.length > 1 && getOverlappingDateRange(selectedRuns) && (() => {
+          const overlapTotals = getOverlapPnLTotals(selectedRuns);
+          const totalOverlapPnL = Object.values(overlapTotals).reduce((sum, total) => sum + total, 0);
+          const avgOverlapPnL = totalOverlapPnL / Object.keys(overlapTotals).length;
+          
+          return (
+            <Card className="bg-blue-900/20 border-blue-700">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-blue-300">Overlap Period PnL</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold text-white">
+                    {formatCurrency(avgOverlapPnL)}
+                  </div>
+                  <div className="text-xs text-blue-400">
+                    Avg across {Object.keys(overlapTotals).length} runs
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
       </div>
 
       <Tabs defaultValue="runs" className="space-y-6">
@@ -1109,19 +1170,36 @@ export default function AnalysisPage() {
                         </div>
                       </div>
                       
-                      {runParameters.length > 0 && (() => {
+                      {(() => {
                         const paramComparison = selectedRuns.length > 1 ? compareParameters(selectedRuns) : { changed: [], unchanged: [] };
                         
-                        let parametersToShow: Parameter[];
-                        if (selectedRuns.length === 1 || showAllParameters) {
-                          parametersToShow = runParameters;
-                        } else {
-                          parametersToShow = runParameters.filter(param => 
+                        // Get all unique parameters across all selected runs
+                        const allParameterNames = new Set<string>();
+                        selectedRuns.forEach(runId => {
+                          const runParams = parameters[runId] || [];
+                          runParams.forEach(param => allParameterNames.add(param.parameter_name));
+                        });
+                        
+                        // Create parameter display data for this specific run
+                        const parametersToShow = Array.from(allParameterNames).map(paramName => {
+                          const runParams = parameters[runId] || [];
+                          const param = runParams.find(p => p.parameter_name === paramName);
+                          return {
+                            parameter_name: paramName,
+                            parameter_value: param ? param.parameter_value : null,
+                            parameter_type: param ? param.parameter_type : 'string'
+                          };
+                        });
+                        
+                        // Filter parameters to show based on mode
+                        let filteredParameters = parametersToShow;
+                        if (selectedRuns.length > 1 && !showAllParameters) {
+                          filteredParameters = parametersToShow.filter(param => 
                             paramComparison.changed.includes(param.parameter_name)
                           );
                         }
                         
-                        if (parametersToShow.length === 0) {
+                        if (filteredParameters.length === 0) {
                           return (
                             <div>
                               <h4 className="font-medium text-sm text-muted-foreground mb-2">Parameters</h4>
@@ -1141,25 +1219,26 @@ export default function AnalysisPage() {
                               {selectedRuns.length > 1 && !showAllParameters ? 'Changed Parameters' : 'Parameters'}
                             </h4>
                             <div className="space-y-1 max-h-64 overflow-y-auto">
-                              {parametersToShow.map((param, index) => {
+                              {filteredParameters.map((param, index) => {
                                 const isChanged = selectedRuns.length > 1 && paramComparison.changed.includes(param.parameter_name);
+                                const isMissing = param.parameter_value === null;
                                 
                                 let bgColor, borderColor, textColor;
                                 if (selectedRuns.length === 1 || showAllParameters) {
                                   // When showing all parameters or single run, use neutral styling
-                                  bgColor = 'bg-gray-900/20';
-                                  borderColor = 'border-gray-700';
-                                  textColor = 'text-gray-300';
+                                  bgColor = isMissing ? 'bg-gray-800/20' : 'bg-gray-900/20';
+                                  borderColor = isMissing ? 'border-gray-600' : 'border-gray-700';
+                                  textColor = isMissing ? 'text-gray-500' : 'text-gray-300';
                                 } else if (isChanged) {
                                   // Changed parameters - red styling
-                                  bgColor = 'bg-red-900/20';
-                                  borderColor = 'border-red-800';
-                                  textColor = 'text-red-300';
+                                  bgColor = isMissing ? 'bg-red-800/20' : 'bg-red-900/20';
+                                  borderColor = isMissing ? 'border-red-600' : 'border-red-800';
+                                  textColor = isMissing ? 'text-red-400' : 'text-red-300';
                                 } else {
                                   // This shouldn't happen when showAllParameters is false, but just in case
-                                  bgColor = 'bg-gray-900/20';
-                                  borderColor = 'border-gray-700';
-                                  textColor = 'text-gray-300';
+                                  bgColor = isMissing ? 'bg-gray-800/20' : 'bg-gray-900/20';
+                                  borderColor = isMissing ? 'border-gray-600' : 'border-gray-700';
+                                  textColor = isMissing ? 'text-gray-500' : 'text-gray-300';
                                 }
                                 
                                 return (
@@ -1170,7 +1249,13 @@ export default function AnalysisPage() {
                                     <span className="font-semibold">
                                       {param.parameter_name}:
                                     </span>
-                                    <span className="font-mono">{param.parameter_value}</span>
+                                    <span className="font-mono">
+                                      {isMissing ? (
+                                        <span className="italic text-gray-500">Not available</span>
+                                      ) : (
+                                        param.parameter_value
+                                      )}
+                                    </span>
                                   </div>
                                 );
                               })}
@@ -1235,9 +1320,29 @@ export default function AnalysisPage() {
                 <CardDescription>
                   Compare daily performance across selected runs.
                     {showOverlapOnly && getOverlappingDateRange(selectedRuns) && (
-                      <span className="block text-blue-400 mt-1">
-                        Showing {getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days
-                      </span>
+                      <div className="block text-blue-400 mt-1">
+                        <div>Showing {getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days</div>
+                        {selectedRuns.length > 0 && (() => {
+                          const overlapTotals = getOverlapPnLTotals(selectedRuns);
+                          return (
+                            <div className="mt-2 space-y-1">
+                              <div className="text-sm font-medium">Overlap Period PnL Totals:</div>
+                              {selectedRuns.map(runId => {
+                                const run = runs.find(r => r.id === runId);
+                                const total = overlapTotals[runId] || 0;
+                                return (
+                                  <div key={runId} className="text-xs flex justify-between">
+                                    <span>{run?.run_name || `Run ${runId}`}:</span>
+                                    <span className={total >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                      {formatCurrency(total)}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
+                      </div>
                     )}
                 </CardDescription>
               </CardHeader>

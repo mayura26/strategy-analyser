@@ -160,20 +160,23 @@ export async function POST(request: NextRequest) {
 
     // Check each parameter across all runs
     allParameterNames.forEach(paramName => {
-      const valuesByRun: Array<{runId: number, value: string}> = [];
+      const valuesByRun: Array<{runId: number, value: string | null}> = [];
       
       validRunIds.forEach(runId => {
         const runParams = parametersByRun[runId] || [];
         const param = runParams.find(p => p.name === paramName);
         valuesByRun.push({
           runId,
-          value: param ? param.value : 'MISSING'
+          value: param ? param.value : null
         });
       });
 
-      // Check if all values are the same
-      const uniqueValues = [...new Set(valuesByRun.map(v => v.value))];
-      if (uniqueValues.length > 1) {
+      // Check if all non-null values are the same (ignore nulls for missing parameters)
+      const nonNullValues = valuesByRun.filter(v => v.value !== null).map(v => v.value);
+      const uniqueNonNullValues = [...new Set(nonNullValues)];
+      
+      // Only flag as different if there are multiple different non-null values
+      if (uniqueNonNullValues.length > 1) {
         parameterDifferences.push({
           parameter: paramName,
           differences: valuesByRun
@@ -181,21 +184,8 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    if (parameterDifferences.length > 0) {
-      return NextResponse.json(
-        { 
-          error: 'Cannot merge runs with different parameters',
-          details: {
-            parameterDifferences,
-            runs: runsResult.rows.map((row: any) => ({
-              id: row.id,
-              name: row.run_name
-            }))
-          }
-        },
-        { status: 400 }
-      );
-    }
+    // Note: We no longer block merges due to parameter differences
+    // Instead, we'll use the most recent parameter set during merge
 
     // Calculate merged date range
     const mergedDateRange = dateRanges.length > 0 ? {
