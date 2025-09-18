@@ -197,6 +197,7 @@ export const RunDetailsDialog = ({
       'Entry Logic': [],
       'Position Management': [],
       'Time Parameters': [],
+      'Protective Functions': [],
       'Magic Lines': [],
       'Other': []
     };
@@ -208,7 +209,8 @@ export const RunDetailsDialog = ({
           name.includes('consecutive') || name.includes('loss cut') || name.includes('take profit') || 
           name.includes('stop loss')) {
         categories['Main Parameters'].push(param);
-      } else if (name.includes('distance') || name.includes('offset') || name.includes('bar count') || 
+      } else if (name.includes('min distance from line') || name.includes('max distance from line') || 
+                 name.includes('entry offset') || name.includes('bar count') || 
                  name.includes('upside') || name.includes('downside')) {
         categories['Entry Logic'].push(param);
       } else if (name.includes('trim') || name.includes('adjustment') || name.includes('x1') || 
@@ -216,10 +218,15 @@ export const RunDetailsDialog = ({
                  name.includes('sl time-based') || name.includes('level l') || 
                  name.includes('sl adjustment') || name.includes('sl levels') || 
                  name.includes('sl high/low') || name.includes('tp adjustment') || 
-                 name.includes('tp levels') || name.includes('tp x1') || name.includes('tp x2')) {
+                 name.includes('tp levels') || name.includes('tp x1') || name.includes('tp x2') ||
+                 name.includes('trim tp near miss') || 
+                 (name === 'distance') || (name === 'offset')) {
         categories['Position Management'].push(param);
       } else if (name.includes('time') || name.includes('start') || name.includes('end')) {
         categories['Time Parameters'].push(param);
+      } else if (name.includes('trade completion protect') || name.includes('max profit delay') || 
+                 name.includes('max loss delay')) {
+        categories['Protective Functions'].push(param);
       } else if (name.includes('level') || name.includes('mini mode') || name.includes('instrument')) {
         categories['Magic Lines'].push(param);
       } else {

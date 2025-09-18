@@ -115,6 +115,9 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       { name: 'TP X2', pattern: /TP Adjustment:.*?X2:\s*(\d+)\s*bars/i, type: 'number' as const },
       { name: 'TP Levels - L1', pattern: /TP Levels - L1:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
       { name: 'TP Levels - L2', pattern: /TP Levels - L2:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
+      { name: 'Trim TP Near Miss', pattern: /Trim TP Near Miss:\s*(True|False)/i, type: 'boolean' as const },
+      { name: 'Distance', pattern: /Distance:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
+      { name: 'Offset', pattern: /Offset:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
     ];
 
     // Time parameters
@@ -126,6 +129,8 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     // Protective functions parameters
     const protectiveParams = [
       { name: 'Trade Completion Protect', pattern: /Trade Completion Protect:\s*(True|False)/i, type: 'boolean' as const },
+      { name: 'Max Profit Delay', pattern: /Max Profit Delay:\s*(\d+)\s*bars/i, type: 'number' as const },
+      { name: 'Max Loss Delay', pattern: /Max Loss Delay:\s*(\d+)\s*bars/i, type: 'number' as const },
     ];
 
     // Magic lines parameters
