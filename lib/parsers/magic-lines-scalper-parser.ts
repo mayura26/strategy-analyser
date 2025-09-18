@@ -194,7 +194,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     }> = [];
 
     // Extract trade fills first - now with ID support
-    const tradeFillPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE FILL \(ID: (\d+)\)\]\s+(LONG|SHORT)\s+FILLED:\s*([\d.]+)\s*\|\s*Bars Since Last Trade:\s*(\d+)/gi;
+    const tradeFillPattern = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE FILL \(ID: (\d+)\)\]\s+(LONG|SHORT)\s+FILLED:\s*([\d.]+)\s*\|\s*Bars Since Last Trade:\s*(\d+)/gi;
     
     const tradeFills: Array<{
       date: string;
@@ -208,9 +208,10 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     let match;
     while ((match = tradeFillPattern.exec(rawData)) !== null) {
       const [, date, time, id, direction, entryStr, barsSinceLastTradeStr] = match;
-      const tradeId = `${date}_${id}`;
+      const normalizedDate = this.normalizeDate(date);
+      const tradeId = `${normalizedDate}_${id}`;
       tradeFills.push({
-        date,
+        date: normalizedDate,
         time,
         id: tradeId,
         direction: direction as 'LONG' | 'SHORT',
@@ -220,7 +221,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     }
 
     // Extract trade summaries - now with ID support
-    const tradeSummaryPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE SUMMARY \(ID: (\d+)\)\]\s+(LONG|SHORT)\s*\|\s*Line:\s*([^|]+)\s*\|\s*Entry:\s*([\d.]+)\s*\|\s*High:\s*([\d.]+)\s*\|\s*Low:\s*([\d.]+)\s*\|\s*Max Profit:\s*([+-]?[\d.]+)pts\s*\|\s*Max Loss:\s*([+-]?[\d.]+)pts\s*\|\s*Bars:\s*(\d+)/gi;
+    const tradeSummaryPattern = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE SUMMARY \(ID: (\d+)\)\]\s+(LONG|SHORT)\s*\|\s*Line:\s*([^|]+)\s*\|\s*Entry:\s*([\d.]+)\s*\|\s*High:\s*([\d.]+)\s*\|\s*Low:\s*([\d.]+)\s*\|\s*Max Profit:\s*([+-]?[\d.]+)pts\s*\|\s*Max Loss:\s*([+-]?[\d.]+)pts\s*\|\s*Bars:\s*(\d+)/gi;
 
     const tradeSummaries: Array<{
       date: string;
@@ -238,9 +239,10 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
 
     while ((match = tradeSummaryPattern.exec(rawData)) !== null) {
       const [, date, time, id, direction, line, entryStr, highStr, lowStr, maxProfitStr, maxLossStr, barsStr] = match;
-      const tradeId = `${date}_${id}`;
+      const normalizedDate = this.normalizeDate(date);
+      const tradeId = `${normalizedDate}_${id}`;
       tradeSummaries.push({
-        date,
+        date: normalizedDate,
         time,
         id: tradeId,
         direction: direction as 'LONG' | 'SHORT',
@@ -255,7 +257,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     }
 
     // Extract PNL updates - now with ID support
-    const pnlUpdatePattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[PNL UPDATE \(ID: (\d+)\)\]\s+COMPLETED TRADE PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Total PnL:\s*\$([+-]?[\d.]+)/gi;
+    const pnlUpdatePattern = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[PNL UPDATE \(ID: (\d+)\)\]\s+COMPLETED TRADE PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Total PnL:\s*\$([+-]?[\d.]+)/gi;
 
     const pnlUpdates: Array<{
       date: string;
@@ -267,9 +269,10 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
 
     while ((match = pnlUpdatePattern.exec(rawData)) !== null) {
       const [, date, time, id, completedTradePnlStr, totalPnlStr] = match;
-      const tradeId = `${date}_${id}`;
+      const normalizedDate = this.normalizeDate(date);
+      const tradeId = `${normalizedDate}_${id}`;
       pnlUpdates.push({
-        date,
+        date: normalizedDate,
         time,
         id: tradeId,
         completedTradePnl: parseFloat(completedTradePnlStr),
@@ -278,7 +281,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     }
 
     // Extract additional trade data (quantity, points, etc.) - now with ID support
-    const currentTradePnlPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[PNL UPDATE \(ID: (\d+)\)\]\s+CURRENT TRADE PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Current PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Points\s*:\s*([+-]?[\d.]+)\s*\|\s*Quantity:\s*(\d+)/gi;
+    const currentTradePnlPattern = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[PNL UPDATE \(ID: (\d+)\)\]\s+CURRENT TRADE PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Current PnL:\s*\$([+-]?[\d.]+)\s*\|\s*Points\s*:\s*([+-]?[\d.]+)\s*\|\s*Quantity:\s*(\d+)/gi;
 
     const currentTradeData: Array<{
       date: string;
@@ -290,9 +293,10 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
 
     while ((match = currentTradePnlPattern.exec(rawData)) !== null) {
       const [, date, time, id, , , pointsStr, quantityStr] = match;
-      const tradeId = `${date}_${id}`;
+      const normalizedDate = this.normalizeDate(date);
+      const tradeId = `${normalizedDate}_${id}`;
       currentTradeData.push({
-        date,
+        date: normalizedDate,
         time,
         id: tradeId,
         quantity: parseInt(quantityStr),
@@ -611,6 +615,12 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     return lineName.trim().replace(/\s+/g, ' ');
   }
 
+  private normalizeDate(dateStr: string): string {
+    // Convert M/D/YYYY format to YYYY-MM-DD format
+    const [month, day, year] = dateStr.split('/');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
   private extractDetailedEvents(rawData: string): {
     tpNearMisses: Array<{
       date: string;
@@ -663,12 +673,12 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     };
 
     // Extract TP Near Misses
-    const tpNearMissPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TP NEAR MISS \(ID: (\d+)\)\]\s+(Long|Short)\s+TP near miss \(([^)]+)\) at ([^-]+) - closest distance: ([\d.]+)pts \(([^)]+)\)/g;
+    const tpNearMissPattern = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TP NEAR MISS \(ID: (\d+)\)\]\s+(Long|Short)\s+TP near miss \(([^)]+)\) at ([^-]+) - closest distance: ([\d.]+)pts \(([^)]+)\)/g;
     let match;
     while ((match = tpNearMissPattern.exec(rawData)) !== null) {
       const [, date, time, tradeId, direction, target, , closestDistance, reason] = match;
       events.tpNearMisses.push({
-        date,
+        date: this.normalizeDate(date),
         time,
         tradeId,
         direction,
@@ -679,11 +689,11 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     }
 
     // Extract Fill Near Misses (general near misses)
-    const fillNearMissPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[NEAR MISS\]\s+(Long|Short)\s+near miss at ([^-]+) - closest distance: ([\d.]+)pts/g;
+    const fillNearMissPattern = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[NEAR MISS\]\s+(Long|Short)\s+near miss at ([^-]+) - closest distance: ([\d.]+)pts/g;
     while ((match = fillNearMissPattern.exec(rawData)) !== null) {
       const [, date, time, direction, closestDistance] = match;
       events.fillNearMisses.push({
-        date,
+        date: this.normalizeDate(date),
         time,
         direction,
         closestDistance
@@ -691,11 +701,11 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     }
 
     // Extract SL Adjustments
-    const slAdjustmentPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE SL \(ID: (\d+)\)\]\s+(Long|Short)\s+position: Price reached (X[12]) \(([^)]+)\), adjusting SL to (L[12]) \(([^)]+)\)/g;
+    const slAdjustmentPattern = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE SL \(ID: (\d+)\)\]\s+(Long|Short)\s+position: Price reached (X[12]) \(([^)]+)\), adjusting SL to (L[12]) \(([^)]+)\)/g;
     while ((match = slAdjustmentPattern.exec(rawData)) !== null) {
       const [, date, time, tradeId, direction, trigger, triggerValue, adjustment, adjustmentValue] = match;
       events.slAdjustments.push({
-        date,
+        date: this.normalizeDate(date),
         time,
         tradeId,
         direction,
@@ -728,11 +738,12 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     const trades = [];
 
     // Extract trade summaries with detailed analysis - fixed case sensitivity
-    const tradeSummaryPattern = /(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE SUMMARY \(ID: (\d+)\)\]\s+(Long|Short)\s*\|\s*Line:\s*([^|]+)\s*\|\s*Entry:\s*([\d.]+)\s*\|\s*High:\s*([\d.]+)\s*\|\s*Low:\s*([\d.]+)\s*\|\s*Max Profit:\s*([+-]?[\d.]+)pts\s*\|\s*Max Loss:\s*([+-]?[\d.]+)pts\s*\|\s*Bars:\s*(\d+)/g;
+    const tradeSummaryPattern = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}:\d{2}\s+(?:AM|PM))\s+\[TRADE SUMMARY \(ID: (\d+)\)\]\s+(Long|Short)\s*\|\s*Line:\s*([^|]+)\s*\|\s*Entry:\s*([\d.]+)\s*\|\s*High:\s*([\d.]+)\s*\|\s*Low:\s*([\d.]+)\s*\|\s*Max Profit:\s*([+-]?[\d.]+)pts\s*\|\s*Max Loss:\s*([+-]?[\d.]+)pts\s*\|\s*Bars:\s*(\d+)/g;
     
     let match;
     while ((match = tradeSummaryPattern.exec(rawData)) !== null) {
       const [, date, time, tradeId, direction, line, entryStr, highStr, lowStr, maxProfitStr, maxLossStr, barsStr] = match;
+      const normalizedDate = this.normalizeDate(date);
       
       // Get actual PNL for this trade
       const pnlPattern = new RegExp(`${date}.*\\[PNL UPDATE \\(ID: ${tradeId}\\)\\].*COMPLETED TRADE PnL: \\$([+-]?[\\d.]+)`, 'g');
@@ -756,7 +767,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       const profitEfficiency = maxProfit > 0 ? (actualPnl / (maxProfit * 5)) : 0; // 5 is point value
 
       trades.push({
-        date,
+        date: normalizedDate,
         time,
         tradeId,
         direction: direction as 'LONG' | 'SHORT',
