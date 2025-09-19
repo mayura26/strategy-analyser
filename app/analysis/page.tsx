@@ -7,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Loader2,  Settings, Trash2, Eye, GitMerge} from 'lucide-react';
+import { Loader2,  Settings, Trash2, Eye, GitMerge, ChevronDown, ChevronUp, Info} from 'lucide-react';
 import { toast } from 'sonner';
-import {  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Legend } from 'recharts';
+import {  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Legend, ScatterChart, Scatter, ReferenceLine } from 'recharts';
+import Plot from 'react-plotly.js';
 import { RunDetailsDialog } from '@/components/RunDetailsDialog';
 import { formatDateOnly, formatDateRange, getDateRangeFromStrings, findOverlappingDates } from '@/lib/date-utils';
 
@@ -60,7 +61,10 @@ export default function AnalysisPage() {
   const [deletingRun, setDeletingRun] = useState<number | null>(null);
   const [viewingRunDetails, setViewingRunDetails] = useState<number | null>(null);
   const [showOverlapOnly, setShowOverlapOnly] = useState(false);
+  const [hideSameDays, setHideSameDays] = useState(false);
   const [showAllParameters, setShowAllParameters] = useState(false);
+  const [displayOptionsExpanded, setDisplayOptionsExpanded] = useState(false);
+  const [parameterSummaryExpanded, setParameterSummaryExpanded] = useState(false);
   const [dateRangeWarnings, setDateRangeWarnings] = useState<string[]>([]);
   const [localDescription, setLocalDescription] = useState<{ [runId: number]: string }>({});
   const [savingDescription, setSavingDescription] = useState<number | null>(null);
@@ -354,7 +358,7 @@ export default function AnalysisPage() {
     // Sort runs by ID for consistent ordering
     const sortedRuns = [...selectedRuns].sort((a, b) => a - b);
     
-    return allDates.map(date => {
+    const chartData = allDates.map(date => {
       const dataPoint: any = { date: formatDateOnly(date) };
       sortedRuns.forEach((runId) => {
         const runData = dailyPnlData[runId] || [];
@@ -363,6 +367,198 @@ export default function AnalysisPage() {
       });
       return dataPoint;
     });
+
+    // Filter out days where all runs have the same PnL value
+    if (hideSameDays && selectedRuns.length > 1) {
+      return chartData.filter(dataPoint => {
+        const values = sortedRuns.map(runId => dataPoint[`run_${runId}`] || 0);
+        const firstValue = values[0];
+        return !values.every(value => value === firstValue);
+      });
+    }
+    
+    return chartData;
+  };
+
+  const getBoxPlotData = () => {
+    if (selectedRuns.length === 0) return [];
+    
+    const sortedRuns = [...selectedRuns].sort((a, b) => a - b);
+    const chartData = getFilteredChartData();
+    
+    return sortedRuns.map(runId => {
+      const run = runs.find(r => r.id === runId);
+      const values = chartData
+        .map(dataPoint => dataPoint[`run_${runId}`] || 0)
+        .filter(value => value !== 0) // Remove zero values (days with no data)
+        .sort((a, b) => a - b);
+      
+      if (values.length === 0) {
+        return {
+          runId,
+          name: run?.run_description 
+            ? `${run.run_name || `Run ${runId}`} - ${run.run_description}`
+            : run?.run_name || `Run ${runId}`,
+          min: 0,
+          q1: 0,
+          median: 0,
+          q3: 0,
+          max: 0,
+          mean: 0,
+          count: 0
+        };
+      }
+      
+      const min = values[0];
+      const max = values[values.length - 1];
+      const q1 = values[Math.floor(values.length * 0.25)];
+      const median = values[Math.floor(values.length * 0.5)];
+      const q3 = values[Math.floor(values.length * 0.75)];
+      const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+      
+      return {
+        runId,
+        name: run?.run_description 
+          ? `${run.run_name || `Run ${runId}`} - ${run.run_description}`
+          : run?.run_name || `Run ${runId}`,
+        min,
+        q1,
+        median,
+        q3,
+        max,
+        mean,
+        count: values.length
+      };
+    });
+  };
+
+  const getHeadToHeadComparison = () => {
+    if (selectedRuns.length !== 2) return null;
+    
+    const [run1Id, run2Id] = selectedRuns.sort((a, b) => a - b);
+    const chartData = getFilteredChartData();
+    
+    let run1Wins = 0;
+    let run2Wins = 0;
+    let ties = 0;
+    let run1TotalOutperformance = 0;
+    let run2TotalOutperformance = 0;
+    const run1WinDays: number[] = [];
+    const run2WinDays: number[] = [];
+    
+    chartData.forEach(dataPoint => {
+      const run1Pnl = dataPoint[`run_${run1Id}`] || 0;
+      const run2Pnl = dataPoint[`run_${run2Id}`] || 0;
+      
+      if (run1Pnl > run2Pnl) {
+        run1Wins++;
+        run1TotalOutperformance += (run1Pnl - run2Pnl);
+        run1WinDays.push(run1Pnl - run2Pnl);
+      } else if (run2Pnl > run1Pnl) {
+        run2Wins++;
+        run2TotalOutperformance += (run2Pnl - run1Pnl);
+        run2WinDays.push(run2Pnl - run1Pnl);
+      } else {
+        ties++;
+      }
+    });
+    
+    const run1 = runs.find(r => r.id === run1Id);
+    const run2 = runs.find(r => r.id === run2Id);
+    
+    return {
+      run1: {
+        id: run1Id,
+        name: run1?.run_description || run1?.run_name || `Run ${run1Id}`,
+        wins: run1Wins,
+        totalOutperformance: run1TotalOutperformance,
+        avgOutperformance: run1Wins > 0 ? run1TotalOutperformance / run1Wins : 0,
+        winDays: run1WinDays
+      },
+      run2: {
+        id: run2Id,
+        name: run2?.run_description || run2?.run_name || `Run ${run2Id}`,
+        wins: run2Wins,
+        totalOutperformance: run2TotalOutperformance,
+        avgOutperformance: run2Wins > 0 ? run2TotalOutperformance / run2Wins : 0,
+        winDays: run2WinDays
+      },
+      ties,
+      totalDays: chartData.length
+    };
+  };
+
+  const getPlotlyBoxPlotData = () => {
+    if (selectedRuns.length === 0) return { traces: [], layout: {} };
+    
+    const sortedRuns = [...selectedRuns].sort((a, b) => a - b);
+    const chartData = getFilteredChartData();
+    
+    const traces = sortedRuns.map((runId, index) => {
+      const run = runs.find(r => r.id === runId);
+      const values = chartData
+        .map(dataPoint => dataPoint[`run_${runId}`] || 0)
+        .filter(value => value !== 0); // Remove zero values (days with no data)
+      
+      const colors = [
+        '#10b981', // Green
+        '#3b82f6', // Blue
+        '#8b5cf6', // Purple
+        '#f59e0b', // Amber
+        '#06b6d4', // Cyan
+      ];
+      
+      return {
+        y: values,
+        type: 'box',
+        name: run?.run_description 
+          ? `${run.run_name || `Run ${runId}`} - ${run.run_description}`
+          : run?.run_name || `Run ${runId}`,
+        marker: {
+          color: colors[index % colors.length],
+          size: 4
+        },
+        boxpoints: 'outliers',
+        jitter: 0.3,
+        pointpos: 0,
+        showlegend: true
+      };
+    });
+    
+    const layout = {
+      title: {
+        text: 'Daily PnL Distribution',
+        font: { color: '#F9FAFB', size: 16 }
+      },
+      xaxis: {
+        showgrid: true,
+        gridcolor: '#374151',
+        color: '#9CA3AF',
+        title: {
+          text: 'Runs',
+          font: { color: '#9CA3AF' }
+        }
+      },
+      yaxis: {
+        showgrid: true,
+        gridcolor: '#374151',
+        color: '#9CA3AF',
+        title: {
+          text: 'Daily PnL ($)',
+          font: { color: '#9CA3AF' }
+        },
+        tickformat: '$,.0f'
+      },
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      font: { color: '#9CA3AF' },
+      legend: {
+        font: { color: '#9CA3AF' }
+      },
+      margin: { t: 40, r: 40, b: 60, l: 60 }
+    };
+    
+    return { traces, layout };
   };
 
 
@@ -640,32 +836,136 @@ export default function AnalysisPage() {
           </CardContent>
         </Card>
 
-        {showOverlapOnly && selectedRuns.length > 1 && getOverlappingDateRange(selectedRuns) && (() => {
-          const overlapTotals = getOverlapPnLTotals(selectedRuns);
-          const totalOverlapPnL = Object.values(overlapTotals).reduce((sum, total) => sum + total, 0);
-          const avgOverlapPnL = totalOverlapPnL / Object.keys(overlapTotals).length;
-          
-          return (
-            <Card className="bg-blue-900/20 border-blue-700">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-blue-300">Overlap Period PnL</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="text-2xl font-bold text-white">
-                    {formatCurrency(avgOverlapPnL)}
-                  </div>
-                  <div className="text-xs text-blue-400">
-                    Avg across {Object.keys(overlapTotals).length} runs
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })()}
       </div>
 
-      <Tabs defaultValue="runs" className="space-y-6">
+      {/* Compact Display Options */}
+      {selectedRuns.length > 0 && (
+        <Card className="bg-gray-800 border-gray-700 mb-2">
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setDisplayOptionsExpanded(!displayOptionsExpanded)}
+                  className="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                >
+                  <Settings className="h-4 w-4" />
+                  Display Options
+                  {displayOptionsExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+                
+                {/* Compact inline options */}
+                <div className="flex items-center gap-6">
+                  {/* Overlap Only */}
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-300 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={showOverlapOnly}
+                        onChange={(e) => setShowOverlapOnly(e.target.checked)}
+                        className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span>Overlap Only</span>
+                      <div className="relative group">
+                        <Info className="h-3 w-3 text-gray-500" />
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                          Show only overlapping dates for accurate comparison
+                          {getOverlappingDateRange(selectedRuns) && (
+                            <div className="text-blue-400">
+                              {getOverlappingDateRange(selectedRuns)?.dates.length} days available
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Hide Same Days */}
+                  {selectedRuns.length > 1 && (
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-300 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={hideSameDays}
+                          onChange={(e) => setHideSameDays(e.target.checked)}
+                          className="rounded border-gray-600 bg-gray-700 text-green-600 focus:ring-green-500"
+                        />
+                        <span>Hide Same Days</span>
+                        <div className="relative group">
+                          <Info className="h-3 w-3 text-gray-500" />
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            Hide days where all runs have identical PnL values
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Show All Parameters */}
+                  {selectedRuns.length > 1 && (
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-300 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={showAllParameters}
+                          onChange={(e) => setShowAllParameters(e.target.checked)}
+                          className="rounded border-gray-600 bg-gray-700 text-amber-600 focus:ring-amber-500"
+                        />
+                        <span>All Parameters</span>
+                        <div className="relative group">
+                          <Info className="h-3 w-3 text-gray-500" />
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            Show all parameters in comparison view, not just changed ones
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Status indicators */}
+              <div className="flex items-center gap-2">
+                {showOverlapOnly && (
+                  <Badge variant="outline" className="text-xs border-blue-500 text-blue-300">
+                    Overlap
+                  </Badge>
+                )}
+                {hideSameDays && selectedRuns.length > 1 && (
+                  <Badge variant="outline" className="text-xs border-green-500 text-green-300">
+                    Filtered
+                  </Badge>
+                )}
+                {showAllParameters && selectedRuns.length > 1 && (
+                  <Badge variant="outline" className="text-xs border-amber-500 text-amber-300">
+                    All Params
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Expanded details (collapsible) */}
+            {displayOptionsExpanded && (
+              <div className="mt-4 pt-4 border-t border-gray-700 space-y-3">
+                <div className="text-xs text-gray-500">
+                  <strong>Overlap Only:</strong> Shows only dates where all selected runs have data for accurate comparison
+                </div>
+                {selectedRuns.length > 1 && (
+                  <>
+                    <div className="text-xs text-gray-500">
+                      <strong>Hide Same Days:</strong> Removes days where all runs have identical PnL values to focus on differences
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      <strong>All Parameters:</strong> Shows all parameters in comparison view instead of just changed ones
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      <Tabs defaultValue="runs" className="space-y-4">
         <TabsList className="bg-gray-800 border-gray-700">
           <TabsTrigger value="runs" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white">Runs Overview</TabsTrigger>
           <TabsTrigger value="comparison" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white">Run Comparison</TabsTrigger>
@@ -912,11 +1212,21 @@ export default function AnalysisPage() {
                 const paramComparison = compareParameters(selectedRuns);
                 return (
                   <Card className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <Settings className="h-5 w-5" />
-                        {showAllParameters ? 'Parameter Overview' : 'Parameter Changes Summary'}
-                      </CardTitle>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Settings className="h-5 w-5" />
+                          <CardTitle className="text-white">
+                            {showAllParameters ? 'Parameter Overview' : 'Parameter Changes Summary'}
+                          </CardTitle>
+                        </div>
+                        <button
+                          onClick={() => setParameterSummaryExpanded(!parameterSummaryExpanded)}
+                          className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors"
+                        >
+                          {parameterSummaryExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </button>
+                      </div>
                       <CardDescription className="text-gray-300">
                         {showAllParameters 
                           ? 'Overview of all parameters across selected runs'
@@ -924,93 +1234,95 @@ export default function AnalysisPage() {
                         }
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      {showAllParameters ? (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                              <h4 className="text-sm font-medium text-blue-400 flex items-center gap-2">
-                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                Total Parameters ({paramComparison.changed.length + paramComparison.unchanged.length})
-                              </h4>
-                              <p className="text-sm text-gray-400">
-                                All parameters from selected runs
-                              </p>
+                    {parameterSummaryExpanded && (
+                      <CardContent>
+                        {showAllParameters ? (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="space-y-2">
+                                <h4 className="text-sm font-medium text-blue-400 flex items-center gap-2">
+                                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                  Total Parameters ({paramComparison.changed.length + paramComparison.unchanged.length})
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  All parameters from selected runs
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <h4 className="text-sm font-medium text-red-400 flex items-center gap-2">
+                                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                  Changed Parameters ({paramComparison.changed.length})
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Parameters with different values
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <h4 className="text-sm font-medium text-green-400 flex items-center gap-2">
+                                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                  Unchanged Parameters ({paramComparison.unchanged.length})
+                                </h4>
+                                <p className="text-sm text-gray-400">
+                                  Parameters with same values
+                                </p>
+                              </div>
                             </div>
+                            {paramComparison.changed.length > 0 && (
+                              <div className="space-y-2">
+                                <h4 className="text-sm font-medium text-red-400 flex items-center gap-2">
+                                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                  Changed Parameters List
+                                </h4>
+                                <div className="space-y-1 max-h-32 overflow-y-auto">
+                                  {paramComparison.changed.map((paramName, index) => (
+                                    <div key={index} className="text-sm text-red-300 bg-red-900/20 px-2 py-1 rounded border border-red-800">
+                                      {paramName}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <h4 className="text-sm font-medium text-red-400 flex items-center gap-2">
                                 <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                                 Changed Parameters ({paramComparison.changed.length})
                               </h4>
-                              <p className="text-sm text-gray-400">
-                                Parameters with different values
-                              </p>
+                              <div className="space-y-1 max-h-32 overflow-y-auto">
+                                {paramComparison.changed.length > 0 ? (
+                                  paramComparison.changed.map((paramName, index) => (
+                                    <div key={index} className="text-sm text-red-300 bg-red-900/20 px-2 py-1 rounded border border-red-800">
+                                      {paramName}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <p className="text-sm text-gray-400 italic">No parameter changes detected</p>
+                                )}
+                              </div>
                             </div>
                             <div className="space-y-2">
                               <h4 className="text-sm font-medium text-green-400 flex items-center gap-2">
                                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                                 Unchanged Parameters ({paramComparison.unchanged.length})
                               </h4>
-                              <p className="text-sm text-gray-400">
-                                Parameters with same values
-                              </p>
-                            </div>
-                          </div>
-                          {paramComparison.changed.length > 0 && (
-                            <div className="space-y-2">
-                              <h4 className="text-sm font-medium text-red-400 flex items-center gap-2">
-                                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                                Changed Parameters List
-                              </h4>
                               <div className="space-y-1 max-h-32 overflow-y-auto">
-                                {paramComparison.changed.map((paramName, index) => (
-                                  <div key={index} className="text-sm text-red-300 bg-red-900/20 px-2 py-1 rounded border border-red-800">
-                                    {paramName}
-                                  </div>
-                                ))}
+                                {paramComparison.unchanged.length > 0 ? (
+                                  paramComparison.unchanged.map((paramName, index) => (
+                                    <div key={index} className="text-sm text-green-300 bg-green-900/20 px-2 py-1 rounded border border-green-800">
+                                      {paramName}
+                                    </div>
+                                  ))
+                                ) : (
+                                  <p className="text-sm text-gray-400 italic">No unchanged parameters</p>
+                                )}
                               </div>
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-medium text-red-400 flex items-center gap-2">
-                              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                              Changed Parameters ({paramComparison.changed.length})
-                            </h4>
-                            <div className="space-y-1 max-h-32 overflow-y-auto">
-                              {paramComparison.changed.length > 0 ? (
-                                paramComparison.changed.map((paramName, index) => (
-                                  <div key={index} className="text-sm text-red-300 bg-red-900/20 px-2 py-1 rounded border border-red-800">
-                                    {paramName}
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-sm text-gray-400 italic">No parameter changes detected</p>
-                              )}
-                            </div>
                           </div>
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-medium text-green-400 flex items-center gap-2">
-                              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                              Unchanged Parameters ({paramComparison.unchanged.length})
-                            </h4>
-                            <div className="space-y-1 max-h-32 overflow-y-auto">
-                              {paramComparison.unchanged.length > 0 ? (
-                                paramComparison.unchanged.map((paramName, index) => (
-                                  <div key={index} className="text-sm text-green-300 bg-green-900/20 px-2 py-1 rounded border border-green-800">
-                                    {paramName}
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-sm text-gray-400 italic">No unchanged parameters</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
+                        )}
+                      </CardContent>
+                    )}
                   </Card>
                 );
               })()}
@@ -1037,83 +1349,6 @@ export default function AnalysisPage() {
                       </p>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Chart Display Option */}
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium text-gray-300">
-                            Show Overlap Only
-                          </label>
-                          <Badge 
-                            variant="outline" 
-                            className={`text-xs ${showOverlapOnly ? 'bg-blue-600/20 border-blue-500 text-blue-300' : 'border-gray-600 text-gray-400'}`}
-                          >
-                            {showOverlapOnly ? 'ON' : 'OFF'}
-                          </Badge>
-                        </div>
-                        <div className="relative">
-                          <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="1"
-                            value={showOverlapOnly ? 1 : 0}
-                            onChange={(e) => setShowOverlapOnly(e.target.value === '1')}
-                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                            style={{
-                              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${showOverlapOnly ? '100%' : '0%'}, #374151 ${showOverlapOnly ? '100%' : '0%'}, #374151 100%)`
-                            }}
-                          />
-                          <div className="flex justify-between text-xs text-gray-500 mt-1">
-                            <span>All Dates</span>
-                            <span>Overlap Only</span>
-                          </div>
-                        </div>
-                        {getOverlappingDateRange(selectedRuns) && (
-                          <div className="text-xs text-blue-400">
-                            {getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days available
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Parameter Display Option */}
-                      {selectedRuns.length > 1 && (
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium text-gray-300">
-                              Show All Parameters
-                            </label>
-                            <Badge 
-                              variant="outline" 
-                              className={`text-xs ${showAllParameters ? 'bg-green-600/20 border-green-500 text-green-300' : 'border-gray-600 text-gray-400'}`}
-                            >
-                              {showAllParameters ? 'ON' : 'OFF'}
-                            </Badge>
-                          </div>
-                          <div className="relative">
-                            <input
-                              type="range"
-                              min="0"
-                              max="1"
-                              step="1"
-                              value={showAllParameters ? 1 : 0}
-                              onChange={(e) => setShowAllParameters(e.target.value === '1')}
-                              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                              style={{
-                                background: `linear-gradient(to right, #10b981 0%, #10b981 ${showAllParameters ? '100%' : '0%'}, #374151 ${showAllParameters ? '100%' : '0%'}, #374151 100%)`
-                              }}
-                            />
-                            <div className="flex justify-between text-xs text-gray-500 mt-1">
-                              <span>Changes Only</span>
-                              <span>All Parameters</span>
-                            </div>
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            {showAllParameters ? 'Viewing complete parameter sets' : 'Focusing on differences'}
-                          </div>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1281,38 +1516,293 @@ export default function AnalysisPage() {
         <TabsContent value="charts" className="space-y-6">
           {selectedRuns.length > 0 ? (
             <div className="space-y-6">
-              {/* Chart Controls */}
-              <Card className="bg-gray-800 border-gray-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-white font-semibold">Chart Display Options</h4>
-                      <p className="text-gray-400 text-sm">
-                        {showOverlapOnly 
-                          ? 'Showing only overlapping dates for accurate comparison'
-                          : 'Showing all dates from selected runs'
-                        }
-                      </p>
+
+            {/* Proper Box Plot Distribution */}
+            {selectedRuns.length > 1 && (() => {
+              const plotData = getPlotlyBoxPlotData();
+              return (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Daily PnL Distribution</CardTitle>
+                    <CardDescription>
+                      Box plot showing the distribution of daily PnL values for each run
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-96 bg-gray-900/50 rounded-lg p-4">
+                      <Plot
+                        data={plotData.traces}
+                        layout={plotData.layout}
+                        config={{
+                          displayModeBar: true,
+                          displaylogo: false,
+                          modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
+                          toImageButtonOptions: {
+                            format: 'png',
+                            filename: 'daily-pnl-distribution',
+                            height: 500,
+                            width: 800,
+                            scale: 2
+                          }
+                        }}
+                        style={{ width: '100%', height: '100%' }}
+                      />
                     </div>
-                    <div className="flex items-center gap-3">
-                      <label className="flex items-center gap-2 text-sm text-gray-300">
-                        <input
-                          type="checkbox"
-                          checked={showOverlapOnly}
-                          onChange={(e) => setShowOverlapOnly(e.target.checked)}
-                          className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
-                        />
-                        Show Overlap Only
-                      </label>
-                      {getOverlappingDateRange(selectedRuns) && (
-                        <Badge variant="outline" className="text-xs">
-                          {getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days
-                        </Badge>
-                      )}
+                    
+                    {/* Statistical Summary */}
+                    <div className="mt-4 space-y-4">
+                      {getBoxPlotData().map((data, index) => {
+                        const colors = [
+                          { positive: '#10b981', negative: '#ef4444' }, // Green/Red
+                          { positive: '#3b82f6', negative: '#dc2626' }, // Blue/Red
+                          { positive: '#8b5cf6', negative: '#b91c1c' }, // Purple/Red
+                          { positive: '#f59e0b', negative: '#dc2626' }, // Amber/Red
+                          { positive: '#06b6d4', negative: '#dc2626' }, // Cyan/Red
+                        ];
+                        const colorScheme = colors[index % colors.length];
+                        
+                        return (
+                          <div key={data.runId} className="bg-gray-900/50 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div 
+                                className="w-4 h-4 rounded-sm" 
+                                style={{ backgroundColor: colorScheme.positive }}
+                              />
+                              <h4 className="text-sm font-medium text-white">{data.name}</h4>
+                              <Badge variant="outline" className="text-xs">
+                                {data.count} days
+                              </Badge>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <div className="space-y-1">
+                                <div className="text-xs text-gray-400">Minimum</div>
+                                <div className="text-sm font-medium" style={{ color: data.min >= 0 ? colorScheme.positive : colorScheme.negative }}>
+                                  ${data.min.toFixed(2)}
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="text-xs text-gray-400">Q1 (25th percentile)</div>
+                                <div className="text-sm font-medium" style={{ color: data.q1 >= 0 ? colorScheme.positive : colorScheme.negative }}>
+                                  ${data.q1.toFixed(2)}
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="text-xs text-gray-400">Median (50th percentile)</div>
+                                <div className="text-sm font-medium" style={{ color: data.median >= 0 ? colorScheme.positive : colorScheme.negative }}>
+                                  ${data.median.toFixed(2)}
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="text-xs text-gray-400">Q3 (75th percentile)</div>
+                                <div className="text-sm font-medium" style={{ color: data.q3 >= 0 ? colorScheme.positive : colorScheme.negative }}>
+                                  ${data.q3.toFixed(2)}
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="text-xs text-gray-400">Maximum</div>
+                                <div className="text-sm font-medium" style={{ color: data.max >= 0 ? colorScheme.positive : colorScheme.negative }}>
+                                  ${data.max.toFixed(2)}
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="text-xs text-gray-400">Average (Mean)</div>
+                                <div className="text-sm font-medium" style={{ color: data.mean >= 0 ? colorScheme.positive : colorScheme.negative }}>
+                                  ${data.mean.toFixed(2)}
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="text-xs text-gray-400">Range</div>
+                                <div className="text-sm font-medium text-gray-300">
+                                  ${(data.max - data.min).toFixed(2)}
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="text-xs text-gray-400">IQR (Q3-Q1)</div>
+                                <div className="text-sm font-medium text-gray-300">
+                                  ${(data.q3 - data.q1).toFixed(2)}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
+            {/* Head-to-Head Comparison */}
+            {selectedRuns.length === 2 && (() => {
+              const headToHead = getHeadToHeadComparison();
+              if (!headToHead) return null;
+              
+              const colors = [
+                { positive: '#10b981', negative: '#ef4444' }, // Green/Red
+                { positive: '#3b82f6', negative: '#dc2626' }, // Blue/Red
+              ];
+              
+              return (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Head-to-Head Daily Performance</CardTitle>
+                    <CardDescription>
+                      Day-by-day comparison showing which run outperformed the other and by how much
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      {/* Summary Stats */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-gray-900/50 rounded-lg p-4 text-center">
+                          <div className="text-2xl font-bold text-white">{headToHead.run1.wins}</div>
+                          <div className="text-sm text-gray-400">Days {headToHead.run1.name} Won</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {((headToHead.run1.wins / headToHead.totalDays) * 100).toFixed(1)}% of days
+                          </div>
+                        </div>
+                        
+                        <div className="bg-gray-900/50 rounded-lg p-4 text-center">
+                          <div className="text-2xl font-bold text-gray-300">{headToHead.ties}</div>
+                          <div className="text-sm text-gray-400">Tie Days</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {((headToHead.ties / headToHead.totalDays) * 100).toFixed(1)}% of days
+                          </div>
+                        </div>
+                        
+                        <div className="bg-gray-900/50 rounded-lg p-4 text-center">
+                          <div className="text-2xl font-bold text-white">{headToHead.run2.wins}</div>
+                          <div className="text-sm text-gray-400">Days {headToHead.run2.name} Won</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {((headToHead.run2.wins / headToHead.totalDays) * 100).toFixed(1)}% of days
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Detailed Comparison */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Run 1 Stats */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-4 h-4 rounded-sm" 
+                              style={{ backgroundColor: colors[0].positive }}
+                            />
+                            <h4 className="text-lg font-medium text-white">{headToHead.run1.name}</h4>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-400">Winning Days</span>
+                              <span className="text-sm font-medium text-white">{headToHead.run1.wins}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-400">Total Outperformance</span>
+                              <span className="text-sm font-medium" style={{ color: headToHead.run1.totalOutperformance >= 0 ? colors[0].positive : colors[0].negative }}>
+                                ${headToHead.run1.totalOutperformance.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-400">Average Win Margin</span>
+                              <span className="text-sm font-medium" style={{ color: headToHead.run1.avgOutperformance >= 0 ? colors[0].positive : colors[0].negative }}>
+                                ${headToHead.run1.avgOutperformance.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-400">Best Win Day</span>
+                              <span className="text-sm font-medium" style={{ color: colors[0].positive }}>
+                                ${Math.max(...headToHead.run1.winDays, 0).toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-400">Worst Win Day</span>
+                              <span className="text-sm font-medium" style={{ color: colors[0].positive }}>
+                                ${Math.min(...headToHead.run1.winDays, 0).toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Run 2 Stats */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-4 h-4 rounded-sm" 
+                              style={{ backgroundColor: colors[1].positive }}
+                            />
+                            <h4 className="text-lg font-medium text-white">{headToHead.run2.name}</h4>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-400">Winning Days</span>
+                              <span className="text-sm font-medium text-white">{headToHead.run2.wins}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-400">Total Outperformance</span>
+                              <span className="text-sm font-medium" style={{ color: headToHead.run2.totalOutperformance >= 0 ? colors[1].positive : colors[1].negative }}>
+                                ${headToHead.run2.totalOutperformance.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-400">Average Win Margin</span>
+                              <span className="text-sm font-medium" style={{ color: headToHead.run2.avgOutperformance >= 0 ? colors[1].positive : colors[1].negative }}>
+                                ${headToHead.run2.avgOutperformance.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-400">Best Win Day</span>
+                              <span className="text-sm font-medium" style={{ color: colors[1].positive }}>
+                                ${Math.max(...headToHead.run2.winDays, 0).toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-gray-400">Worst Win Day</span>
+                              <span className="text-sm font-medium" style={{ color: colors[1].positive }}>
+                                ${Math.min(...headToHead.run2.winDays, 0).toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Winner Summary */}
+                      <div className="bg-gray-900/50 rounded-lg p-4">
+                        <div className="text-center">
+                          <h4 className="text-lg font-medium text-white mb-2">Overall Winner</h4>
+                          {headToHead.run1.totalOutperformance > headToHead.run2.totalOutperformance ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <div 
+                                className="w-4 h-4 rounded-sm" 
+                                style={{ backgroundColor: colors[0].positive }}
+                              />
+                              <span className="text-white font-medium">{headToHead.run1.name}</span>
+                              <span className="text-gray-400">
+                                wins by ${(headToHead.run1.totalOutperformance - headToHead.run2.totalOutperformance).toFixed(2)}
+                              </span>
+                            </div>
+                          ) : headToHead.run2.totalOutperformance > headToHead.run1.totalOutperformance ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <div 
+                                className="w-4 h-4 rounded-sm" 
+                                style={{ backgroundColor: colors[1].positive }}
+                              />
+                              <span className="text-white font-medium">{headToHead.run2.name}</span>
+                              <span className="text-gray-400">
+                                wins by ${(headToHead.run2.totalOutperformance - headToHead.run1.totalOutperformance).toFixed(2)}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="text-gray-400">It's a tie!</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
             <Card>
               <CardHeader>
@@ -1321,19 +1811,43 @@ export default function AnalysisPage() {
                   Compare daily performance across selected runs.
                     {showOverlapOnly && getOverlappingDateRange(selectedRuns) && (
                       <div className="block text-blue-400 mt-1">
-                        <div>Showing {getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days</div>
+                        <div>
+                          Showing {getFilteredChartData().length} days
+                          {hideSameDays && selectedRuns.length > 1 && ' (filtered to show only different days)'}
+                          {!hideSameDays && ` (${getOverlappingDateRange(selectedRuns)?.dates.length} overlapping days)`}
+                        </div>
                         {selectedRuns.length > 0 && (() => {
                           const overlapTotals = getOverlapPnLTotals(selectedRuns);
+                          const colors = [
+                            { positive: '#10b981', negative: '#ef4444' }, // Green/Red
+                            { positive: '#3b82f6', negative: '#dc2626' }, // Blue/Red
+                            { positive: '#8b5cf6', negative: '#b91c1c' }, // Purple/Red
+                            { positive: '#f59e0b', negative: '#dc2626' }, // Amber/Red
+                            { positive: '#06b6d4', negative: '#dc2626' }, // Cyan/Red
+                          ];
                           return (
                             <div className="mt-2 space-y-1">
                               <div className="text-sm font-medium">Overlap Period PnL Totals:</div>
-                              {selectedRuns.map(runId => {
+                              {selectedRuns.sort((a, b) => a - b).map((runId, index) => {
                                 const run = runs.find(r => r.id === runId);
                                 const total = overlapTotals[runId] || 0;
+                                const colorScheme = colors[index % colors.length];
+                                const displayName = run?.run_description 
+                                  ? `${run.run_name || `Run ${runId}`} - ${run.run_description}`
+                                  : run?.run_name || `Run ${runId}`;
                                 return (
-                                  <div key={runId} className="text-xs flex justify-between">
-                                    <span>{run?.run_name || `Run ${runId}`}:</span>
-                                    <span className={total >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                  <div key={runId} className="text-xs flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                      <div 
+                                        className="w-3 h-3 rounded-sm" 
+                                        style={{ backgroundColor: colorScheme.positive }}
+                                      />
+                                      <span>{displayName}:</span>
+                                    </div>
+                                    <span 
+                                      className="font-medium"
+                                      style={{ color: total >= 0 ? colorScheme.positive : colorScheme.negative }}
+                                    >
                                       {formatCurrency(total)}
                                     </span>
                                   </div>
