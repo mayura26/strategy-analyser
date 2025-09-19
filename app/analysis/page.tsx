@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,7 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Loader2,  Settings, Trash2, Eye, GitMerge, ChevronDown, ChevronUp, Info} from 'lucide-react';
 import { toast } from 'sonner';
 import {  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Legend, ScatterChart, Scatter, ReferenceLine } from 'recharts';
-import Plot from 'react-plotly.js';
+const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 import { RunDetailsDialog } from '@/components/RunDetailsDialog';
 import { formatDateOnly, formatDateRange, getDateRangeFromStrings, findOverlappingDates } from '@/lib/date-utils';
 
@@ -510,7 +511,7 @@ export default function AnalysisPage() {
       
       return {
         y: values,
-        type: 'box',
+        type: 'box' as const,
         name: run?.run_description 
           ? `${run.run_name || `Run ${runId}`} - ${run.run_description}`
           : run?.run_name || `Run ${runId}`,
@@ -518,7 +519,7 @@ export default function AnalysisPage() {
           color: colors[index % colors.length],
           size: 4
         },
-        boxpoints: 'outliers',
+        boxpoints: 'outliers' as const,
         jitter: 0.3,
         pointpos: 0,
         showlegend: true
