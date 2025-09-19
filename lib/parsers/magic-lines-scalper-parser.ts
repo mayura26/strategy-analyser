@@ -376,16 +376,39 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     return trades;
   }
 
-  private calculateDailyPnl(tradeData: Array<{ date: string; pnl: number; bars: number }>): Array<{ date: string; pnl: number; trades: number }> {
+  private calculateDailyPnl(tradeData: Array<{ date: string; pnl: number; bars: number }>): Array<{ date: string; pnl: number; trades: number; highestIntradayPnl?: number; lowestIntradayPnl?: number }> {
     
-    const dailyMap = new Map<string, { pnl: number; trades: number }>();
+    const dailyMap = new Map<string, { 
+      pnl: number; 
+      trades: number; 
+      highestIntradayPnl: number; 
+      lowestIntradayPnl: number;
+      runningPnl: number;
+    }>();
 
     for (const trade of tradeData) {
-      const existing = dailyMap.get(trade.date) || { pnl: 0, trades: 0 };
-      const newPnl = existing.pnl + (isFinite(trade.pnl) ? trade.pnl : 0);
+      const existing = dailyMap.get(trade.date) || { 
+        pnl: 0, 
+        trades: 0, 
+        highestIntradayPnl: 0, 
+        lowestIntradayPnl: 0,
+        runningPnl: 0
+      };
+      
+      const tradePnl = isFinite(trade.pnl) ? trade.pnl : 0;
+      const newRunningPnl = existing.runningPnl + tradePnl;
+      const newPnl = existing.pnl + tradePnl;
+      
+      // Update intraday highs and lows
+      const newHighest = Math.max(existing.highestIntradayPnl, newRunningPnl);
+      const newLowest = Math.min(existing.lowestIntradayPnl, newRunningPnl);
+      
       dailyMap.set(trade.date, {
         pnl: newPnl,
-        trades: existing.trades + 1
+        trades: existing.trades + 1,
+        highestIntradayPnl: newHighest,
+        lowestIntradayPnl: newLowest,
+        runningPnl: newRunningPnl
       });
     }
 
@@ -393,7 +416,9 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       .map(([date, data]) => ({ 
         date, 
         pnl: isFinite(data.pnl) ? data.pnl : 0, 
-        trades: data.trades 
+        trades: data.trades,
+        highestIntradayPnl: isFinite(data.highestIntradayPnl) ? data.highestIntradayPnl : undefined,
+        lowestIntradayPnl: isFinite(data.lowestIntradayPnl) ? data.lowestIntradayPnl : undefined
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
     

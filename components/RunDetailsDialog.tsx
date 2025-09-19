@@ -25,6 +25,8 @@ interface DailyPnl {
   date: string;
   pnl: number;
   trades: number;
+  highest_intraday_pnl?: number;
+  lowest_intraday_pnl?: number;
 }
 
 interface Parameter {
@@ -106,8 +108,14 @@ export const RunDetailsDialog = ({
   const [rawDataError, setRawDataError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
 
-  const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
-  const formatPercentage = (value: number) => `${(value * 100).toFixed(1)}%`;
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) return '-';
+    return `$${value.toFixed(2)}`;
+  };
+  const formatPercentage = (value: number | null | undefined) => {
+    if (value === null || value === undefined || isNaN(value)) return '-';
+    return `${(value * 100).toFixed(1)}%`;
+  };
 
   // Fetch data when dialog opens
   useEffect(() => {
@@ -675,7 +683,9 @@ export const RunDetailsDialog = ({
                     <thead>
                       <tr className="border-b border-gray-600">
                         <th className="text-left py-1 text-gray-300 font-medium">Date</th>
-                        <th className="text-right py-1 text-gray-300 font-medium">PNL</th>
+                        <th className="text-right py-1 text-gray-300 font-medium">Final PNL</th>
+                        <th className="text-right py-1 text-gray-300 font-medium">Intraday High</th>
+                        <th className="text-right py-1 text-gray-300 font-medium">Intraday Low</th>
                         <th className="text-right py-1 text-gray-300 font-medium">Trades</th>
                       </tr>
                     </thead>
@@ -685,6 +695,12 @@ export const RunDetailsDialog = ({
                           <td className="py-1 text-gray-300">{formatDateOnly(day.date)}</td>
                           <td className={`py-1 text-right font-medium ${day.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                             {formatCurrency(day.pnl)}
+                          </td>
+                          <td className={`py-1 text-right font-medium ${day.highest_intraday_pnl !== null && day.highest_intraday_pnl !== undefined && day.highest_intraday_pnl >= 0 ? 'text-green-400' : day.highest_intraday_pnl !== null && day.highest_intraday_pnl !== undefined ? 'text-red-400' : 'text-gray-400'}`}>
+                            {formatCurrency(day.highest_intraday_pnl)}
+                          </td>
+                          <td className={`py-1 text-right font-medium ${day.lowest_intraday_pnl !== null && day.lowest_intraday_pnl !== undefined && day.lowest_intraday_pnl >= 0 ? 'text-green-400' : day.lowest_intraday_pnl !== null && day.lowest_intraday_pnl !== undefined ? 'text-red-400' : 'text-gray-400'}`}>
+                            {formatCurrency(day.lowest_intraday_pnl)}
                           </td>
                           <td className="py-1 text-right text-gray-300">{day.trades}</td>
                         </tr>

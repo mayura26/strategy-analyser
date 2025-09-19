@@ -12,6 +12,8 @@ export interface ParsedRunData {
     date: string;
     pnl: number;
     trades?: number;
+    highestIntradayPnl?: number;
+    lowestIntradayPnl?: number;
   }>;
   parameters: Array<{
     name: string;

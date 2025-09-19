@@ -43,6 +43,8 @@ interface DailyPnl {
   date: string;
   pnl: number;
   trades: number;
+  highest_intraday_pnl?: number;
+  lowest_intraday_pnl?: number;
 }
 
 interface Parameter {

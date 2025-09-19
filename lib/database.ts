@@ -76,6 +76,8 @@ export async function initializeDatabase() {
         date DATE NOT NULL,
         pnl REAL NOT NULL,
         trades INTEGER DEFAULT 0,
+        highest_intraday_pnl REAL,
+        lowest_intraday_pnl REAL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (run_id) REFERENCES strategy_runs (id) ON DELETE CASCADE,
         UNIQUE(run_id, date)
@@ -166,6 +168,23 @@ export async function initializeDatabase() {
     try {
       await db.execute(`
         ALTER TABLE strategy_runs ADD COLUMN raw_data TEXT
+      `);
+    } catch {
+      // Column might already exist, ignore the error
+    }
+
+    // Add intraday PNL columns to daily_pnl if they don't exist
+    try {
+      await db.execute(`
+        ALTER TABLE daily_pnl ADD COLUMN highest_intraday_pnl REAL
+      `);
+    } catch {
+      // Column might already exist, ignore the error
+    }
+
+    try {
+      await db.execute(`
+        ALTER TABLE daily_pnl ADD COLUMN lowest_intraday_pnl REAL
       `);
     } catch {
       // Column might already exist, ignore the error

@@ -18,7 +18,7 @@ export async function GET(
 
     const result = await db.execute({
       sql: `
-        SELECT date, pnl, trades
+        SELECT date, pnl, trades, highest_intraday_pnl, lowest_intraday_pnl
         FROM daily_pnl
         WHERE run_id = ?
         ORDER BY date ASC

@@ -60,10 +60,10 @@ export async function POST(request: NextRequest) {
     for (const daily of parsedData.dailyPnl) {
       await db.execute({
         sql: `
-          INSERT INTO daily_pnl (run_id, date, pnl, trades)
-          VALUES (?, ?, ?, ?)
+          INSERT INTO daily_pnl (run_id, date, pnl, trades, highest_intraday_pnl, lowest_intraday_pnl)
+          VALUES (?, ?, ?, ?, ?, ?)
         `,
-        args: [runId, daily.date, daily.pnl, daily.trades || 0]
+        args: [runId, daily.date, daily.pnl, daily.trades || 0, daily.highestIntradayPnl || null, daily.lowestIntradayPnl || null]
       });
     }
 
