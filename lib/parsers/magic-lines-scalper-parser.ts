@@ -137,6 +137,9 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     const magicLinesParams = [
       { name: 'Upside Levels', pattern: /Upside Levels:\s*([\d.,\s]+)/i, type: 'string' as const },
       { name: 'Downside Levels', pattern: /Downside Levels:\s*([\d.,\s]+)/i, type: 'string' as const },
+      { name: 'Morning Lines', pattern: /Morning Lines:\s*(True|False)/i, type: 'boolean' as const },
+      { name: 'Duration', pattern: /Duration:\s*(\d+)min/i, type: 'number' as const },
+      { name: 'Morning Levels', pattern: /Levels:\s*([\d.,\s]+)/i, type: 'string' as const },
       { name: 'Mini Mode', pattern: /Mini Mode:\s*(True|False)/i, type: 'boolean' as const },
       { name: 'Instrument', pattern: /Instrument:\s*(\w+)/i, type: 'string' as const },
     ];

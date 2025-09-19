@@ -199,6 +199,7 @@ export const RunDetailsDialog = ({
       'Time Parameters': [],
       'Protective Functions': [],
       'Magic Lines': [],
+      'Morning Lines': [],
       'Other': []
     };
 
@@ -227,7 +228,10 @@ export const RunDetailsDialog = ({
       } else if (name.includes('trade completion protect') || name.includes('max profit delay') || 
                  name.includes('max loss delay')) {
         categories['Protective Functions'].push(param);
-      } else if (name.includes('level') || name.includes('mini mode') || name.includes('instrument')) {
+      } else if (name.includes('morning lines') || name.includes('duration') || name.includes('morning levels')) {
+        categories['Morning Lines'].push(param);
+      } else if (name.includes('level') || name.includes('mini mode') || name.includes('instrument') || 
+                 name.includes('upside levels') || name.includes('downside levels')) {
         categories['Magic Lines'].push(param);
       } else {
         categories['Other'].push(param);
