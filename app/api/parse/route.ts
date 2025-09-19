@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
     const runResult = await db.execute({
       sql: `
         INSERT INTO strategy_runs 
-        (strategy_id, run_name, run_description, net_pnl, total_trades, win_rate, profit_factor, max_drawdown, sharpe_ratio)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (strategy_id, run_name, run_description, net_pnl, total_trades, win_rate, profit_factor, max_drawdown, sharpe_ratio, raw_data)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       args: [
         strategyId,
@@ -49,7 +49,8 @@ export async function POST(request: NextRequest) {
         parsedData.winRate || null,
         parsedData.profitFactor || null,
         parsedData.maxDrawdown || null,
-        parsedData.sharpeRatio || null
+        parsedData.sharpeRatio || null,
+        rawData
       ]
     });
 

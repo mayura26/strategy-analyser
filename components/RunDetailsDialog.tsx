@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BarChart3, Settings, Calendar, Activity, Target } from 'lucide-react';
+import { BarChart3, Settings, Calendar, Activity, Target, FileText } from 'lucide-react';
 import { formatDateOnly } from '@/lib/date-utils';
 
 interface Run {
@@ -101,6 +101,9 @@ export const RunDetailsDialog = ({
   const [detailedTrades, setDetailedTrades] = useState<DetailedTrade[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [loadingTrades, setLoadingTrades] = useState(false);
+  const [rawData, setRawData] = useState<string | null>(null);
+  const [loadingRawData, setLoadingRawData] = useState(false);
+  const [rawDataError, setRawDataError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
 
   const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
@@ -112,6 +115,7 @@ export const RunDetailsDialog = ({
       fetchMetrics();
       fetchEvents();
       fetchTrades();
+      fetchRawData();
     }
   }, [isOpen, run.id]);
 
@@ -157,6 +161,30 @@ export const RunDetailsDialog = ({
       console.error('Error fetching trades:', error);
     } finally {
       setLoadingTrades(false);
+    }
+  };
+
+  const fetchRawData = async () => {
+    setLoadingRawData(true);
+    setRawDataError(null);
+    try {
+      const response = await fetch(`/api/runs/${run.id}/raw-data`);
+      const data = await response.json();
+      if (data.success) {
+        setRawData(data.rawData);
+        setRawDataError(null);
+      } else {
+        // Handle API errors gracefully
+        console.warn('Failed to fetch raw data:', data.error);
+        setRawData(null);
+        setRawDataError(data.error || 'Failed to fetch raw data');
+      }
+    } catch (error) {
+      console.error('Error fetching raw data:', error);
+      setRawData(null);
+      setRawDataError('Network error while fetching raw data');
+    } finally {
+      setLoadingRawData(false);
     }
   };
 
@@ -220,8 +248,8 @@ export const RunDetailsDialog = ({
                  name.includes('sl adjustment') || name.includes('sl levels') || 
                  name.includes('sl high/low') || name.includes('tp adjustment') || 
                  name.includes('tp levels') || name.includes('tp x1') || name.includes('tp x2') ||
-                 name.includes('trim tp near miss') || 
-                 (name === 'distance') || (name === 'offset')) {
+                 name.includes('trim tp near miss') || name.includes('trim distance') || 
+                 name.includes('trim offset') || (name === 'distance') || (name === 'offset')) {
         categories['Position Management'].push(param);
       } else if (name.includes('time') || name.includes('start') || name.includes('end')) {
         categories['Time Parameters'].push(param);
@@ -248,7 +276,7 @@ export const RunDetailsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className={`${activeTab === 'lines' ? 'max-w-[95vw] sm:max-w-[95vw]' : 'max-w-4xl sm:max-w-4xl'} max-h-[90vh] bg-gray-800 border-gray-700 flex flex-col`}>
+      <DialogContent className={`${activeTab === 'lines' || activeTab === 'raw' ? 'max-w-[95vw] sm:max-w-[95vw]' : 'max-w-4xl sm:max-w-4xl'} max-h-[90vh] bg-gray-800 border-gray-700 flex flex-col`}>
         <DialogHeader className="pb-2">
           <div className="flex items-center gap-2 mb-1">
             <Badge variant="outline" className="bg-blue-600/20 border-blue-500 text-blue-300 text-xs px-2 py-0.5">
@@ -315,13 +343,14 @@ export const RunDetailsDialog = ({
         </DialogHeader>
         
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col flex-1 min-h-0">
-          <TabsList className="grid w-full grid-cols-6 bg-gray-700 flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-7 bg-gray-700 flex-shrink-0">
             <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
             <TabsTrigger value="lines" className="text-xs">Magic Lines</TabsTrigger>
             <TabsTrigger value="events" className="text-xs">Events</TabsTrigger>
             <TabsTrigger value="trades" className="text-xs">Trade Analysis</TabsTrigger>
             <TabsTrigger value="daily" className="text-xs">Daily PNL</TabsTrigger>
             <TabsTrigger value="params" className="text-xs">Parameters</TabsTrigger>
+            <TabsTrigger value="raw" className="text-xs">Raw Data</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-3 mt-3 flex-1 overflow-y-auto">
@@ -679,14 +708,34 @@ export const RunDetailsDialog = ({
                         <Badge variant="outline" className="text-xs">{parameters.length} params</Badge>
                   </h3>
                   <div className="grid grid-cols-1 gap-1">
-                        {parameters.map((param, index) => (
-                      <div key={index} className="flex justify-between items-center py-1.5 px-2 bg-gray-600 rounded">
-                        <span className="text-gray-300 text-xs">{param.parameter_name}</span>
-                        <span className="text-white font-mono bg-gray-800 px-1.5 py-0.5 rounded text-xs">
-                          {param.parameter_value}
-                        </span>
-                      </div>
-                    ))}
+                        {parameters.map((param, index) => {
+                          // Special styling for Morning Lines enabled/disabled
+                          const isMorningLinesEnabled = param.parameter_name === 'Morning Lines' && param.parameter_value === 'True';
+                          const isMorningLinesDisabled = param.parameter_name === 'Morning Lines' && param.parameter_value === 'False';
+                          
+                          return (
+                            <div key={index} className={`flex justify-between items-center py-1.5 px-2 rounded ${
+                              isMorningLinesEnabled ? 'bg-green-900/30 border border-green-600' :
+                              isMorningLinesDisabled ? 'bg-red-900/30 border border-red-600' :
+                              'bg-gray-600'
+                            }`}>
+                              <span className={`text-xs ${
+                                isMorningLinesEnabled ? 'text-green-300' :
+                                isMorningLinesDisabled ? 'text-red-300' :
+                                'text-gray-300'
+                              }`}>
+                                {param.parameter_name}
+                              </span>
+                              <span className={`font-mono px-1.5 py-0.5 rounded text-xs ${
+                                isMorningLinesEnabled ? 'bg-green-800 text-green-200' :
+                                isMorningLinesDisabled ? 'bg-red-800 text-red-200' :
+                                'bg-gray-800 text-white'
+                              }`}>
+                                {param.parameter_value}
+                              </span>
+                            </div>
+                          );
+                        })}
                   </div>
                 </CardContent>
             </Card>
@@ -695,6 +744,43 @@ export const RunDetailsDialog = ({
             ) : (
               <div className="text-center text-gray-400 py-4">No parameters available</div>
           )}
+          </TabsContent>
+
+          <TabsContent value="raw" className="space-y-3 mt-3 flex-1 overflow-y-auto">
+            {loadingRawData ? (
+              <div className="text-center text-gray-400 py-4">Loading raw data...</div>
+            ) : rawDataError ? (
+              <div className="text-center text-red-400 py-4">
+                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Error loading raw data</p>
+                <p className="text-xs text-red-300 mt-1">{rawDataError}</p>
+              </div>
+            ) : rawData ? (
+              <Card className="bg-gray-700 border-gray-600">
+                <CardContent className="p-3">
+                  <h3 className="text-white flex items-center gap-2 text-sm mb-3">
+                    <FileText className="h-4 w-4" />
+                    Original Raw Data
+                    <Badge variant="outline" className="text-xs">
+                      {rawData.length} characters
+                    </Badge>
+                  </h3>
+                  <div className="bg-gray-900 border border-gray-600 rounded p-3 max-h-96 overflow-y-auto">
+                    <pre className="text-gray-300 text-xs whitespace-pre-wrap font-mono leading-relaxed">
+                      {rawData}
+                    </pre>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="text-center text-gray-400 py-4">
+                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No raw data available</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  This run was created before raw data storage was implemented
+                </p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </DialogContent>
