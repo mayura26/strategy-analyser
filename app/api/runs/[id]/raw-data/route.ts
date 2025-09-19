@@ -4,10 +4,11 @@ import '@/lib/init-db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const runId = parseInt(params.id);
+    const { id } = await params;
+    const runId = parseInt(id);
 
     if (isNaN(runId)) {
       return NextResponse.json(
