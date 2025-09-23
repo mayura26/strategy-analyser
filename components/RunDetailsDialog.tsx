@@ -244,7 +244,7 @@ export const RunDetailsDialog = ({
       
       if (name.includes('trade quantity') || name.includes('max gain') || name.includes('max loss') || 
           name.includes('consecutive') || name.includes('loss cut') || name.includes('take profit') || 
-          name.includes('stop loss')) {
+          name.includes('stop loss') || name.includes('early finish')) {
         categories['Main Parameters'].push(param);
       } else if (name.includes('min distance from line') || name.includes('max distance from line') || 
                  name.includes('entry offset') || name.includes('bar count') || 

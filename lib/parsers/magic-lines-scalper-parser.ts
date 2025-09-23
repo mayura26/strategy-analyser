@@ -84,6 +84,9 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       { name: 'Loss Cut Off', pattern: /Loss Cut Off:\s*\$(\d+)/i, type: 'number' as const },
       { name: 'Full Take Profit', pattern: /Full Take Profit:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
       { name: 'Full Stop Loss', pattern: /Full Stop Loss:\s*(\d+(?:\.\d+)?)pts/i, type: 'number' as const },
+      { name: 'Early Finish', pattern: /Early Finish:\s*(True|False)/i, type: 'boolean' as const },
+      { name: 'Early Finish Time', pattern: /Early Finish:.*?Time:\s*(\d{2}:\d{2})/i, type: 'string' as const },
+      { name: 'Early Finish Max Gain', pattern: /Early Finish:.*?Max Gain:\s*\$(\d+)/i, type: 'number' as const },
     ];
 
     // Entry logic parameters
