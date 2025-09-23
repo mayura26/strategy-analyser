@@ -52,12 +52,6 @@ export default function RootLayout({
                     Upload Data
                   </Button>
                 </Link>
-                <Link href="/analysis">
-                  <Button variant="ghost" size="sm">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Analysis
-                  </Button>
-                </Link>
               </div>
             </div>
           </div>
