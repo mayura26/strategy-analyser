@@ -77,6 +77,7 @@ export default function AnalysisPage() {
   const [mergedRunDescription, setMergedRunDescription] = useState('');
   const [showSignificantDifferences, setShowSignificantDifferences] = useState(false);
   const [significanceThreshold, setSignificanceThreshold] = useState(50);
+  const [dotPlotExpanded, setDotPlotExpanded] = useState(false);
 
   useEffect(() => {
     fetchStrategies();
@@ -1830,6 +1831,212 @@ export default function AnalysisPage() {
                           )}
                         </div>
                       </div>
+                      
+                      {/* Daily Differences Dot Plot */}
+                      <div className="bg-gray-900/50 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h4 className="text-lg font-medium text-white">Daily Performance Differences</h4>
+                            <p className="text-sm text-gray-400">
+                              Distribution of daily PnL differences between the two runs
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setDotPlotExpanded(!dotPlotExpanded)}
+                            className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                          >
+                            {dotPlotExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            {dotPlotExpanded ? 'Hide' : 'Show'} Dot Plot
+                          </button>
+                        </div>
+                        
+                        {dotPlotExpanded && (() => {
+                          const chartData = getFilteredChartData();
+                          const differences = chartData.map(dataPoint => {
+                            const run1Pnl = dataPoint[`run_${headToHead.run1.id}`] || 0;
+                            const run2Pnl = dataPoint[`run_${headToHead.run2.id}`] || 0;
+                            return {
+                              date: dataPoint.date,
+                              difference: run1Pnl - run2Pnl,
+                              run1Pnl,
+                              run2Pnl
+                            };
+                          }).filter(d => d.run1Pnl !== 0 || d.run2Pnl !== 0); // Filter out days with no data
+                          
+                          const positiveDifferences = differences.filter(d => d.difference > 0);
+                          const negativeDifferences = differences.filter(d => d.difference < 0);
+                          const zeroDifferences = differences.filter(d => d.difference === 0);
+                          
+                          return (
+                            <div className="space-y-4">
+                              {/* Dot Plot Visualization */}
+                              <div className="h-64 bg-gray-800/50 rounded-lg p-4">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <ScatterChart data={differences}>
+                                    <CartesianGrid 
+                                      strokeDasharray="3 3" 
+                                      stroke="#374151"
+                                      strokeOpacity={0.5}
+                                    />
+                                    <XAxis 
+                                      dataKey="date" 
+                                      tick={{ fill: '#9ca3af', fontSize: 10 }}
+                                      axisLine={{ stroke: '#374151' }}
+                                      tickLine={{ stroke: '#374151' }}
+                                      angle={-45}
+                                      textAnchor="end"
+                                      height={60}
+                                    />
+                                    <YAxis 
+                                      dataKey="difference"
+                                      tick={{ fill: '#9ca3af', fontSize: 12 }}
+                                      axisLine={{ stroke: '#374151' }}
+                                      tickLine={{ stroke: '#374151' }}
+                                      tickFormatter={(value) => `$${value.toFixed(0)}`}
+                                    />
+                                    <Tooltip 
+                                      content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                          const data = payload[0].payload;
+                                          const difference = data.difference;
+                                          const isPositive = difference > 0;
+                                          const color = isPositive ? '#10b981' : '#ef4444';
+                                          
+                                          // Get run names/descriptions
+                                          const run1 = runs.find(r => r.id === headToHead.run1.id);
+                                          const run2 = runs.find(r => r.id === headToHead.run2.id);
+                                          const run1Name = run1?.run_description || run1?.run_name || `Run ${headToHead.run1.id}`;
+                                          const run2Name = run2?.run_description || run2?.run_name || `Run ${headToHead.run2.id}`;
+                                          
+                                          return (
+                                            <div style={{
+                                              backgroundColor: '#111827',
+                                              border: '1px solid #4b5563',
+                                              borderRadius: '12px',
+                                              color: '#ffffff',
+                                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)',
+                                              fontSize: '14px',
+                                              padding: '12px 16px',
+                                              fontFamily: 'inherit'
+                                            }}>
+                                              <div style={{ 
+                                                color: '#ffffff', 
+                                                fontWeight: '600', 
+                                                fontSize: '14px',
+                                                marginBottom: '8px'
+                                              }}>
+                                                {label}
+                                              </div>
+                                              <div style={{ 
+                                                color: color, 
+                                                fontWeight: '600',
+                                                fontSize: '16px',
+                                                marginBottom: '4px'
+                                              }}>
+                                                ${difference.toFixed(2)}
+                                              </div>
+                                              <div style={{ 
+                                                color: '#9ca3af', 
+                                                fontSize: '12px',
+                                                marginBottom: '2px'
+                                              }}>
+                                                <span style={{ color: '#3b82f6' }}>{run1Name}:</span> ${data.run1Pnl.toFixed(2)}
+                                              </div>
+                                              <div style={{ 
+                                                color: '#9ca3af', 
+                                                fontSize: '12px'
+                                              }}>
+                                                <span style={{ color: '#10b981' }}>{run2Name}:</span> ${data.run2Pnl.toFixed(2)}
+                                              </div>
+                                            </div>
+                                          );
+                                        }
+                                        return null;
+                                      }}
+                                    />
+                                    <ReferenceLine y={0} stroke="#6b7280" strokeDasharray="2 2" />
+                                    <Scatter
+                                      dataKey="difference"
+                                      fill="#3b82f6"
+                                      r={4}
+                                    />
+                                  </ScatterChart>
+                                </ResponsiveContainer>
+                              </div>
+                              
+                              {/* Summary Statistics */}
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="bg-green-900/20 border border-green-600 rounded-lg p-3">
+                                  <div className="text-center">
+                                    <div className="text-lg font-bold text-green-400">
+                                      {positiveDifferences.length}
+                                    </div>
+                                    <div className="text-sm text-green-300">Days {headToHead.run1.name} Won</div>
+                                    <div className="text-xs text-gray-400 mt-1">
+                                      Avg: ${positiveDifferences.length > 0 ? (positiveDifferences.reduce((sum, d) => sum + d.difference, 0) / positiveDifferences.length).toFixed(2) : '0.00'}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="bg-gray-700/20 border border-gray-600 rounded-lg p-3">
+                                  <div className="text-center">
+                                    <div className="text-lg font-bold text-gray-300">
+                                      {zeroDifferences.length}
+                                    </div>
+                                    <div className="text-sm text-gray-400">Tie Days</div>
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      {((zeroDifferences.length / differences.length) * 100).toFixed(1)}% of days
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="bg-red-900/20 border border-red-600 rounded-lg p-3">
+                                  <div className="text-center">
+                                    <div className="text-lg font-bold text-red-400">
+                                      {negativeDifferences.length}
+                                    </div>
+                                    <div className="text-sm text-red-300">Days {headToHead.run2.name} Won</div>
+                                    <div className="text-xs text-gray-400 mt-1">
+                                      Avg: ${negativeDifferences.length > 0 ? (Math.abs(negativeDifferences.reduce((sum, d) => sum + d.difference, 0) / negativeDifferences.length)).toFixed(2) : '0.00'}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* Distribution Stats */}
+                              <div className="bg-gray-800/30 rounded-lg p-3">
+                                <h5 className="text-sm font-medium text-white mb-2">Distribution Statistics</h5>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                                  <div>
+                                    <div className="text-gray-400">Largest Win</div>
+                                    <div className="text-green-400 font-medium">
+                                      ${Math.max(...differences.map(d => d.difference), 0).toFixed(2)}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-gray-400">Largest Loss</div>
+                                    <div className="text-red-400 font-medium">
+                                      ${Math.min(...differences.map(d => d.difference), 0).toFixed(2)}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-gray-400">Average Difference</div>
+                                    <div className={`font-medium ${differences.reduce((sum, d) => sum + d.difference, 0) / differences.length >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                      ${(differences.reduce((sum, d) => sum + d.difference, 0) / differences.length).toFixed(2)}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-gray-400">Standard Deviation</div>
+                                    <div className="text-gray-300 font-medium">
+                                      ${(Math.sqrt(differences.reduce((sum, d) => sum + Math.pow(d.difference - (differences.reduce((s, d) => s + d.difference, 0) / differences.length), 2), 0) / differences.length)).toFixed(2)}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -1923,14 +2130,19 @@ export default function AnalysisPage() {
                       />
                       <Tooltip 
                         contentStyle={{
-                          backgroundColor: '#1f2937',
-                          border: '1px solid #374151',
-                          borderRadius: '8px',
-                          color: '#f9fafb'
+                          backgroundColor: '#111827',
+                          border: '1px solid #4b5563',
+                          borderRadius: '12px',
+                          color: '#f9fafb',
+                          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)',
+                          fontSize: '14px',
+                          padding: '12px 16px'
                         }}
                         labelStyle={{
-                          color: '#f9fafb',
-                          fontWeight: '600'
+                          color: '#ffffff !important',
+                          fontWeight: '600',
+                          fontSize: '14px',
+                          marginBottom: '8px'
                         }}
                         formatter={(value: any, name: string) => {
                           const runId = name.replace('run_', '');
@@ -1938,9 +2150,18 @@ export default function AnalysisPage() {
                           const displayName = run?.run_description 
                             ? `Run ${runId} - ${run.run_description}`
                             : run?.run_name || `Run ${runId}`;
-                          return [formatCurrency(value), displayName];
+                          const isPositive = value >= 0;
+                          const color = isPositive ? '#10b981' : '#ef4444';
+                          return [
+                            <span key="value" style={{ color, fontWeight: '600' }}>
+                              {formatCurrency(value)}
+                            </span>,
+                            <span key="label" style={{ color: '#ffffff' }}>
+                              {displayName}
+                            </span>
+                          ];
                         }}
-                        labelFormatter={(label) => `Date: ${label}`}
+                        labelFormatter={(label) => label}
                       />
                       {selectedRuns.sort((a, b) => a - b).map((runId, index) => {
                         const run = runs.find(r => r.id === runId);
