@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Loader2,  Settings, Trash2, Eye, GitMerge, ChevronDown, ChevronUp, Info} from 'lucide-react';
+import { Loader2,  Settings, Trash2, Eye, GitMerge, ChevronDown, ChevronUp, Info, Star} from 'lucide-react';
 import { toast } from 'sonner';
 import {  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Legend, ScatterChart, Scatter, ReferenceLine } from 'recharts';
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
@@ -37,6 +37,7 @@ interface Run {
   sharpe_ratio: number;
   created_at: string;
   strategy_name: string;
+  is_baseline?: boolean;
 }
 
 interface DailyPnl {
@@ -78,6 +79,7 @@ export default function AnalysisPage() {
   const [showSignificantDifferences, setShowSignificantDifferences] = useState(false);
   const [significanceThreshold, setSignificanceThreshold] = useState(50);
   const [dotPlotExpanded, setDotPlotExpanded] = useState(false);
+  const [baselineRun, setBaselineRun] = useState<Run | null>(null);
 
   useEffect(() => {
     fetchStrategies();
@@ -116,9 +118,24 @@ export default function AnalysisPage() {
             fetchDailyPnl(run.id);
           }
         });
+
+        // Fetch baseline run for this strategy
+        fetchBaselineRun(strategyId);
       }
     } catch (error) {
       console.error('Error fetching runs:', error);
+    }
+  };
+
+  const fetchBaselineRun = async (strategyId: string) => {
+    try {
+      const response = await fetch(`/api/runs/baseline?strategyId=${strategyId}`);
+      const data = await response.json();
+      if (data.success) {
+        setBaselineRun(data.baselineRun);
+      }
+    } catch (error) {
+      console.error('Error fetching baseline run:', error);
     }
   };
 
@@ -175,6 +192,7 @@ export default function AnalysisPage() {
       } else {
         setDateRangeWarnings([]);
       }
+      
       
       return newSelection;
     });
@@ -650,6 +668,46 @@ export default function AnalysisPage() {
     }));
   }, []);
 
+  const handleBaselineChange = useCallback(async (runId: number, isBaseline: boolean) => {
+    try {
+      const response = await fetch('/api/runs/baseline', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ runId, isBaseline }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Update the runs list to reflect the new baseline status
+        setRuns(prevRuns => 
+          prevRuns.map(run => ({
+            ...run,
+            is_baseline: run.id === runId ? isBaseline : false
+          }))
+        );
+
+        // Update baseline run state
+        if (isBaseline) {
+          const updatedRun = runs.find(r => r.id === runId);
+          if (updatedRun) {
+            setBaselineRun({ ...updatedRun, is_baseline: true });
+          }
+        } else {
+          setBaselineRun(null);
+        }
+
+        toast.success(data.message);
+      } else {
+        toast.error(data.error || 'Failed to update baseline status');
+      }
+    } catch (error) {
+      console.error('Error updating baseline status:', error);
+      toast.error('Failed to update baseline status');
+    }
+  }, [runs]);
+
 
 
   const handleSaveDescription = useCallback(async (runId: number) => {
@@ -1079,6 +1137,15 @@ export default function AnalysisPage() {
                           >
                             Run #{run.id}
                           </Badge>
+                          {Boolean(run.is_baseline) && (
+                            <Badge 
+                              variant="outline" 
+                              className="bg-yellow-600/20 border-yellow-500 text-yellow-300 font-bold text-sm px-3 py-1 flex items-center gap-1"
+                            >
+                              <Star className="h-3 w-3 fill-current" />
+                              Baseline
+                            </Badge>
+                          )}
                         <h3 className="font-semibold text-white">
                           {run.run_name || `Run ${run.id}`}
                         </h3>
@@ -1115,6 +1182,21 @@ export default function AnalysisPage() {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
+                        {baselineRun && run.id !== baselineRun.id && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRunSelect(run.id);
+                              handleRunSelect(baselineRun.id);
+                            }}
+                            className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                            title="Compare with baseline run"
+                          >
+                            <Star className="h-4 w-4" />
+                          </Button>
+                        )}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
@@ -1217,6 +1299,8 @@ export default function AnalysisPage() {
                   </div>
                 </CardContent>
               </Card>
+
+
               {/* Date Range Warnings */}
               {dateRangeWarnings.length > 0 && (
                 <Card className="bg-yellow-900/20 border-yellow-600">
@@ -1389,7 +1473,6 @@ export default function AnalysisPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {selectedRuns.map((runId) => {
                 const run = runs.find(r => r.id === runId);
-                const runParameters = parameters[runId] || [];
                 
                 return (
                   <Card key={runId} className="bg-gray-800 border-gray-700">
@@ -2228,6 +2311,7 @@ export default function AnalysisPage() {
           onDescriptionChange={handleDescriptionChange}
           localDescription={localDescription}
           savingDescription={savingDescription}
+          onBaselineChange={handleBaselineChange}
         />
       ))}
 

@@ -189,6 +189,15 @@ export async function initializeDatabase() {
     } catch {
       // Column might already exist, ignore the error
     }
+
+    // Add baseline column to strategy_runs if it doesn't exist
+    try {
+      await db.execute(`
+        ALTER TABLE strategy_runs ADD COLUMN is_baseline BOOLEAN DEFAULT FALSE
+      `);
+    } catch {
+      // Column might already exist, ignore the error
+    }
   } catch (error) {
     console.error('Error initializing database:', error);
     throw error;

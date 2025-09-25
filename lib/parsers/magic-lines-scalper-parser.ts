@@ -634,7 +634,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     }
 
     // Calculate derived metrics
-    for (const [lineName, stats] of lineStatsMap.entries()) {
+    for (const [, stats] of lineStatsMap.entries()) {
       stats.winRate = stats.totalTrades > 0 ? Math.round((stats.winningTrades / stats.totalTrades) * 10000) / 10000 : 0; // Round to 4 decimal places
       stats.avgPnl = stats.totalTrades > 0 ? Math.round((stats.netPnl / stats.totalTrades) * 100) / 100 : 0; // Round to 2 decimal places
       stats.netPnl = Math.round(stats.netPnl * 100) / 100; // Round to 2 decimal places

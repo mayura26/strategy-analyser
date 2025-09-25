@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BarChart3, Settings, Calendar, Activity, Target, FileText } from 'lucide-react';
+import { BarChart3, Settings, Calendar, Activity, Target, FileText, Star } from 'lucide-react';
 import { formatDateOnly } from '@/lib/date-utils';
 
 interface Run {
@@ -19,6 +19,7 @@ interface Run {
   profit_factor: number;
   created_at: string;
   strategy_name: string;
+  is_baseline?: boolean;
 }
 
 interface DailyPnl {
@@ -80,6 +81,7 @@ interface RunDetailsDialogProps {
   onDescriptionChange?: (runId: number, value: string) => void;
   localDescription?: { [runId: number]: string };
   savingDescription?: number | null;
+  onBaselineChange?: (runId: number, isBaseline: boolean) => Promise<void>;
 }
 
 export const RunDetailsDialog = ({ 
@@ -91,7 +93,8 @@ export const RunDetailsDialog = ({
   onSaveDescription,
   onDescriptionChange,
   localDescription,
-  savingDescription
+  savingDescription,
+  onBaselineChange
 }: RunDetailsDialogProps) => {
   const [runMetrics, setRunMetrics] = useState<Metric[]>([]);
   const [loadingMetrics, setLoadingMetrics] = useState(false);
@@ -107,6 +110,8 @@ export const RunDetailsDialog = ({
   const [loadingRawData, setLoadingRawData] = useState(false);
   const [rawDataError, setRawDataError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isBaseline, setIsBaseline] = useState(run.is_baseline || false);
+  const [updatingBaseline, setUpdatingBaseline] = useState(false);
 
   const formatCurrency = (value: number | null | undefined) => {
     if (value === null || value === undefined || isNaN(value)) return '-';
@@ -126,6 +131,11 @@ export const RunDetailsDialog = ({
       fetchRawData();
     }
   }, [isOpen, run.id]);
+
+  // Update baseline state when run changes
+  useEffect(() => {
+    setIsBaseline(run.is_baseline || false);
+  }, [run.is_baseline]);
 
   const fetchMetrics = async () => {
     setLoadingMetrics(true);
@@ -199,6 +209,20 @@ export const RunDetailsDialog = ({
   const handleSave = async () => {
     if (!onSaveDescription) return;
     await onSaveDescription(run.id);
+  };
+
+  const handleBaselineToggle = async () => {
+    if (!onBaselineChange) return;
+    
+    setUpdatingBaseline(true);
+    try {
+      await onBaselineChange(run.id, !isBaseline);
+      setIsBaseline(!isBaseline);
+    } catch (error) {
+      console.error('Error updating baseline status:', error);
+    } finally {
+      setUpdatingBaseline(false);
+    }
   };
 
   const isEditing = localDescription && localDescription[run.id] !== undefined;
@@ -292,10 +316,36 @@ export const RunDetailsDialog = ({
             </Badge>
             <DialogTitle className="text-white text-base">{run.run_name || `Run ${run.id}`}</DialogTitle>
           </div>
-          <p className="text-gray-300 text-xs">
-            Submitted: {formatDateOnly(run.created_at)}
-          </p>
-          
+          <div className="flex items-center justify-between">
+            <p className="text-gray-300 text-xs">
+              Submitted: {formatDateOnly(run.created_at)}
+            </p>
+            
+            {/* Baseline Toggle - In header */}
+            {onBaselineChange && (
+              <div className="flex items-center gap-2">
+                <Star className={`h-4 w-4 ${isBaseline ? 'text-yellow-400 fill-yellow-400' : 'text-gray-400'}`} />
+                {isBaseline && (
+                  <Badge variant="outline" className="bg-yellow-600/20 border-yellow-500 text-yellow-300 text-xs px-2 py-0.5">
+                    Active
+                  </Badge>
+                )}
+                <Button
+                  size="sm"
+                  onClick={handleBaselineToggle}
+                  disabled={updatingBaseline}
+                  className={`h-6 px-2 text-xs ${
+                    isBaseline 
+                      ? 'bg-yellow-600 hover:bg-yellow-700 text-white' 
+                      : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
+                  }`}
+                >
+                  {updatingBaseline ? 'Updating...' : (isBaseline ? 'Remove' : 'Set')}
+                </Button>
+              </div>
+            )}
+          </div>
+
           <div className="mt-2 p-2 bg-gray-700/50 rounded border border-gray-600">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-white text-xs font-medium">Description</h4>

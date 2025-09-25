@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
         sr.max_drawdown,
         sr.sharpe_ratio,
         sr.created_at,
+        sr.is_baseline,
         s.name as strategy_name
       FROM strategy_runs sr
       JOIN strategies s ON sr.strategy_id = s.id
