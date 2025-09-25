@@ -10,6 +10,7 @@ export async function GET() {
           s.id,
           s.name,
           s.description,
+          s.notes,
           s.created_at,
           COUNT(sr.id) as run_count,
           AVG(sr.net_pnl) as avg_net_pnl,
@@ -17,7 +18,7 @@ export async function GET() {
           MIN(sr.net_pnl) as worst_net_pnl
         FROM strategies s
         LEFT JOIN strategy_runs sr ON s.id = sr.strategy_id
-        GROUP BY s.id, s.name, s.description, s.created_at
+        GROUP BY s.id, s.name, s.description, s.notes, s.created_at
         ORDER BY s.created_at DESC
       `
     });

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Loader2,  Settings, Trash2, Eye, GitMerge, ChevronDown, ChevronUp, Info, Star} from 'lucide-react';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ interface Strategy {
   id: number;
   name: string;
   description: string;
+  notes?: string;
   run_count: number;
   avg_net_pnl: number;
   best_net_pnl: number;
@@ -75,6 +77,8 @@ export default function AnalysisPage() {
   const [mergeValidation, setMergeValidation] = useState<any>(null);
   const [mergingRuns, setMergingRuns] = useState(false);
   const [mergedRunName, setMergedRunName] = useState('');
+  const [strategyNotes, setStrategyNotes] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
   const [mergedRunDescription, setMergedRunDescription] = useState('');
   const [showSignificantDifferences, setShowSignificantDifferences] = useState(false);
   const [significanceThreshold, setSignificanceThreshold] = useState(50);
@@ -88,6 +92,7 @@ export default function AnalysisPage() {
   useEffect(() => {
     if (selectedStrategy) {
       fetchRuns(selectedStrategy);
+      fetchStrategyNotes(selectedStrategy);
     }
   }, [selectedStrategy]);
 
@@ -166,6 +171,18 @@ export default function AnalysisPage() {
       }
     } catch (error) {
       console.error('Error fetching parameters:', error);
+    }
+  };
+
+  const fetchStrategyNotes = async (strategyId: string) => {
+    try {
+      const response = await fetch(`/api/strategies/${strategyId}/notes`);
+      const data = await response.json();
+      if (data.success) {
+        setStrategyNotes(data.notes || '');
+      }
+    } catch (error) {
+      console.error('Error fetching strategy notes:', error);
     }
   };
 
@@ -752,6 +769,42 @@ export default function AnalysisPage() {
     }
   }, [localDescription]);
 
+  const handleSaveNotes = useCallback(async () => {
+    if (!selectedStrategy) return;
+    
+    setSavingNotes(true);
+    
+    try {
+      const response = await fetch(`/api/strategies/${selectedStrategy}/notes`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          notes: strategyNotes
+        }),
+      });
+
+      if (response.ok) {
+        // Update the local strategies state
+        setStrategies(prev => prev.map(strategy => 
+          strategy.id.toString() === selectedStrategy 
+            ? { ...strategy, notes: strategyNotes }
+            : strategy
+        ));
+        
+        toast.success('Notes saved successfully!');
+      } else {
+        toast.error('Failed to save notes. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      toast.error('Failed to save notes. Please try again.');
+    } finally {
+      setSavingNotes(false);
+    }
+  }, [selectedStrategy, strategyNotes]);
+
   const handleMergeRuns = useCallback(async () => {
     if (selectedRuns.length < 2) {
       toast.error('Please select at least 2 runs to merge.');
@@ -1061,6 +1114,7 @@ export default function AnalysisPage() {
           <TabsTrigger value="runs" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white">Runs Overview</TabsTrigger>
           <TabsTrigger value="comparison" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white">Run Comparison</TabsTrigger>
           <TabsTrigger value="charts" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white">Performance Charts</TabsTrigger>
+          <TabsTrigger value="notes" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white">Notes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="runs" className="space-y-6">
@@ -2295,6 +2349,43 @@ export default function AnalysisPage() {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="notes" className="space-y-6">
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white">Strategy Notes</CardTitle>
+              <CardDescription className="text-gray-400">
+                Add your analysis notes and observations for this strategy
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Textarea
+                  value={strategyNotes}
+                  onChange={(e) => setStrategyNotes(e.target.value)}
+                  placeholder="Enter your notes about this strategy's performance, observations, improvements, or any other insights..."
+                  className="min-h-[300px] bg-gray-900 border-gray-600 text-white placeholder-gray-400 resize-none"
+                />
+                <div className="flex justify-end">
+                  <Button
+                    onClick={handleSaveNotes}
+                    disabled={savingNotes}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {savingNotes ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Notes'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
       

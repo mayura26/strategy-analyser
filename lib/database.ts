@@ -45,10 +45,23 @@ export async function initializeDatabase() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT UNIQUE NOT NULL,
         description TEXT,
+        notes TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Migration: Add notes column to existing strategies table if it doesn't exist
+    try {
+      await db.execute({
+        sql: 'ALTER TABLE strategies ADD COLUMN notes TEXT'
+      });
+    } catch (error) {
+      // Column already exists, ignore the error
+      if (!(error instanceof Error) || !error.message.includes('duplicate column name')) {
+        console.warn('Warning: Could not add notes column:', error instanceof Error ? error.message : String(error));
+      }
+    }
 
     // Strategy runs table - stores individual run results
     await db.execute(`
