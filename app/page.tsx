@@ -1992,13 +1992,55 @@ export default function AnalysisPage() {
                           const differences = chartData.map(dataPoint => {
                             const run1Pnl = dataPoint[`run_${headToHead.run1.id}`] || 0;
                             const run2Pnl = dataPoint[`run_${headToHead.run2.id}`] || 0;
+                            const difference = run1Pnl - run2Pnl;
                             return {
                               date: dataPoint.date,
-                              difference: run1Pnl - run2Pnl,
+                              difference,
                               run1Pnl,
-                              run2Pnl
+                              run2Pnl,
+                              color: '' // Will be set after we have all differences
                             };
                           }).filter(d => d.run1Pnl !== 0 || d.run2Pnl !== 0); // Filter out days with no data
+                          
+                          // Color mapping function: fixed bands for consistent color coding
+                          const getColorForDifference = (difference: number) => {
+                            const absDifference = Math.abs(difference);
+                            
+                            if (difference === 0) {
+                              return '#6b7280'; // Gray for zero difference
+                            } else if (difference > 0) {
+                              // Positive differences: green progression
+                              if (absDifference <= 50) {
+                                return 'hsl(120, 25%, 80%)'; // Grayish green
+                              } else if (absDifference <= 150) {
+                                return 'hsl(120, 45%, 70%)'; // Middle green
+                              } else if (absDifference <= 300) {
+                                return 'hsl(120, 70%, 60%)'; // Medium green
+                              } else if (absDifference <= 500) {
+                                return 'hsl(120, 85%, 50%)'; // Bright green
+                              } else {
+                                return 'hsl(120, 100%, 40%)'; // Very bright green
+                              }
+                            } else {
+                              // Negative differences: red progression
+                              if (absDifference <= 50) {
+                                return 'hsl(0, 25%, 80%)'; // Grayish red
+                              } else if (absDifference <= 150) {
+                                return 'hsl(0, 45%, 70%)'; // Middle red
+                              } else if (absDifference <= 300) {
+                                return 'hsl(0, 70%, 60%)'; // Medium red
+                              } else if (absDifference <= 500) {
+                                return 'hsl(0, 85%, 50%)'; // Bright red
+                              } else {
+                                return 'hsl(0, 100%, 40%)'; // Very bright red
+                              }
+                            }
+                          };
+                          
+                          // Set colors for each data point
+                          differences.forEach(d => {
+                            d.color = getColorForDifference(d.difference);
+                          });
                           
                           const positiveDifferences = differences.filter(d => d.difference > 0);
                           const negativeDifferences = differences.filter(d => d.difference < 0);
@@ -2094,11 +2136,78 @@ export default function AnalysisPage() {
                                     <ReferenceLine y={0} stroke="#6b7280" strokeDasharray="2 2" />
                                     <Scatter
                                       dataKey="difference"
-                                      fill="#3b82f6"
+                                      fill="#8884d8"
                                       r={4}
-                                    />
+                                    >
+                                      {differences.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                      ))}
+                                    </Scatter>
                                   </ScatterChart>
                                 </ResponsiveContainer>
+                              </div>
+                              
+                              {/* Color Legend */}
+                              <div className="bg-gray-800/30 rounded-lg p-4">
+                                <h5 className="text-sm font-medium text-white mb-3">Color Legend - Fixed Bands</h5>
+                                <div className="grid grid-cols-2 gap-4 text-xs">
+                                  <div>
+                                    <div className="text-green-300 font-medium mb-2">Positive Differences (Run 1 wins)</div>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(120, 25%, 80%)' }}></div>
+                                        <span className="text-gray-300">$0 - $50 (Grayish Green)</span>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(120, 45%, 70%)' }}></div>
+                                        <span className="text-gray-300">$50 - $150 (Middle Green)</span>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(120, 70%, 60%)' }}></div>
+                                        <span className="text-gray-300">$150 - $300 (Medium Green)</span>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(120, 85%, 50%)' }}></div>
+                                        <span className="text-gray-300">$300 - $500 (Bright Green)</span>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(120, 100%, 40%)' }}></div>
+                                        <span className="text-gray-300">$500+ (Very Bright Green)</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-red-300 font-medium mb-2">Negative Differences (Run 2 wins)</div>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(0, 25%, 80%)' }}></div>
+                                        <span className="text-gray-300">$0 - $50 (Grayish Red)</span>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(0, 45%, 70%)' }}></div>
+                                        <span className="text-gray-300">$50 - $150 (Middle Red)</span>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(0, 70%, 60%)' }}></div>
+                                        <span className="text-gray-300">$150 - $300 (Medium Red)</span>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(0, 85%, 50%)' }}></div>
+                                        <span className="text-gray-300">$300 - $500 (Bright Red)</span>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(0, 100%, 40%)' }}></div>
+                                        <span className="text-gray-300">$500+ (Very Bright Red)</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="mt-3 pt-2 border-t border-gray-600">
+                                  <div className="flex items-center justify-center space-x-2">
+                                    <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: '#6b7280' }}></div>
+                                    <span className="text-gray-400 text-xs">Zero Difference (Gray)</span>
+                                  </div>
+                                </div>
                               </div>
                               
                               {/* Summary Statistics */}
