@@ -2099,12 +2099,12 @@ export default function AnalysisPage() {
                                               fontFamily: 'inherit'
                                             }}>
                                               <div style={{ 
-                                                color: '#ffffff', 
-                                                fontWeight: '600', 
-                                                fontSize: '14px',
+                                                color: '#9ca3af', 
+                                                fontWeight: '500', 
+                                                fontSize: '12px',
                                                 marginBottom: '8px'
                                               }}>
-                                                {label}
+                                                {data.date}
                                               </div>
                                               <div style={{ 
                                                 color: color, 
@@ -2145,69 +2145,6 @@ export default function AnalysisPage() {
                                     </Scatter>
                                   </ScatterChart>
                                 </ResponsiveContainer>
-                              </div>
-                              
-                              {/* Color Legend */}
-                              <div className="bg-gray-800/30 rounded-lg p-4">
-                                <h5 className="text-sm font-medium text-white mb-3">Color Legend - Fixed Bands</h5>
-                                <div className="grid grid-cols-2 gap-4 text-xs">
-                                  <div>
-                                    <div className="text-green-300 font-medium mb-2">Positive Differences (Run 1 wins)</div>
-                                    <div className="space-y-1">
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(120, 25%, 80%)' }}></div>
-                                        <span className="text-gray-300">$0 - $50 (Grayish Green)</span>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(120, 45%, 70%)' }}></div>
-                                        <span className="text-gray-300">$50 - $150 (Middle Green)</span>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(120, 70%, 60%)' }}></div>
-                                        <span className="text-gray-300">$150 - $300 (Medium Green)</span>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(120, 85%, 50%)' }}></div>
-                                        <span className="text-gray-300">$300 - $500 (Bright Green)</span>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(120, 100%, 40%)' }}></div>
-                                        <span className="text-gray-300">$500+ (Very Bright Green)</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="text-red-300 font-medium mb-2">Negative Differences (Run 2 wins)</div>
-                                    <div className="space-y-1">
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(0, 25%, 80%)' }}></div>
-                                        <span className="text-gray-300">$0 - $50 (Grayish Red)</span>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(0, 45%, 70%)' }}></div>
-                                        <span className="text-gray-300">$50 - $150 (Middle Red)</span>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(0, 70%, 60%)' }}></div>
-                                        <span className="text-gray-300">$150 - $300 (Medium Red)</span>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(0, 85%, 50%)' }}></div>
-                                        <span className="text-gray-300">$300 - $500 (Bright Red)</span>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: 'hsl(0, 100%, 40%)' }}></div>
-                                        <span className="text-gray-300">$500+ (Very Bright Red)</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="mt-3 pt-2 border-t border-gray-600">
-                                  <div className="flex items-center justify-center space-x-2">
-                                    <div className="w-3 h-3 rounded-full border border-gray-500" style={{ backgroundColor: '#6b7280' }}></div>
-                                    <span className="text-gray-400 text-xs">Zero Difference (Gray)</span>
-                                  </div>
-                                </div>
                               </div>
                               
                               {/* Summary Statistics */}
@@ -2375,39 +2312,59 @@ export default function AnalysisPage() {
                         iconType="rect"
                       />
                       <Tooltip 
-                        contentStyle={{
-                          backgroundColor: '#111827',
-                          border: '1px solid #4b5563',
-                          borderRadius: '12px',
-                          color: '#f9fafb',
-                          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)',
-                          fontSize: '14px',
-                          padding: '12px 16px'
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div style={{
+                                backgroundColor: '#111827',
+                                border: '1px solid #4b5563',
+                                borderRadius: '12px',
+                                color: '#ffffff',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)',
+                                fontSize: '14px',
+                                padding: '12px 16px',
+                                fontFamily: 'inherit'
+                              }}>
+                                <div style={{ 
+                                  color: '#9ca3af', 
+                                  fontWeight: '500', 
+                                  fontSize: '12px',
+                                  marginBottom: '8px'
+                                }}>
+                                  {label}
+                                </div>
+                                {payload.map((entry, index) => {
+                                  const runId = entry.dataKey?.replace('run_', '');
+                                  const run = runs.find(r => r.id === parseInt(runId || '0'));
+                                  const runName = run?.run_description || run?.run_name || `Run ${runId}`;
+                                  const value = entry.value || 0;
+                                  const isPositive = value >= 0;
+                                  const color = isPositive ? '#10b981' : '#ef4444';
+                                  
+                                  return (
+                                    <div key={index} style={{ marginBottom: '4px' }}>
+                                      <div style={{ 
+                                        color: color, 
+                                        fontWeight: '600',
+                                        fontSize: '14px',
+                                        marginBottom: '2px'
+                                      }}>
+                                        {formatCurrency(value)}
+                                      </div>
+                                      <div style={{ 
+                                        color: '#9ca3af', 
+                                        fontSize: '12px'
+                                      }}>
+                                        {runName}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          }
+                          return null;
                         }}
-                        labelStyle={{
-                          color: '#ffffff !important',
-                          fontWeight: '600',
-                          fontSize: '14px',
-                          marginBottom: '8px'
-                        }}
-                        formatter={(value: any, name: string) => {
-                          const runId = name.replace('run_', '');
-                          const run = runs.find(r => r.id === parseInt(runId));
-                          const displayName = run?.run_description 
-                            ? `Run ${runId} - ${run.run_description}`
-                            : run?.run_name || `Run ${runId}`;
-                          const isPositive = value >= 0;
-                          const color = isPositive ? '#10b981' : '#ef4444';
-                          return [
-                            <span key="value" style={{ color, fontWeight: '600' }}>
-                              {formatCurrency(value)}
-                            </span>,
-                            <span key="label" style={{ color: '#ffffff' }}>
-                              {displayName}
-                            </span>
-                          ];
-                        }}
-                        labelFormatter={(label) => label}
                       />
                       {selectedRuns.sort((a, b) => a - b).map((runId, index) => {
                         const run = runs.find(r => r.id === runId);
