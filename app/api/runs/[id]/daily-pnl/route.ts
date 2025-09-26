@@ -8,6 +8,8 @@ export async function GET(
   try {
     const { id } = await params;
     const runId = parseInt(id);
+    const { searchParams } = new URL(request.url);
+    const date = searchParams.get('date');
 
     if (isNaN(runId)) {
       return NextResponse.json(
@@ -16,15 +18,30 @@ export async function GET(
       );
     }
 
-    const result = await db.execute({
-      sql: `
+    let sql: string;
+    let args: any[];
+
+    if (date) {
+      // Fetch data for specific date
+      sql = `
+        SELECT date, pnl, trades, highest_intraday_pnl, lowest_intraday_pnl
+        FROM daily_pnl
+        WHERE run_id = ? AND date = ?
+        ORDER BY date ASC
+      `;
+      args = [runId, date];
+    } else {
+      // Fetch all data
+      sql = `
         SELECT date, pnl, trades, highest_intraday_pnl, lowest_intraday_pnl
         FROM daily_pnl
         WHERE run_id = ?
         ORDER BY date ASC
-      `,
-      args: [runId]
-    });
+      `;
+      args = [runId];
+    }
+
+    const result = await db.execute({ sql, args });
 
     return NextResponse.json({
       success: true,

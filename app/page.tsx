@@ -9,11 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Loader2,  Settings, Trash2, Eye, GitMerge, ChevronDown, ChevronUp, Info, Star} from 'lucide-react';
+import { Loader2,  Settings, Trash2, Eye, GitMerge, ChevronDown, ChevronUp, Info, Star, Calendar} from 'lucide-react';
 import { toast } from 'sonner';
 import {  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Legend, ScatterChart, Scatter, ReferenceLine } from 'recharts';
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 import { RunDetailsDialog } from '@/components/RunDetailsDialog';
+import { DayCompareDialog } from '@/components/DayCompareDialog';
 import { formatDateOnly, formatDateRange, getDateRangeFromStrings, findOverlappingDates } from '@/lib/date-utils';
 
 interface Strategy {
@@ -1816,10 +1817,23 @@ export default function AnalysisPage() {
               return (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Head-to-Head Daily Performance</CardTitle>
-                    <CardDescription>
-                      Day-by-day comparison showing which run outperformed the other and by how much
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle>Head-to-Head Daily Performance</CardTitle>
+                        <CardDescription>
+                          Day-by-day comparison showing which run outperformed the other and by how much
+                        </CardDescription>
+                      </div>
+                      <DayCompareDialog 
+                        run1={runs.find(r => r.id === headToHead.run1.id)!}
+                        run2={runs.find(r => r.id === headToHead.run2.id)!}
+                      >
+                        <Button variant="outline" size="sm" className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border-blue-500/50">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          Day Compare
+                        </Button>
+                      </DayCompareDialog>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
@@ -2074,7 +2088,7 @@ export default function AnalysisPage() {
                                       tickFormatter={(value) => `$${value.toFixed(0)}`}
                                     />
                                     <Tooltip 
-                                      content={({ active, payload, label }) => {
+                                      content={({ active, payload }) => {
                                         if (active && payload && payload.length) {
                                           const data = payload[0].payload;
                                           const difference = data.difference;
