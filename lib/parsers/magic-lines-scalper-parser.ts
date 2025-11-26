@@ -461,7 +461,7 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     return maxDrawdown;
   }
 
-  private extractCustomMetrics(rawData: string, tradeData: Array<{ pnl: number; maxProfit: number; maxLoss: number; bars: number; slAdjustments: number; nearMisses: number; quantity: number; points: number; line: string }>): Array<{ name: string; value: number; description?: string }> {
+  private extractCustomMetrics(rawData: string, tradeData: Array<{ pnl: number; maxProfit: number; maxLoss: number; bars: number; slAdjustments: number; nearMisses: number; quantity: number; points: number; line: string; time: string }>): Array<{ name: string; value: number; description?: string }> {
     const metrics: Array<{ name: string; value: number; description?: string }> = [];
 
     // Helper function to ensure finite numbers
@@ -592,6 +592,60 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
       });
     }
 
+    // Calculate hourly statistics per line
+    const lineHourlyStats = this.calculateLineHourlyStatistics(tradeData);
+    
+    // Add hourly metrics for each line
+    for (const [lineName, hourlyStats] of lineHourlyStats.entries()) {
+      for (const [hour, stats] of hourlyStats.entries()) {
+        const hourLabel = `${hour.toString().padStart(2, '0')}:00`;
+        
+        metrics.push({
+          name: `${lineName} - ${hourLabel} - Total Trades`,
+          value: ensureFinite(stats.totalTrades),
+          description: `Total trades executed on ${lineName} during ${hourLabel} hour`
+        });
+
+        metrics.push({
+          name: `${lineName} - ${hourLabel} - Win Rate`,
+          value: ensureFinite(stats.winRate),
+          description: `Win rate for trades on ${lineName} during ${hourLabel} hour`
+        });
+
+        metrics.push({
+          name: `${lineName} - ${hourLabel} - Net PNL`,
+          value: ensureFinite(stats.netPnl),
+          description: `Net P&L for trades on ${lineName} during ${hourLabel} hour`
+        });
+
+        metrics.push({
+          name: `${lineName} - ${hourLabel} - Avg PNL`,
+          value: ensureFinite(stats.avgPnl),
+          description: `Average P&L per trade on ${lineName} during ${hourLabel} hour`
+        });
+
+        metrics.push({
+          name: `${lineName} - ${hourLabel} - Gross Profit`,
+          value: ensureFinite(stats.grossProfit),
+          description: `Total profit from winning trades on ${lineName} during ${hourLabel} hour`
+        });
+
+        metrics.push({
+          name: `${lineName} - ${hourLabel} - Gross Loss`,
+          value: ensureFinite(stats.grossLoss),
+          description: `Total loss from losing trades on ${lineName} during ${hourLabel} hour`
+        });
+
+        // Calculate profit factor for this line and hour
+        const hourlyProfitFactor = stats.grossLoss > 0 ? stats.grossProfit / stats.grossLoss : 0;
+        metrics.push({
+          name: `${lineName} - ${hourLabel} - Profit Factor`,
+          value: Math.round(ensureFinite(hourlyProfitFactor) * 100) / 100,
+          description: `Profit factor for trades on ${lineName} during ${hourLabel} hour`
+        });
+      }
+    }
+
     return metrics;
   }
 
@@ -658,9 +712,101 @@ export class MagicLinesScalperParser extends BaseStrategyParser {
     return lineStatsMap;
   }
 
+  private calculateLineHourlyStatistics(tradeData: Array<{ pnl: number; line: string; time: string }>): Map<string, Map<number, { 
+    totalTrades: number; 
+    winningTrades: number; 
+    losingTrades: number; 
+    winRate: number; 
+    netPnl: number; 
+    avgPnl: number;
+    grossProfit: number;
+    grossLoss: number;
+  }>> {
+    const lineHourlyStatsMap = new Map<string, Map<number, { 
+      totalTrades: number; 
+      winningTrades: number; 
+      losingTrades: number; 
+      winRate: number; 
+      netPnl: number; 
+      avgPnl: number;
+      grossProfit: number;
+      grossLoss: number;
+    }>>();
+
+    // Group trades by line and hour
+    for (const trade of tradeData) {
+      const lineName = trade.line;
+      const hour = this.extractHourFromTime(trade.time);
+      
+      if (!lineHourlyStatsMap.has(lineName)) {
+        lineHourlyStatsMap.set(lineName, new Map());
+      }
+      
+      const lineStats = lineHourlyStatsMap.get(lineName)!;
+      
+      if (!lineStats.has(hour)) {
+        lineStats.set(hour, {
+          totalTrades: 0,
+          winningTrades: 0,
+          losingTrades: 0,
+          winRate: 0,
+          netPnl: 0,
+          avgPnl: 0,
+          grossProfit: 0,
+          grossLoss: 0
+        });
+      }
+
+      const hourStats = lineStats.get(hour)!;
+      hourStats.totalTrades++;
+      hourStats.netPnl += trade.pnl;
+
+      if (trade.pnl > 0) {
+        hourStats.winningTrades++;
+        hourStats.grossProfit += trade.pnl;
+      } else if (trade.pnl < 0) {
+        hourStats.losingTrades++;
+        hourStats.grossLoss += Math.abs(trade.pnl);
+      }
+    }
+
+    // Calculate derived metrics for each line and hour
+    for (const [, lineStats] of lineHourlyStatsMap.entries()) {
+      for (const [, hourStats] of lineStats.entries()) {
+        hourStats.winRate = hourStats.totalTrades > 0 ? Math.round((hourStats.winningTrades / hourStats.totalTrades) * 10000) / 10000 : 0;
+        hourStats.avgPnl = hourStats.totalTrades > 0 ? Math.round((hourStats.netPnl / hourStats.totalTrades) * 100) / 100 : 0;
+        hourStats.netPnl = Math.round(hourStats.netPnl * 100) / 100;
+        hourStats.grossProfit = Math.round(hourStats.grossProfit * 100) / 100;
+        hourStats.grossLoss = Math.round(hourStats.grossLoss * 100) / 100;
+      }
+    }
+
+    return lineHourlyStatsMap;
+  }
+
   private normalizeLineName(lineName: string): string {
     // Clean up the line name by removing extra spaces and standardizing format
     return lineName.trim().replace(/\s+/g, ' ');
+  }
+
+  private extractHourFromTime(timeStr: string): number {
+    // Extract hour from time string like "9:30:00 AM" or "13:45:00"
+    const match = timeStr.match(/(\d{1,2}):\d{2}:\d{2}(?:\s+(AM|PM))?/);
+    if (!match) return 0;
+    
+    let hour = parseInt(match[1]);
+    const period = match[2];
+    
+    // Convert to 24-hour format if needed
+    if (period) {
+      if (period === 'PM' && hour !== 12) {
+        hour += 12;
+      } else if (period === 'AM' && hour === 12) {
+        hour = 0;
+      }
+    }
+    
+    return hour;
   }
 
   private normalizeDate(dateStr: string): string {

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BarChart3, Settings, Calendar, Activity, Target, FileText, Star } from 'lucide-react';
+import { BarChart3, Settings, Calendar, Activity, Target, FileText, Star, ChevronDown, ChevronRight, Clock } from 'lucide-react';
 import { formatDateOnly } from '@/lib/date-utils';
 
 interface Run {
@@ -112,6 +112,7 @@ export const RunDetailsDialog = ({
   const [activeTab, setActiveTab] = useState('overview');
   const [isBaseline, setIsBaseline] = useState(run.is_baseline || false);
   const [updatingBaseline, setUpdatingBaseline] = useState(false);
+  const [expandedLines, setExpandedLines] = useState<Set<string>>(new Set());
 
   const formatCurrency = (value: number | null | undefined) => {
     if (value === null || value === undefined || isNaN(value)) return '-';
@@ -246,6 +247,38 @@ export const RunDetailsDialog = ({
     });
 
     return { lineMetrics, generalMetrics };
+  };
+
+  // Organize hourly metrics for a specific line
+  const organizeHourlyMetrics = (lineName: string, metrics: Metric[]) => {
+    const hourlyMetrics: { [hour: string]: Metric[] } = {};
+    const lineOverallMetrics: Metric[] = [];
+
+    metrics.forEach(metric => {
+      // Check if this is an hourly metric (contains hour pattern like "09:00")
+      const hourMatch = metric.metric_name.match(/(\d{2}:\d{2})/);
+      if (hourMatch) {
+        const hour = hourMatch[1];
+        if (!hourlyMetrics[hour]) {
+          hourlyMetrics[hour] = [];
+        }
+        hourlyMetrics[hour].push(metric);
+      } else {
+        lineOverallMetrics.push(metric);
+      }
+    });
+
+    return { hourlyMetrics, lineOverallMetrics };
+  };
+
+  const toggleLineExpansion = (lineName: string) => {
+    const newExpanded = new Set(expandedLines);
+    if (newExpanded.has(lineName)) {
+      newExpanded.delete(lineName);
+    } else {
+      newExpanded.add(lineName);
+    }
+    setExpandedLines(newExpanded);
   };
 
   const { lineMetrics, generalMetrics } = organizeMetricsByLine();
@@ -476,6 +509,7 @@ export const RunDetailsDialog = ({
                             <th className="text-right py-3 px-4 text-white font-medium text-sm">Gross Profit</th>
                             <th className="text-right py-3 px-4 text-white font-medium text-sm">Gross Loss</th>
                             <th className="text-right py-3 px-4 text-white font-medium text-sm">Profit Factor</th>
+                            <th className="text-center py-3 px-4 text-white font-medium text-sm">Hourly</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -495,51 +529,128 @@ export const RunDetailsDialog = ({
                               return aNum - bNum;
                             })
                             .map(([lineName, metrics]) => {
-                              // Extract specific metrics for this line
-                              const totalTrades = metrics.find(m => m.metric_name.includes('Total Trades'))?.metric_value || 0;
-                              const winRate = metrics.find(m => m.metric_name.includes('Win Rate'))?.metric_value || 0;
-                              const netPnl = metrics.find(m => m.metric_name.includes('Net PNL'))?.metric_value || 0;
-                              const avgPnl = metrics.find(m => m.metric_name.includes('Avg PNL'))?.metric_value || 0;
-                              const grossProfit = metrics.find(m => m.metric_name.includes('Gross Profit'))?.metric_value || 0;
-                              const grossLoss = metrics.find(m => m.metric_name.includes('Gross Loss'))?.metric_value || 0;
-                              const profitFactor = metrics.find(m => m.metric_name.includes('Profit Factor'))?.metric_value || 0;
+                              const { hourlyMetrics, lineOverallMetrics } = organizeHourlyMetrics(lineName, metrics);
+                              const isExpanded = expandedLines.has(lineName);
+                              const hasHourlyData = Object.keys(hourlyMetrics).length > 0;
+                              
+                              // Extract specific metrics for this line (overall)
+                              const totalTrades = lineOverallMetrics.find(m => m.metric_name.includes('Total Trades'))?.metric_value || 0;
+                              const winRate = lineOverallMetrics.find(m => m.metric_name.includes('Win Rate'))?.metric_value || 0;
+                              const netPnl = lineOverallMetrics.find(m => m.metric_name.includes('Net PNL'))?.metric_value || 0;
+                              const avgPnl = lineOverallMetrics.find(m => m.metric_name.includes('Avg PNL'))?.metric_value || 0;
+                              const grossProfit = lineOverallMetrics.find(m => m.metric_name.includes('Gross Profit'))?.metric_value || 0;
+                              const grossLoss = lineOverallMetrics.find(m => m.metric_name.includes('Gross Loss'))?.metric_value || 0;
+                              const profitFactor = lineOverallMetrics.find(m => m.metric_name.includes('Profit Factor'))?.metric_value || 0;
                           
-                          return (
-                                <tr key={lineName} className="border-b border-gray-600 hover:bg-gray-600/50">
-                                  <td className="py-3 px-4">
-                                    <div className="flex items-center gap-2">
-                                      <Target className="h-4 w-4 text-blue-400" />
-                                      <span className="text-white font-medium text-sm">{lineName}</span>
-                                    </div>
-                                  </td>
-                                  <td className="text-right py-3 px-4">
-                                    <span className="text-white font-mono text-sm">{totalTrades}</span>
-                                  </td>
-                                  <td className="text-right py-3 px-4">
-                                    <span className="text-white font-mono text-sm">{formatPercentage(winRate)}</span>
-                                  </td>
-                                  <td className="text-right py-3 px-4">
-                                    <span className={`font-mono text-sm ${netPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                      {formatCurrency(netPnl)}
-                                    </span>
-                                  </td>
-                                  <td className="text-right py-3 px-4">
-                                    <span className={`font-mono text-sm ${avgPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                      {formatCurrency(avgPnl)}
-                              </span>
-                                  </td>
-                                  <td className="text-right py-3 px-4">
-                                    <span className="text-green-400 font-mono text-sm">{formatCurrency(grossProfit)}</span>
-                                  </td>
-                                  <td className="text-right py-3 px-4">
-                                    <span className="text-red-400 font-mono text-sm">{formatCurrency(grossLoss)}</span>
-                                  </td>
-                                  <td className="text-right py-3 px-4">
-                                    <span className="text-white font-mono text-sm">{profitFactor.toFixed(2)}</span>
-                                  </td>
-                                </tr>
-                          );
-                        })}
+                              return (
+                                <React.Fragment key={lineName}>
+                                  {/* Main line row */}
+                                  <tr className="border-b border-gray-600 hover:bg-gray-600/50">
+                                    <td className="py-3 px-4">
+                                      <div className="flex items-center gap-2">
+                                        <Target className="h-4 w-4 text-blue-400" />
+                                        <span className="text-white font-medium text-sm">{lineName}</span>
+                                      </div>
+                                    </td>
+                                    <td className="text-right py-3 px-4">
+                                      <span className="text-white font-mono text-sm">{totalTrades}</span>
+                                    </td>
+                                    <td className="text-right py-3 px-4">
+                                      <span className="text-white font-mono text-sm">{formatPercentage(winRate)}</span>
+                                    </td>
+                                    <td className="text-right py-3 px-4">
+                                      <span className={`font-mono text-sm ${netPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                        {formatCurrency(netPnl)}
+                                      </span>
+                                    </td>
+                                    <td className="text-right py-3 px-4">
+                                      <span className={`font-mono text-sm ${avgPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                        {formatCurrency(avgPnl)}
+                                      </span>
+                                    </td>
+                                    <td className="text-right py-3 px-4">
+                                      <span className="text-green-400 font-mono text-sm">{formatCurrency(grossProfit)}</span>
+                                    </td>
+                                    <td className="text-right py-3 px-4">
+                                      <span className="text-red-400 font-mono text-sm">{formatCurrency(grossLoss)}</span>
+                                    </td>
+                                    <td className="text-right py-3 px-4">
+                                      <span className="text-white font-mono text-sm">{profitFactor.toFixed(2)}</span>
+                                    </td>
+                                    <td className="text-center py-3 px-4">
+                                      {hasHourlyData && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => toggleLineExpansion(lineName)}
+                                          className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                                        >
+                                          {isExpanded ? (
+                                            <ChevronDown className="h-4 w-4" />
+                                          ) : (
+                                            <ChevronRight className="h-4 w-4" />
+                                          )}
+                                        </Button>
+                                      )}
+                                    </td>
+                                  </tr>
+                                  
+                                  {/* Hourly breakdown rows */}
+                                  {isExpanded && hasHourlyData && (
+                                    <>
+                                      {Object.entries(hourlyMetrics)
+                                        .sort(([a], [b]) => a.localeCompare(b))
+                                        .map(([hour, hourMetrics]) => {
+                                          const hourTotalTrades = hourMetrics.find(m => m.metric_name.includes('Total Trades'))?.metric_value || 0;
+                                          const hourWinRate = hourMetrics.find(m => m.metric_name.includes('Win Rate'))?.metric_value || 0;
+                                          const hourNetPnl = hourMetrics.find(m => m.metric_name.includes('Net PNL'))?.metric_value || 0;
+                                          const hourAvgPnl = hourMetrics.find(m => m.metric_name.includes('Avg PNL'))?.metric_value || 0;
+                                          const hourGrossProfit = hourMetrics.find(m => m.metric_name.includes('Gross Profit'))?.metric_value || 0;
+                                          const hourGrossLoss = hourMetrics.find(m => m.metric_name.includes('Gross Loss'))?.metric_value || 0;
+                                          const hourProfitFactor = hourMetrics.find(m => m.metric_name.includes('Profit Factor'))?.metric_value || 0;
+                                          
+                                          return (
+                                            <tr key={`${lineName}-${hour}`} className="bg-gray-800/50 border-b border-gray-700">
+                                              <td className="py-2 px-4 pl-12">
+                                                <div className="flex items-center gap-2">
+                                                  <Clock className="h-3 w-3 text-gray-400" />
+                                                  <span className="text-gray-300 text-xs">{hour}</span>
+                                                </div>
+                                              </td>
+                                              <td className="text-right py-2 px-4">
+                                                <span className="text-gray-300 font-mono text-xs">{hourTotalTrades}</span>
+                                              </td>
+                                              <td className="text-right py-2 px-4">
+                                                <span className="text-gray-300 font-mono text-xs">{formatPercentage(hourWinRate)}</span>
+                                              </td>
+                                              <td className="text-right py-2 px-4">
+                                                <span className={`font-mono text-xs ${hourNetPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                  {formatCurrency(hourNetPnl)}
+                                                </span>
+                                              </td>
+                                              <td className="text-right py-2 px-4">
+                                                <span className={`font-mono text-xs ${hourAvgPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                  {formatCurrency(hourAvgPnl)}
+                                                </span>
+                                              </td>
+                                              <td className="text-right py-2 px-4">
+                                                <span className="text-green-400 font-mono text-xs">{formatCurrency(hourGrossProfit)}</span>
+                                              </td>
+                                              <td className="text-right py-2 px-4">
+                                                <span className="text-red-400 font-mono text-xs">{formatCurrency(hourGrossLoss)}</span>
+                                              </td>
+                                              <td className="text-right py-2 px-4">
+                                                <span className="text-gray-300 font-mono text-xs">{hourProfitFactor.toFixed(2)}</span>
+                                              </td>
+                                              <td className="text-center py-2 px-4"></td>
+                                            </tr>
+                                          );
+                                        })}
+                                    </>
+                                  )}
+                                </React.Fragment>
+                              );
+                            })}
                         </tbody>
                       </table>
                 </div>
