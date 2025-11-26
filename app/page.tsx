@@ -90,12 +90,6 @@ export default function AnalysisPage() {
     fetchStrategies();
   }, []);
 
-  useEffect(() => {
-    if (selectedStrategy) {
-      fetchRuns(selectedStrategy);
-      fetchStrategyNotes(selectedStrategy);
-    }
-  }, [selectedStrategy]);
 
   const fetchStrategies = async () => {
     try {
@@ -111,7 +105,34 @@ export default function AnalysisPage() {
     }
   };
 
-  const fetchRuns = async (strategyId: string) => {
+  const fetchBaselineRun = useCallback(async (strategyId: string) => {
+    try {
+      const response = await fetch(`/api/runs/baseline?strategyId=${strategyId}`);
+      const data = await response.json();
+      if (data.success) {
+        setBaselineRun(data.baselineRun);
+      }
+    } catch (error) {
+      console.error('Error fetching baseline run:', error);
+    }
+  }, []);
+
+  const fetchDailyPnl = useCallback(async (runId: number) => {
+    try {
+      const response = await fetch(`/api/runs/${runId}/daily-pnl`);
+      const data = await response.json();
+      if (data.success) {
+        setDailyPnlData(prev => ({
+          ...prev,
+          [runId]: data.dailyPnl
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching daily PNL:', error);
+    }
+  }, []);
+
+  const fetchRuns = useCallback(async (strategyId: string) => {
     try {
       const response = await fetch(`/api/runs?strategyId=${strategyId}`);
       const data = await response.json();
@@ -131,34 +152,8 @@ export default function AnalysisPage() {
     } catch (error) {
       console.error('Error fetching runs:', error);
     }
-  };
+  }, [dailyPnlData, fetchDailyPnl, fetchBaselineRun]);
 
-  const fetchBaselineRun = async (strategyId: string) => {
-    try {
-      const response = await fetch(`/api/runs/baseline?strategyId=${strategyId}`);
-      const data = await response.json();
-      if (data.success) {
-        setBaselineRun(data.baselineRun);
-      }
-    } catch (error) {
-      console.error('Error fetching baseline run:', error);
-    }
-  };
-
-  const fetchDailyPnl = async (runId: number) => {
-    try {
-      const response = await fetch(`/api/runs/${runId}/daily-pnl`);
-      const data = await response.json();
-      if (data.success) {
-        setDailyPnlData(prev => ({
-          ...prev,
-          [runId]: data.dailyPnl
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching daily PNL:', error);
-    }
-  };
 
   const fetchParameters = async (runId: number) => {
     try {
@@ -175,7 +170,7 @@ export default function AnalysisPage() {
     }
   };
 
-  const fetchStrategyNotes = async (strategyId: string) => {
+  const fetchStrategyNotes = useCallback(async (strategyId: string) => {
     try {
       const response = await fetch(`/api/strategies/${strategyId}/notes`);
       const data = await response.json();
@@ -185,7 +180,14 @@ export default function AnalysisPage() {
     } catch (error) {
       console.error('Error fetching strategy notes:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (selectedStrategy) {
+      fetchRuns(selectedStrategy);
+      fetchStrategyNotes(selectedStrategy);
+    }
+  }, [selectedStrategy, fetchRuns, fetchStrategyNotes]);
 
   const handleRunSelect = (runId: number) => {
     setSelectedRuns(prev => {

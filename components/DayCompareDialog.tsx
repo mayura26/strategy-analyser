@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Loader2, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
@@ -49,13 +48,8 @@ export const DayCompareDialog = ({ run1, run2, children }: DayCompareDialogProps
   // Get available dates from both runs
   const [availableDates, setAvailableDates] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (open) {
-      fetchAvailableDates();
-    }
-  }, [open, run1.id, run2.id]);
 
-  const fetchAvailableDates = async () => {
+  const fetchAvailableDates = useCallback(async () => {
     try {
       const [run1Response, run2Response] = await Promise.all([
         fetch(`/api/runs/${run1.id}/daily-pnl`),
@@ -84,7 +78,13 @@ export const DayCompareDialog = ({ run1, run2, children }: DayCompareDialogProps
       console.error('Error fetching available dates:', error);
       setError('Failed to fetch available dates');
     }
-  };
+  }, [run1.id, run2.id]);
+
+  useEffect(() => {
+    if (open) {
+      fetchAvailableDates();
+    }
+  }, [open, run1.id, run2.id, fetchAvailableDates]);
 
   const fetchDayComparison = async (date: string) => {
     if (!date) return;

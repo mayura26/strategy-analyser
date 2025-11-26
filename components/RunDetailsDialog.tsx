@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -113,6 +113,7 @@ export const RunDetailsDialog = ({
   const [isBaseline, setIsBaseline] = useState(run.is_baseline || false);
   const [updatingBaseline, setUpdatingBaseline] = useState(false);
   const [expandedLines, setExpandedLines] = useState<Set<string>>(new Set());
+  const [expandedHours, setExpandedHours] = useState<Set<string>>(new Set());
 
   const formatCurrency = (value: number | null | undefined) => {
     if (value === null || value === undefined || isNaN(value)) return '-';
@@ -123,22 +124,13 @@ export const RunDetailsDialog = ({
     return `${(value * 100).toFixed(1)}%`;
   };
 
-  // Fetch data when dialog opens
-  useEffect(() => {
-    if (isOpen && run.id) {
-      fetchMetrics();
-      fetchEvents();
-      fetchTrades();
-      fetchRawData();
-    }
-  }, [isOpen, run.id]);
 
   // Update baseline state when run changes
   useEffect(() => {
     setIsBaseline(run.is_baseline || false);
   }, [run.is_baseline]);
 
-  const fetchMetrics = async () => {
+  const fetchMetrics = useCallback(async () => {
     setLoadingMetrics(true);
     try {
       const response = await fetch(`/api/runs/${run.id}/metrics`);
@@ -151,9 +143,9 @@ export const RunDetailsDialog = ({
     } finally {
       setLoadingMetrics(false);
     }
-  };
+  }, [run.id]);
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoadingEvents(true);
     try {
       const response = await fetch(`/api/runs/${run.id}/events`);
@@ -166,9 +158,9 @@ export const RunDetailsDialog = ({
     } finally {
       setLoadingEvents(false);
     }
-  };
+  }, [run.id]);
 
-  const fetchTrades = async () => {
+  const fetchTrades = useCallback(async () => {
     setLoadingTrades(true);
     try {
       const response = await fetch(`/api/runs/${run.id}/trades`);
@@ -181,9 +173,9 @@ export const RunDetailsDialog = ({
     } finally {
       setLoadingTrades(false);
     }
-  };
+  }, [run.id]);
 
-  const fetchRawData = async () => {
+  const fetchRawData = useCallback(async () => {
     setLoadingRawData(true);
     setRawDataError(null);
     try {
@@ -205,7 +197,17 @@ export const RunDetailsDialog = ({
     } finally {
       setLoadingRawData(false);
     }
-  };
+  }, [run.id]);
+
+  // Fetch data when dialog opens
+  useEffect(() => {
+    if (isOpen && run.id) {
+      fetchMetrics();
+      fetchEvents();
+      fetchTrades();
+      fetchRawData();
+    }
+  }, [isOpen, run.id, fetchMetrics, fetchEvents, fetchTrades, fetchRawData]);
 
   const handleSave = async () => {
     if (!onSaveDescription) return;
@@ -279,6 +281,49 @@ export const RunDetailsDialog = ({
       newExpanded.add(lineName);
     }
     setExpandedLines(newExpanded);
+  };
+
+  const toggleHourExpansion = (lineName: string, hour: string) => {
+    const hourKey = `${lineName}-${hour}`;
+    const newExpanded = new Set(expandedHours);
+    if (newExpanded.has(hourKey)) {
+      newExpanded.delete(hourKey);
+    } else {
+      newExpanded.add(hourKey);
+    }
+    setExpandedHours(newExpanded);
+  };
+
+  // Organize trades by line and hour
+  const organizeTradesByLineAndHour = () => {
+    const tradesByLineAndHour: { [lineName: string]: { [hour: string]: typeof detailedTrades } } = {};
+    
+    detailedTrades.forEach(trade => {
+      const lineName = trade.line;
+      const hour = trade.time.match(/(\d{1,2}):\d{2}:\d{2}/)?.[1];
+      if (!hour) return;
+      
+      // Convert to 24-hour format if needed
+      let hourNum = parseInt(hour);
+      if (trade.time.includes('PM') && hourNum !== 12) {
+        hourNum += 12;
+      } else if (trade.time.includes('AM') && hourNum === 12) {
+        hourNum = 0;
+      }
+      
+      const hourLabel = `${hourNum.toString().padStart(2, '0')}:00`;
+      
+      if (!tradesByLineAndHour[lineName]) {
+        tradesByLineAndHour[lineName] = {};
+      }
+      if (!tradesByLineAndHour[lineName][hourLabel]) {
+        tradesByLineAndHour[lineName][hourLabel] = [];
+      }
+      
+      tradesByLineAndHour[lineName][hourLabel].push(trade);
+    });
+    
+    return tradesByLineAndHour;
   };
 
   const { lineMetrics, generalMetrics } = organizeMetricsByLine();
@@ -609,41 +654,104 @@ export const RunDetailsDialog = ({
                                           const hourGrossLoss = hourMetrics.find(m => m.metric_name.includes('Gross Loss'))?.metric_value || 0;
                                           const hourProfitFactor = hourMetrics.find(m => m.metric_name.includes('Profit Factor'))?.metric_value || 0;
                                           
+                                          const hourKey = `${lineName}-${hour}`;
+                                          const isHourExpanded = expandedHours.has(hourKey);
+                                          const tradesByLineAndHour = organizeTradesByLineAndHour();
+                                          const hourTrades = tradesByLineAndHour[lineName]?.[hour] || [];
+                                          const hasTradeData = hourTrades.length > 0;
+                                          
                                           return (
-                                            <tr key={`${lineName}-${hour}`} className="bg-gray-800/50 border-b border-gray-700">
-                                              <td className="py-2 px-4 pl-12">
-                                                <div className="flex items-center gap-2">
-                                                  <Clock className="h-3 w-3 text-gray-400" />
-                                                  <span className="text-gray-300 text-xs">{hour}</span>
-                                                </div>
-                                              </td>
-                                              <td className="text-right py-2 px-4">
-                                                <span className="text-gray-300 font-mono text-xs">{hourTotalTrades}</span>
-                                              </td>
-                                              <td className="text-right py-2 px-4">
-                                                <span className="text-gray-300 font-mono text-xs">{formatPercentage(hourWinRate)}</span>
-                                              </td>
-                                              <td className="text-right py-2 px-4">
-                                                <span className={`font-mono text-xs ${hourNetPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                  {formatCurrency(hourNetPnl)}
-                                                </span>
-                                              </td>
-                                              <td className="text-right py-2 px-4">
-                                                <span className={`font-mono text-xs ${hourAvgPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                  {formatCurrency(hourAvgPnl)}
-                                                </span>
-                                              </td>
-                                              <td className="text-right py-2 px-4">
-                                                <span className="text-green-400 font-mono text-xs">{formatCurrency(hourGrossProfit)}</span>
-                                              </td>
-                                              <td className="text-right py-2 px-4">
-                                                <span className="text-red-400 font-mono text-xs">{formatCurrency(hourGrossLoss)}</span>
-                                              </td>
-                                              <td className="text-right py-2 px-4">
-                                                <span className="text-gray-300 font-mono text-xs">{hourProfitFactor.toFixed(2)}</span>
-                                              </td>
-                                              <td className="text-center py-2 px-4"></td>
-                                            </tr>
+                                            <React.Fragment key={`${lineName}-${hour}`}>
+                                              {/* Hour summary row */}
+                                              <tr 
+                                                className="bg-gray-800/50 border-b border-gray-700 hover:bg-gray-700/50 cursor-pointer"
+                                                onClick={() => hasTradeData && toggleHourExpansion(lineName, hour)}
+                                              >
+                                                <td className="py-2 px-4 pl-12">
+                                                  <div className="flex items-center gap-2">
+                                                    <Clock className="h-3 w-3 text-gray-400" />
+                                                    <span className="text-gray-300 text-xs">{hour}</span>
+                                                    {hasTradeData && (
+                                                      <div className="ml-2">
+                                                        {isHourExpanded ? (
+                                                          <ChevronDown className="h-3 w-3 text-gray-400" />
+                                                        ) : (
+                                                          <ChevronRight className="h-3 w-3 text-gray-400" />
+                                                        )}
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                </td>
+                                                <td className="text-right py-2 px-4">
+                                                  <span className="text-gray-300 font-mono text-xs">{hourTotalTrades}</span>
+                                                </td>
+                                                <td className="text-right py-2 px-4">
+                                                  <span className="text-gray-300 font-mono text-xs">{formatPercentage(hourWinRate)}</span>
+                                                </td>
+                                                <td className="text-right py-2 px-4">
+                                                  <span className={`font-mono text-xs ${hourNetPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {formatCurrency(hourNetPnl)}
+                                                  </span>
+                                                </td>
+                                                <td className="text-right py-2 px-4">
+                                                  <span className={`font-mono text-xs ${hourAvgPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {formatCurrency(hourAvgPnl)}
+                                                  </span>
+                                                </td>
+                                                <td className="text-right py-2 px-4">
+                                                  <span className="text-green-400 font-mono text-xs">{formatCurrency(hourGrossProfit)}</span>
+                                                </td>
+                                                <td className="text-right py-2 px-4">
+                                                  <span className="text-red-400 font-mono text-xs">{formatCurrency(hourGrossLoss)}</span>
+                                                </td>
+                                                <td className="text-right py-2 px-4">
+                                                  <span className="text-gray-300 font-mono text-xs">{hourProfitFactor.toFixed(2)}</span>
+                                                </td>
+                                                <td className="text-center py-2 px-4"></td>
+                                              </tr>
+                                              
+                                              {/* Individual trade rows for this hour */}
+                                              {isHourExpanded && hasTradeData && (
+                                                <>
+                                                  {hourTrades.map((trade, index) => (
+                                                    <tr key={`${lineName}-${hour}-trade-${index}`} className="bg-gray-900/50 border-b border-gray-800">
+                                                      <td className="py-1 px-4 pl-20">
+                                                        <div className="flex items-center gap-2">
+                                                          <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                                                          <span className="text-gray-400 text-xs">{trade.time}</span>
+                                                        </div>
+                                                      </td>
+                                                      <td className="text-right py-1 px-4">
+                                                        <span className={`text-xs px-2 py-1 rounded ${trade.direction === 'LONG' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
+                                                          {trade.direction}
+                                                        </span>
+                                                      </td>
+                                                      <td className="text-right py-1 px-4">
+                                                        <span className="text-gray-400 font-mono text-xs">{trade.entry.toFixed(2)}</span>
+                                                      </td>
+                                                      <td className="text-right py-1 px-4">
+                                                        <span className={`font-mono text-xs ${trade.actualPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                          {formatCurrency(trade.actualPnl)}
+                                                        </span>
+                                                      </td>
+                                                      <td className="text-right py-1 px-4">
+                                                        <span className="text-gray-400 font-mono text-xs">{trade.maxProfit.toFixed(1)}pts</span>
+                                                      </td>
+                                                      <td className="text-right py-1 px-4">
+                                                        <span className="text-gray-400 font-mono text-xs">{Math.abs(trade.maxLoss).toFixed(1)}pts</span>
+                                                      </td>
+                                                      <td className="text-right py-1 px-4">
+                                                        <span className="text-gray-400 font-mono text-xs">{trade.bars}</span>
+                                                      </td>
+                                                      <td className="text-right py-1 px-4">
+                                                        <span className="text-gray-400 font-mono text-xs">{(trade.profitEfficiency * 100).toFixed(0)}%</span>
+                                                      </td>
+                                                      <td className="text-center py-1 px-4"></td>
+                                                    </tr>
+                                                  ))}
+                                                </>
+                                              )}
+                                            </React.Fragment>
                                           );
                                         })}
                                     </>
