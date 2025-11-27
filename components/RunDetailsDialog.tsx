@@ -124,6 +124,21 @@ export const RunDetailsDialog = ({
     return `${(value * 100).toFixed(1)}%`;
   };
 
+  const formatTradeDateTime = (date: string, time: string) => {
+    // Parse the date (YYYY-MM-DD format) and format as "Mar 25"
+    const dateObj = new Date(date);
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = monthNames[dateObj.getMonth()];
+    const day = dateObj.getDate();
+    
+    // Extract just the time part (remove seconds if present)
+    const timeMatch = time.match(/(\d{1,2}:\d{2})(?::\d{2})?\s*(AM|PM)?/);
+    const formattedTime = timeMatch ? `${timeMatch[1]}${timeMatch[2] ? ` ${timeMatch[2]}` : ''}` : time;
+    
+    return `${formattedTime} (${month} ${day})`;
+  };
+
 
   // Update baseline state when run changes
   useEffect(() => {
@@ -748,7 +763,7 @@ export const RunDetailsDialog = ({
                                                         <td className="py-1 px-4 pl-20">
                                                           <div className="flex items-center gap-2">
                                                             <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                                                            <span className="text-gray-400 text-xs">{trade.time}</span>
+                                                            <span className="text-gray-400 text-xs">{formatTradeDateTime(trade.date, trade.time)}</span>
                                                           </div>
                                                         </td>
                                                         <td className="text-right py-1 px-4">
