@@ -294,23 +294,33 @@ export const RunDetailsDialog = ({
     setExpandedHours(newExpanded);
   };
 
+  // Extract hour from time string (same logic as parser)
+  const extractHourFromTime = (timeStr: string): number => {
+    const match = timeStr.match(/(\d{1,2}):\d{2}:\d{2}(?:\s+(AM|PM))?/);
+    if (!match) return 0;
+    
+    let hour = parseInt(match[1]);
+    const period = match[2];
+    
+    // Convert to 24-hour format if needed
+    if (period) {
+      if (period === 'PM' && hour !== 12) {
+        hour += 12;
+      } else if (period === 'AM' && hour === 12) {
+        hour = 0;
+      }
+    }
+    
+    return hour;
+  };
+
   // Organize trades by line and hour
   const organizeTradesByLineAndHour = () => {
     const tradesByLineAndHour: { [lineName: string]: { [hour: string]: typeof detailedTrades } } = {};
     
     detailedTrades.forEach(trade => {
       const lineName = trade.line;
-      const hour = trade.time.match(/(\d{1,2}):\d{2}:\d{2}/)?.[1];
-      if (!hour) return;
-      
-      // Convert to 24-hour format if needed
-      let hourNum = parseInt(hour);
-      if (trade.time.includes('PM') && hourNum !== 12) {
-        hourNum += 12;
-      } else if (trade.time.includes('AM') && hourNum === 12) {
-        hourNum = 0;
-      }
-      
+      const hourNum = extractHourFromTime(trade.time);
       const hourLabel = `${hourNum.toString().padStart(2, '0')}:00`;
       
       if (!tradesByLineAndHour[lineName]) {
@@ -646,19 +656,22 @@ export const RunDetailsDialog = ({
                                       {Object.entries(hourlyMetrics)
                                         .sort(([a], [b]) => a.localeCompare(b))
                                         .map(([hour, hourMetrics]) => {
-                                          const hourTotalTrades = hourMetrics.find(m => m.metric_name.includes('Total Trades'))?.metric_value || 0;
-                                          const hourWinRate = hourMetrics.find(m => m.metric_name.includes('Win Rate'))?.metric_value || 0;
-                                          const hourNetPnl = hourMetrics.find(m => m.metric_name.includes('Net PNL'))?.metric_value || 0;
-                                          const hourAvgPnl = hourMetrics.find(m => m.metric_name.includes('Avg PNL'))?.metric_value || 0;
-                                          const hourGrossProfit = hourMetrics.find(m => m.metric_name.includes('Gross Profit'))?.metric_value || 0;
-                                          const hourGrossLoss = hourMetrics.find(m => m.metric_name.includes('Gross Loss'))?.metric_value || 0;
-                                          const hourProfitFactor = hourMetrics.find(m => m.metric_name.includes('Profit Factor'))?.metric_value || 0;
-                                          
                                           const hourKey = `${lineName}-${hour}`;
                                           const isHourExpanded = expandedHours.has(hourKey);
                                           const tradesByLineAndHour = organizeTradesByLineAndHour();
                                           const hourTrades = tradesByLineAndHour[lineName]?.[hour] || [];
                                           const hasTradeData = hourTrades.length > 0;
+                                          
+                                          // Calculate metrics directly from detailedTrades for consistency
+                                          const hourTotalTrades = hourTrades.length;
+                                          const hourWinningTrades = hourTrades.filter(t => t.actualPnl > 0).length;
+                                          const hourWinRate = hourTotalTrades > 0 ? hourWinningTrades / hourTotalTrades : 0;
+                                          const hourNetPnl = hourTrades.reduce((sum, t) => sum + t.actualPnl, 0);
+                                          const hourAvgPnl = hourTotalTrades > 0 ? hourNetPnl / hourTotalTrades : 0;
+                                          const hourGrossProfit = hourTrades.filter(t => t.actualPnl > 0).reduce((sum, t) => sum + t.actualPnl, 0);
+                                          const hourGrossLoss = Math.abs(hourTrades.filter(t => t.actualPnl < 0).reduce((sum, t) => sum + t.actualPnl, 0));
+                                          const hourProfitFactor = hourGrossLoss > 0 ? hourGrossProfit / hourGrossLoss : 0;
+                                          
                                           
                                           return (
                                             <React.Fragment key={`${lineName}-${hour}`}>
