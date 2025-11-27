@@ -713,42 +713,60 @@ export const RunDetailsDialog = ({
                                               {/* Individual trade rows for this hour */}
                                               {isHourExpanded && hasTradeData && (
                                                 <>
-                                                  {hourTrades.map((trade, index) => (
-                                                    <tr key={`${lineName}-${hour}-trade-${index}`} className="bg-gray-900/50 border-b border-gray-800">
-                                                      <td className="py-1 px-4 pl-20">
-                                                        <div className="flex items-center gap-2">
-                                                          <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                                                          <span className="text-gray-400 text-xs">{trade.time}</span>
-                                                        </div>
-                                                      </td>
-                                                      <td className="text-right py-1 px-4">
-                                                        <span className={`text-xs px-2 py-1 rounded ${trade.direction === 'LONG' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
-                                                          {trade.direction}
-                                                        </span>
-                                                      </td>
-                                                      <td className="text-right py-1 px-4">
-                                                        <span className="text-gray-400 font-mono text-xs">{trade.entry.toFixed(2)}</span>
-                                                      </td>
-                                                      <td className="text-right py-1 px-4">
-                                                        <span className={`font-mono text-xs ${trade.actualPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                          {formatCurrency(trade.actualPnl)}
-                                                        </span>
-                                                      </td>
-                                                      <td className="text-right py-1 px-4">
-                                                        <span className="text-gray-400 font-mono text-xs">{trade.maxProfit.toFixed(1)}pts</span>
-                                                      </td>
-                                                      <td className="text-right py-1 px-4">
-                                                        <span className="text-gray-400 font-mono text-xs">{Math.abs(trade.maxLoss).toFixed(1)}pts</span>
-                                                      </td>
-                                                      <td className="text-right py-1 px-4">
-                                                        <span className="text-gray-400 font-mono text-xs">{trade.bars}</span>
-                                                      </td>
-                                                      <td className="text-right py-1 px-4">
-                                                        <span className="text-gray-400 font-mono text-xs">{(trade.profitEfficiency * 100).toFixed(0)}%</span>
-                                                      </td>
-                                                      <td className="text-center py-1 px-4"></td>
-                                                    </tr>
-                                                  ))}
+                                                  {hourTrades
+                                                    .sort((a, b) => {
+                                                      // Sort by time within the hour
+                                                      const timeA = a.time.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+                                                      const timeB = b.time.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+                                                      
+                                                      if (!timeA || !timeB) return 0;
+                                                      
+                                                      const [, hourA, minA, secA] = timeA;
+                                                      const [, hourB, minB, secB] = timeB;
+                                                      
+                                                      // Convert to total seconds for comparison
+                                                      const totalSecondsA = parseInt(hourA) * 3600 + parseInt(minA) * 60 + parseInt(secA);
+                                                      const totalSecondsB = parseInt(hourB) * 3600 + parseInt(minB) * 60 + parseInt(secB);
+                                                      
+                                                      return totalSecondsA - totalSecondsB;
+                                                    })
+                                                    .map((trade, index) => (
+                                                      <tr key={`${lineName}-${hour}-trade-${index}`} className="bg-gray-900/50 border-b border-gray-800">
+                                                        <td className="py-1 px-4 pl-20">
+                                                          <div className="flex items-center gap-2">
+                                                            <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                                                            <span className="text-gray-400 text-xs">{trade.time}</span>
+                                                          </div>
+                                                        </td>
+                                                        <td className="text-right py-1 px-4">
+                                                          <span className={`text-xs px-2 py-1 rounded ${trade.direction === 'LONG' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
+                                                            {trade.direction}
+                                                          </span>
+                                                        </td>
+                                                        <td className="text-right py-1 px-4">
+                                                          <span className="text-gray-400 font-mono text-xs">{trade.entry.toFixed(2)}</span>
+                                                        </td>
+                                                        <td className="text-right py-1 px-4">
+                                                          <span className={`font-mono text-xs ${trade.actualPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                            {formatCurrency(trade.actualPnl)}
+                                                          </span>
+                                                        </td>
+                                                        <td className="text-right py-1 px-4">
+                                                          <span className="text-gray-400 font-mono text-xs">{trade.maxProfit.toFixed(1)}pts</span>
+                                                        </td>
+                                                        <td className="text-right py-1 px-4">
+                                                          <span className="text-gray-400 font-mono text-xs">{Math.abs(trade.maxLoss).toFixed(1)}pts</span>
+                                                        </td>
+                                                        <td className="text-right py-1 px-4">
+                                                          <span className="text-gray-400 font-mono text-xs">{trade.bars}</span>
+                                                        </td>
+                                                        <td className="text-right py-1 px-4">
+                                                          <span className="text-gray-400 font-mono text-xs">{(trade.profitEfficiency * 100).toFixed(0)}%</span>
+                                                        </td>
+                                                        <td className="text-center py-1 px-4"></td>
+                                                      </tr>
+                                                    ))
+                                                  }
                                                 </>
                                               )}
                                             </React.Fragment>
